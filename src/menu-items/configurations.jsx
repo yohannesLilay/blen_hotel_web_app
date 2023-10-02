@@ -1,6 +1,8 @@
 import {
-  LocationOnOutlined,
-  LocalGasStationOutlined,
+  CategoryOutlined,
+  InventoryOutlined,
+  BusinessOutlined,
+  AccountTreeOutlined,
 } from "@mui/icons-material";
 
 const configurations = {
@@ -13,21 +15,28 @@ const configurations = {
       title: "Category",
       type: "item",
       url: "/categories",
-      icon: LocationOnOutlined,
+      icon: CategoryOutlined,
     },
     {
       id: "inventory",
       title: "Inventory",
       type: "item",
       url: "/inventories",
-      icon: LocalGasStationOutlined,
+      icon: InventoryOutlined,
     },
     {
       id: "supplier",
       title: "Supplier",
       type: "item",
       url: "/suppliers",
-      icon: LocalGasStationOutlined,
+      icon: BusinessOutlined,
+    },
+    {
+      id: "company",
+      title: "Company",
+      type: "item",
+      url: "/companies",
+      icon: AccountTreeOutlined,
     },
   ],
 };

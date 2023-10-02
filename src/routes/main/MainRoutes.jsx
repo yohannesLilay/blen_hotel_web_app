@@ -12,11 +12,10 @@ const Dashboard = Loadable(lazy(() => import("src/pages/Dashboard")));
 import PermissionRoutes from "./security/PermissionRoutes";
 import RoleRoutes from "./security/RoleRoutes";
 import UserRoutes from "./security/UserRoutes";
-import LocationRoutes from "./configurations/LocationRoutes";
-import SubLocationRoutes from "./configurations/SubLocationRoutes";
-import ClientRoutes from "./business-contacts/ClientRoutes";
-import RecordRoutes from "./transactions/RecordRoutes";
-import ClientLedgerRoutes from "./transactions/ClientLedgerRoutes";
+import CategoryRoutes from "./configurations/CategoryRoutes";
+import InventoryRoutes from "./configurations/InventoryRoutes";
+import SupplierRoutes from "./configurations/SupplierRoutes";
+import CompanyRoutes from "./configurations/CompanyRoutes";
 
 const MainRoutes = {
   path: "/",
@@ -26,11 +25,10 @@ const MainRoutes = {
     { path: "permissions", children: [PermissionRoutes] },
     { path: "roles", children: [...RoleRoutes] },
     { path: "users", children: [...UserRoutes] },
-    { path: "locations", children: [...LocationRoutes] },
-    { path: "sub-locations", children: [...SubLocationRoutes] },
-    { path: "clients", children: [...ClientRoutes] },
-    { path: "transaction-records", children: [...RecordRoutes] },
-    { path: "client-ledgers", children: [...ClientLedgerRoutes] },
+    { path: "categories", children: [...CategoryRoutes] },
+    { path: "inventories", children: [...InventoryRoutes] },
+    { path: "suppliers", children: [...SupplierRoutes] },
+    { path: "companies", children: [...CompanyRoutes] },
   ],
 };
 
