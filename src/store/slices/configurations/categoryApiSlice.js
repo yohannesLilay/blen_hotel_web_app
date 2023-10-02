@@ -1,7 +1,7 @@
 import { apiSlice } from "../apiSlice"
 const CATEGORY_ENDPOINT = "categories";
 
-export const locationsApiSlice = apiSlice.injectEndpoints({
+export const categoriesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query({
       query: () => ({
@@ -42,4 +42,4 @@ export const {
   useGetCategoryQuery,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
-} = locationsApiSlice;
+} = categoriesApiSlice;
