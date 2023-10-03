@@ -18,10 +18,10 @@ const configurations = {
       icon: CategoryOutlined,
     },
     {
-      id: "inventory",
-      title: "Inventory",
+      id: "product",
+      title: "Product",
       type: "item",
-      url: "/inventories",
+      url: "/products",
       icon: InventoryOutlined,
     },
     {

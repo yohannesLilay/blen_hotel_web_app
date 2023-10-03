@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
   Autocomplete,
@@ -14,23 +14,26 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useCreateInventoryMutation,
-  useGetInventoryTemplateQuery,
-} from "src/store/slices/configurations/inventoryApiSlice";
+  useUpdateProductMutation,
+  useGetProductQuery,
+  useGetProductTemplateQuery,
+} from "src/store/slices/configurations/productApiSlice";
 import MainCard from "src/components/MainCard";
 
-const CreateInventory = () => {
+const EditProduct = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const { data: getTemplate } = useGetInventoryTemplateQuery();
-  const [createInventory, { isLoading }] = useCreateInventoryMutation();
+  const { data: getTemplate } = useGetProductTemplateQuery();
+  const { data: getProduct } = useGetProductQuery(id);
+  const [updateProduct, { isLoading }] = useUpdateProductMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Inventory
+            Edit Product
           </Typography>
         </Grid>
         <Grid item />
@@ -40,9 +43,12 @@ const CreateInventory = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: "",
-              category: null,
-              description: "",
+              name: getProduct?.name || "",
+              description: getProduct?.description || "",
+              category:
+                getTemplate?.categoryOptions.find(
+                  (option) => option.id === getProduct?.category?.id
+                ) || null,
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
@@ -51,25 +57,19 @@ const CreateInventory = () => {
                 id: Yup.number().required("Category is required"),
               }),
             })}
-            onSubmit={async (values, { setStatus, setSubmitting }) => {
-              try {
-                await createInventory({
-                  name: values.name,
-                  description: values.description,
-                  categoryId: values.category?.id,
-                }).unwrap();
-                navigate(-1);
-                enqueueSnackbar("Inventory created successfully.", {
-                  variant: "success",
-                });
-
-                setStatus({ success: false });
-                setSubmitting(false);
-              } catch (err) {
-                setStatus({ success: false });
-                setSubmitting(false);
-              }
+            onSubmit={async (values) => {
+              await updateProduct({
+                id: parseInt(id),
+                name: values.name,
+                description: values.description,
+                categoryId: values.category?.id,
+              }).unwrap();
+              navigate(-1);
+              enqueueSnackbar("Product updated successfully.", {
+                variant: "success",
+              });
             }}
+            enableReinitialize
           >
             {({
               errors,
@@ -200,4 +200,4 @@ const CreateInventory = () => {
   );
 };
 
-export default CreateInventory;
+export default EditProduct;

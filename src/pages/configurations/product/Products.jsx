@@ -21,19 +21,19 @@ import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import {
-  useGetInventoriesQuery,
-  useDeleteInventoryMutation,
-} from "src/store/slices/configurations/inventoryApiSlice";
+  useGetProductsQuery,
+  useDeleteProductMutation,
+} from "src/store/slices/configurations/productApiSlice";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Inventory">
+      <Tooltip title="Edit Product">
         <IconButton color="primary" size="small" onClick={onEdit}>
           <EditOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Delete Inventory">
+      <Tooltip title="Delete Product">
         <IconButton color="error" size="small" onClick={onDelete}>
           <DeleteOutlined />
         </IconButton>
@@ -42,7 +42,7 @@ const ActionButtons = ({ onEdit, onDelete }) => {
   );
 };
 
-const InventoryTableRow = ({ index, row, onDelete, onEdit }) => {
+const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
   return (
     <TableRow
       key={row.id}
@@ -52,7 +52,7 @@ const InventoryTableRow = ({ index, row, onDelete, onEdit }) => {
         {index + 1}
       </TableCell>
       <TableCell>{row.name}</TableCell>
-      <TableCell>{row.location.name}</TableCell>
+      <TableCell>{row.product.name}</TableCell>
       <TableCell>{row.description}</TableCell>
       <TableCell>
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
@@ -61,42 +61,42 @@ const InventoryTableRow = ({ index, row, onDelete, onEdit }) => {
   );
 };
 
-const Inventories = () => {
+const Products = () => {
   const navigate = useNavigate();
-  const { data, isSuccess } = useGetInventoriesQuery();
-  const [inventoryDeleteApi] = useDeleteInventoryMutation();
+  const { data, isSuccess } = useGetProductsQuery();
+  const [productDeleteApi] = useDeleteProductMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteInventoryId, setDeleteInventoryId] = useState(null);
+  const [deleteProductId, setDeleteProductId] = useState(null);
   const [rows, setRows] = useState(data || []);
   useEffect(() => {
     if (isSuccess) setRows(data);
   }, [isSuccess, data]);
 
-  const handleEdit = (inventoryId) => {
-    navigate(`${inventoryId}/edit`);
+  const handleEdit = (productId) => {
+    navigate(`${productId}/edit`);
   };
 
-  const handleDelete = (inventoryId) => {
+  const handleDelete = (productId) => {
     setShowDeleteModal(true);
-    setDeleteInventoryId(inventoryId);
+    setDeleteProductId(productId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await inventoryDeleteApi(deleteInventoryId).unwrap();
-      enqueueSnackbar("Inventory deleted successfully.", {
+      await productDeleteApi(deleteProductId).unwrap();
+      enqueueSnackbar("Product deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((inventory) => inventory.id !== deleteInventoryId)
+        prevRows.filter((product) => product.id !== deleteProductId)
       );
 
       setShowDeleteModal(false);
-      setDeleteInventoryId(null);
+      setDeleteProductId(null);
     } catch (err) {
-      setDeleteInventoryId(null);
+      setDeleteProductId(null);
       setShowDeleteModal(false);
     }
   };
@@ -106,7 +106,7 @@ const Inventories = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Inventories</Typography>
+            <Typography variant="h5">List of Products</Typography>
           </Grid>
           <Grid item>
             <Button
@@ -114,7 +114,7 @@ const Inventories = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Inventory
+              <AddOutlined /> Add Product
             </Button>
           </Grid>
         </Grid>
@@ -133,7 +133,7 @@ const Inventories = () => {
                 </TableHead>
                 <TableBody>
                   {rows.map((row, index) => (
-                    <InventoryTableRow
+                    <ProductTableRow
                       key={row.id}
                       index={index}
                       row={row}
@@ -152,7 +152,7 @@ const Inventories = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this inventory?"
+        dialogContent="Are you sure you want to delete this product?"
       />
     </>
   );
@@ -164,11 +164,11 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
 };
 
-InventoryTableRow.propTypes = {
+ProductTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
 
-export default Inventories;
+export default Products;
