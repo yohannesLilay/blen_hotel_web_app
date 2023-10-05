@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -21,18 +22,31 @@ import {
   EditOutlined,
   DeleteOutlined,
   MoreVertOutlined,
+  CheckCircleOutline,
+  FactCheckOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
+import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import OrderItemsModal from "./ItemsModal";
 import {
   useGetOrdersQuery,
+  useUpdateOrderStatusMutation,
   useDeleteOrderMutation,
 } from "src/store/slices/purchases/orderApiSlice";
 
-const ActionButtons = ({ onDetail, onEdit, onDelete }) => {
+const ActionButtons = ({
+  onDetail,
+  onEdit,
+  onDelete,
+  onStatusAction,
+  status,
+  requestedBy,
+}) => {
+  const currentUser = useSelector((state) => state.auth.userInfo);
+
   return (
     <div>
       <Tooltip title="View Order items">
@@ -40,21 +54,51 @@ const ActionButtons = ({ onDetail, onEdit, onDelete }) => {
           <MoreVertOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Edit Order">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete Order">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      {status !== "Approved" && (
+        <Tooltip
+          title={
+            status === "Requested"
+              ? "Check Purchase Order"
+              : status === "Checked"
+              ? "Approve Purchase Order"
+              : null
+          }
+        >
+          <IconButton color="primary" size="small" onClick={onStatusAction}>
+            {status === "Requested" ? (
+              <CheckCircleOutline />
+            ) : (
+              <FactCheckOutlined />
+            )}
+          </IconButton>
+        </Tooltip>
+      )}
+      {status === "Requested" && requestedBy === currentUser.userId && (
+        <Tooltip title="Edit Order">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
+      {status === "Requested" && requestedBy === currentUser.userId && (
+        <Tooltip title="Delete Order">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
     </div>
   );
 };
 
-const OrderTableRow = ({ index, row, onDelete, onEdit, onDetail }) => {
+const OrderTableRow = ({
+  index,
+  row,
+  onDelete,
+  onEdit,
+  onDetail,
+  onStatusAction,
+}) => {
   return (
     <TableRow
       key={row.id}
@@ -74,6 +118,9 @@ const OrderTableRow = ({ index, row, onDelete, onEdit, onDetail }) => {
           onEdit={onEdit}
           onDelete={onDelete}
           onDetail={onDetail}
+          onStatusAction={onStatusAction}
+          status={row.status}
+          requestedBy={row.requested_by?.id}
         />
       </TableCell>
     </TableRow>
@@ -82,14 +129,19 @@ const OrderTableRow = ({ index, row, onDelete, onEdit, onDetail }) => {
 
 const Orders = () => {
   const navigate = useNavigate();
+
   const { data, isSuccess } = useGetOrdersQuery();
   const [orderDeleteApi] = useDeleteOrderMutation();
+  const [updateOrderStatusApi] = useUpdateOrderStatusMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
   const [detailOrder, setDetailOrder] = useState(null);
+  const [showChangeStatusModal, setShowChangeStatusModal] = useState(false);
+  const [changeStatusId, setChangeStatusId] = useState(null);
+  const [changeOrderStatus, setChangeOrderStatus] = useState("");
   const [rows, setRows] = useState(data || []);
   useEffect(() => {
     if (isSuccess) setRows(data);
@@ -103,6 +155,38 @@ const Orders = () => {
     setShowDetailModal(true);
     setDetailItems(items);
     setDetailOrder(orderId);
+  };
+
+  const handleStatusAction = (orderId, status) => {
+    setShowChangeStatusModal(true);
+    setChangeStatusId(orderId);
+    setChangeOrderStatus(status);
+  };
+
+  const handleChangeStatusConfirmed = async () => {
+    try {
+      let command = "";
+      if (changeOrderStatus == "Requested") command = "Checked";
+      if (changeOrderStatus == "Checked") command = "Approved";
+      const response = await updateOrderStatusApi({
+        id: parseInt(changeStatusId),
+        command,
+      }).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((order) => (order.id === response.id ? response : order))
+      );
+
+      enqueueSnackbar(`Order ${command} successfully.`, {
+        variant: "success",
+      });
+      setChangeStatusId(null);
+      setShowChangeStatusModal(false);
+      setChangeOrderStatus("");
+    } catch (err) {
+      setChangeStatusId(null);
+      setShowChangeStatusModal(false);
+      setChangeOrderStatus("");
+    }
   };
 
   const handleDelete = (orderId) => {
@@ -171,6 +255,9 @@ const Orders = () => {
                       onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
                       onDetail={() => handleDetail(row.id, row.items)}
+                      onStatusAction={() =>
+                        handleStatusAction(row.id, row.status)
+                      }
                     />
                   ))}
                 </TableBody>
@@ -179,6 +266,20 @@ const Orders = () => {
           </Box>
         </MainCard>
       </Grid>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={showChangeStatusModal}
+        onClose={() => setShowChangeStatusModal(false)}
+        onConfirm={handleChangeStatusConfirmed}
+        dialogTitle={`Confirm ${
+          changeOrderStatus == "Requested" ? "Check" : "Approve"
+        } Order`}
+        dialogContent={`Are you sure you want to ${
+          changeOrderStatus == "Requested" ? "check" : "approve"
+        } this order?`}
+        dialogActionName="Confirm"
+      />
 
       <DeleteModal
         open={showDeleteModal}
@@ -202,6 +303,9 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onStatusAction: PropTypes.func.isRequired,
+  status: PropTypes.string.isRequired,
+  requestedBy: PropTypes.number.isRequired,
 };
 
 OrderTableRow.propTypes = {
@@ -210,6 +314,7 @@ OrderTableRow.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onStatusAction: PropTypes.func.isRequired,
 };
 
 export default Orders;
