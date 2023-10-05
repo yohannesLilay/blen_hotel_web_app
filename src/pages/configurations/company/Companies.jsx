@@ -113,7 +113,7 @@ const Companies = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Company
+              <AddOutlined /> Add Company
             </Button>
           </Grid>
         </Grid>

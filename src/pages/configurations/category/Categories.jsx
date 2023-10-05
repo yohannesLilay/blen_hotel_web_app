@@ -113,7 +113,7 @@ const Categories = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Category
+              <AddOutlined /> Add Category
             </Button>
           </Grid>
         </Grid>

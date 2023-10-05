@@ -17,7 +17,7 @@ const CreateCompany = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Company
+            Add Company
           </Typography>
         </Grid>
         <Grid item />

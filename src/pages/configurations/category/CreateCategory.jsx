@@ -17,7 +17,7 @@ const CreateCategory = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Category
+            Add Category
           </Typography>
         </Grid>
         <Grid item />

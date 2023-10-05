@@ -52,8 +52,10 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
         {index + 1}
       </TableCell>
       <TableCell>{row.name}</TableCell>
-      <TableCell>{row.product.name}</TableCell>
-      <TableCell>{row.description}</TableCell>
+      <TableCell>{row.unit_of_measure}</TableCell>
+      <TableCell>{row.category.name}</TableCell>
+      <TableCell>{row.safety_stock_level}</TableCell>
+      <TableCell>{row.notes}</TableCell>
       <TableCell>
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
@@ -126,8 +128,10 @@ const Products = () => {
                   <TableRow>
                     <TableCell>Index</TableCell>
                     <TableCell>Name</TableCell>
+                    <TableCell>UoM</TableCell>
                     <TableCell>Category</TableCell>
-                    <TableCell>Description</TableCell>
+                    <TableCell>Safety Stock Level</TableCell>
+                    <TableCell>Notes</TableCell>
                     <TableCell>Action</TableCell>
                   </TableRow>
                 </TableHead>

@@ -42,11 +42,17 @@ const CreateProduct = () => {
             initialValues={{
               name: "",
               category: null,
-              description: "",
+              unit_of_measure: "",
+              safety_stock_level: "",
+              notes: "",
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
-              description: Yup.string(),
+              unit_of_measure: Yup.string().required(
+                "Unit of Measure is required"
+              ),
+              notes: Yup.string(),
+              safety_stock_level: Yup.number(),
               category: Yup.object().shape({
                 id: Yup.number().required("Category is required"),
               }),
@@ -55,7 +61,9 @@ const CreateProduct = () => {
               try {
                 await createProduct({
                   name: values.name,
-                  description: values.description,
+                  unit_of_measure: values.unit_of_measure,
+                  safety_stock_level: parseInt(values.safety_stock_level),
+                  notes: values.notes,
                   categoryId: values.category?.id,
                 }).unwrap();
                 navigate(-1);
@@ -106,6 +114,48 @@ const CreateProduct = () => {
                       <FormControl
                         fullWidth
                         variant="outlined"
+                        error={Boolean(
+                          touched.unit_of_measure && errors.unit_of_measure
+                        )}
+                      >
+                        <Autocomplete
+                          disablePortal
+                          id="unit_of_measure"
+                          options={Object.values(getTemplate?.uomOptions || [])}
+                          value={values.unit_of_measure || null}
+                          onChange={(event, newValue) => {
+                            handleChange({
+                              target: {
+                                name: "unit_of_measure",
+                                value: newValue,
+                              },
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="UoM"
+                              variant="outlined"
+                              error={Boolean(
+                                touched.unit_of_measure &&
+                                  errors.unit_of_measure
+                              )}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.unit_of_measure && errors.unit_of_measure && (
+                        <Typography variant="body2" color="error">
+                          {errors.unit_of_measure}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
                         error={Boolean(touched.category && errors.category)}
                       >
                         <Autocomplete
@@ -143,18 +193,39 @@ const CreateProduct = () => {
                       <TextField
                         fullWidth
                         variant="outlined"
-                        name="description"
-                        value={values.description}
+                        name="safety_stock_level"
+                        value={values.safety_stock_level}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Description"
+                        label="Safety Stock Level"
                         error={Boolean(
-                          touched.description && errors.description
+                          touched.safety_stock_level &&
+                            errors.safety_stock_level
                         )}
                       />
-                      {touched.description && errors.description && (
+                      {touched.safety_stock_level &&
+                        errors.safety_stock_level && (
+                          <Typography variant="body2" color="error">
+                            {errors.safety_stock_level}
+                          </Typography>
+                        )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        name="notes"
+                        value={values.notes}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        label="Notes"
+                        error={Boolean(touched.notes && errors.notes)}
+                      />
+                      {touched.notes && errors.notes && (
                         <Typography variant="body2" color="error">
-                          {errors.description}
+                          {errors.notes}
                         </Typography>
                       )}
                     </Stack>
