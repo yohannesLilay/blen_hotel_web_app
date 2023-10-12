@@ -23,7 +23,7 @@ import DeleteModal from "src/components/modals/DeleteModal";
 import {
   useGetCategoriesQuery,
   useDeleteCategoryMutation,
-} from "src/store/slices/configurations/categoryApiSlice";
+} from "src/store/slices/product-management/categoryApiSlice";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
@@ -113,7 +113,7 @@ const Categories = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Category
+              <AddOutlined /> Add Category
             </Button>
           </Grid>
         </Grid>

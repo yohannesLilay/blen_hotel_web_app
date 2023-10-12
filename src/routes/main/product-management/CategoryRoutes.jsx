@@ -5,13 +5,13 @@ import Loadable from "src/components/Loadable";
 import PrivateRoute from "src/components/PrivateRoute";
 
 const Categories = Loadable(
-  lazy(() => import("src/pages/configurations/category/Categories"))
+  lazy(() => import("src/pages/product-management/category/Categories"))
 );
 const CreateCategory = Loadable(
-  lazy(() => import("src/pages/configurations/category/CreateCategory"))
+  lazy(() => import("src/pages/product-management/category/CreateCategory"))
 );
 const EditCategory = Loadable(
-  lazy(() => import("src/pages/configurations/category/EditCategory"))
+  lazy(() => import("src/pages/product-management/category/EditCategory"))
 );
 
 const CategoryRoutes = [

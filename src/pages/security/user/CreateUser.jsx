@@ -52,7 +52,7 @@ const CreateUser = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create User
+            Add User
           </Typography>
         </Grid>
         <Grid item />
