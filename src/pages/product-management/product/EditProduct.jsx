@@ -14,26 +14,26 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useUpdateInventoryMutation,
-  useGetInventoryQuery,
-  useGetInventoryTemplateQuery,
-} from "src/store/slices/configurations/subCategoryApiSlice";
+  useUpdateProductMutation,
+  useGetProductQuery,
+  useGetProductTemplateQuery,
+} from "src/store/slices/product-management/productApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditInventory = () => {
+const EditProduct = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: getTemplate } = useGetInventoryTemplateQuery();
-  const { data: getInventory } = useGetInventoryQuery(id);
-  const [updateInventory, { isLoading }] = useUpdateInventoryMutation();
+  const { data: getTemplate } = useGetProductTemplateQuery();
+  const { data: getProduct } = useGetProductQuery(id);
+  const [updateProduct, { isLoading }] = useUpdateProductMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit Inventory
+            Edit Product
           </Typography>
         </Grid>
         <Grid item />
@@ -43,29 +43,37 @@ const EditInventory = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: getInventory?.name || "",
-              description: getInventory?.description || "",
+              name: getProduct?.name || "",
+              unit_of_measure: getProduct?.unit_of_measure || "",
+              safety_stock_level: getProduct?.safety_stock_level || "",
+              notes: getProduct?.notes || "",
               category:
                 getTemplate?.categoryOptions.find(
-                  (option) => option.id === getInventory?.category?.id
+                  (option) => option.id === getProduct?.category?.id
                 ) || null,
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
-              description: Yup.string(),
+              unit_of_measure: Yup.string().required(
+                "Unit of Measure is required"
+              ),
+              safety_stock_level: Yup.number(),
+              notes: Yup.string(),
               category: Yup.object().shape({
                 id: Yup.number().required("Category is required"),
               }),
             })}
             onSubmit={async (values) => {
-              await updateInventory({
+              await updateProduct({
                 id: parseInt(id),
                 name: values.name,
-                description: values.description,
+                unit_of_measure: values.unit_of_measure,
+                safety_stock_level: parseInt(values.safety_stock_level),
+                notes: values.notes,
                 categoryId: values.category?.id,
               }).unwrap();
               navigate(-1);
-              enqueueSnackbar("Inventory updated successfully.", {
+              enqueueSnackbar("Product updated successfully.", {
                 variant: "success",
               });
             }}
@@ -97,6 +105,48 @@ const EditInventory = () => {
                       {touched.name && errors.name && (
                         <Typography variant="body2" color="error">
                           {errors.name}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(
+                          touched.unit_of_measure && errors.unit_of_measure
+                        )}
+                      >
+                        <Autocomplete
+                          disablePortal
+                          id="unit_of_measure"
+                          options={Object.values(getTemplate?.uomOptions || [])}
+                          value={values.unit_of_measure || null}
+                          onChange={(event, newValue) => {
+                            handleChange({
+                              target: {
+                                name: "unit_of_measure",
+                                value: newValue,
+                              },
+                            });
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="UoM"
+                              variant="outlined"
+                              error={Boolean(
+                                touched.unit_of_measure &&
+                                  errors.unit_of_measure
+                              )}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.unit_of_measure && errors.unit_of_measure && (
+                        <Typography variant="body2" color="error">
+                          {errors.unit_of_measure}
                         </Typography>
                       )}
                     </Stack>
@@ -143,18 +193,39 @@ const EditInventory = () => {
                       <TextField
                         fullWidth
                         variant="outlined"
-                        name="description"
-                        value={values.description}
+                        name="safety_stock_level"
+                        value={values.safety_stock_level}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Description"
+                        label="Safety Stock Level"
                         error={Boolean(
-                          touched.description && errors.description
+                          touched.safety_stock_level &&
+                            errors.safety_stock_level
                         )}
                       />
-                      {touched.description && errors.description && (
+                      {touched.safety_stock_level &&
+                        errors.safety_stock_level && (
+                          <Typography variant="body2" color="error">
+                            {errors.safety_stock_level}
+                          </Typography>
+                        )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        name="notes"
+                        value={values.notes}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        label="Notes"
+                        error={Boolean(touched.notes && errors.notes)}
+                      />
+                      {touched.notes && errors.notes && (
                         <Typography variant="body2" color="error">
-                          {errors.description}
+                          {errors.notes}
                         </Typography>
                       )}
                     </Stack>
@@ -200,4 +271,4 @@ const EditInventory = () => {
   );
 };
 
-export default EditInventory;
+export default EditProduct;

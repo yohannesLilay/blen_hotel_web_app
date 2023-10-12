@@ -113,7 +113,7 @@ const Roles = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Role
+              <AddOutlined /> Add Role
             </Button>
           </Grid>
         </Grid>

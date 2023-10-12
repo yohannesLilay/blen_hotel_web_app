@@ -4,20 +4,20 @@ import { Box, Button, Grid, TextField, Stack, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
 
-import { useCreateCompanyMutation } from "src/store/slices/configurations/companyApiSlice";
+import { useCreateCategoryMutation } from "src/store/slices/product-management/categoryApiSlice";
 import MainCard from "src/components/MainCard";
 
-const CreateCompany = () => {
+const CreateCategory = () => {
   const navigate = useNavigate();
 
-  const [createCompany, { isLoading }] = useCreateCompanyMutation();
+  const [createCategory, { isLoading }] = useCreateCategoryMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Add Company
+            Add Category
           </Typography>
         </Grid>
         <Grid item />
@@ -36,12 +36,12 @@ const CreateCompany = () => {
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
-                await createCompany({
+                await createCategory({
                   name: values.name,
                   description: values.description,
                 }).unwrap();
                 navigate(-1);
-                enqueueSnackbar("Company created successfully.", {
+                enqueueSnackbar("Category created successfully.", {
                   variant: "success",
                 });
 
@@ -145,4 +145,4 @@ const CreateCompany = () => {
   );
 };
 
-export default CreateCompany;
+export default CreateCategory;

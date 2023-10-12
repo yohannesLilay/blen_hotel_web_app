@@ -17,7 +17,7 @@ const CreateSupplier = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Supplier
+            Add Supplier
           </Typography>
         </Grid>
         <Grid item />

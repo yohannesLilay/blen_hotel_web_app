@@ -115,7 +115,7 @@ const Suppliers = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Create Supplier
+              <AddOutlined /> Add Supplier
             </Button>
           </Grid>
         </Grid>

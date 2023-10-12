@@ -3,26 +3,30 @@ import { enqueueSnackbar } from "notistack";
 import { Box, Button, Grid, TextField, Stack, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 import {
-  useUpdateCategoryMutation,
-  useGetCategoryQuery,
-} from "src/store/slices/configurations/categoryApiSlice";
+  useUpdateOrderMutation,
+  useGetOrderQuery,
+} from "src/store/slices/purchases/orderApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditCategory = () => {
+const EditOrder = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: getCategory } = useGetCategoryQuery(id);
-  const [updateCategory, { isLoading }] = useUpdateCategoryMutation();
+  const { data: getOrder } = useGetOrderQuery(id);
+  const [updateOrder, { isLoading }] = useUpdateOrderMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit Category
+            Edit Order
           </Typography>
         </Grid>
         <Grid item />
@@ -32,21 +36,26 @@ const EditCategory = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: getCategory?.name || "",
-              description: getCategory?.description || "",
+              order_number: getOrder?.order_number || "",
+              order_date: dayjs(getOrder?.order_date) || null,
             }}
             validationSchema={Yup.object().shape({
-              name: Yup.string().required("Name is required"),
-              description: Yup.string(),
+              order_number: Yup.string().required("Order Number is required"),
+              order_date: Yup.date()
+                .required("Effective Date is required")
+                .min(
+                  new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+                  "Effective Date must be greater than today"
+                ),
             })}
             onSubmit={async (values) => {
-              await updateCategory({
+              await updateOrder({
                 id: parseInt(id),
-                name: values.name,
-                description: values.description,
+                order_number: values.order_number,
+                unit_of_measure: values.unit_of_measure,
               }).unwrap();
               navigate(-1);
-              enqueueSnackbar("Category updated successfully.", {
+              enqueueSnackbar("Order updated successfully.", {
                 variant: "success",
               });
             }}
@@ -65,19 +74,43 @@ const EditCategory = () => {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="name"
-                        value={values.name}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Name"
-                        error={Boolean(touched.name && errors.name)}
-                      />
-                      {touched.name && errors.name && (
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          label="Order Date"
+                          variant="outlined"
+                          format="DD-MM-YYYY"
+                          maxDate={dayjs()}
+                          disableFuture
+                          value={values.order_date}
+                          name="order_date"
+                          id="order_date"
+                          onBlur={handleBlur}
+                          onChange={(date) => {
+                            handleChange({
+                              target: { name: "order_date", value: date },
+                            });
+                          }}
+                          error={Boolean(
+                            touched.order_date && errors.order_date
+                          )}
+                          textField={(props) => (
+                            <TextField
+                              {...props}
+                              error={Boolean(
+                                touched.order_date && errors.order_date
+                              )}
+                              helperText={
+                                touched.order_date && errors.order_date
+                              }
+                              label="Effective Date"
+                              fullWidth
+                            />
+                          )}
+                        />
+                      </LocalizationProvider>
+                      {touched.order_date && errors.order_date && (
                         <Typography variant="body2" color="error">
-                          {errors.name}
+                          {errors.order_date}
                         </Typography>
                       )}
                     </Stack>
@@ -87,18 +120,18 @@ const EditCategory = () => {
                       <TextField
                         fullWidth
                         variant="outlined"
-                        name="description"
-                        value={values.description}
+                        name="order_number"
+                        value={values.order_number}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Description"
+                        label="Order Number"
                         error={Boolean(
-                          touched.description && errors.description
+                          touched.order_number && errors.order_number
                         )}
                       />
-                      {touched.description && errors.description && (
+                      {touched.order_number && errors.order_number && (
                         <Typography variant="body2" color="error">
-                          {errors.description}
+                          {errors.order_number}
                         </Typography>
                       )}
                     </Stack>
@@ -144,4 +177,4 @@ const EditCategory = () => {
   );
 };
 
-export default EditCategory;
+export default EditOrder;

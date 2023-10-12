@@ -1,23 +1,28 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { Box, Button, Grid, TextField, Stack, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
 
-import { useCreateCategoryMutation } from "src/store/slices/configurations/categoryApiSlice";
+import {
+  useUpdateCategoryMutation,
+  useGetCategoryQuery,
+} from "src/store/slices/product-management/categoryApiSlice";
 import MainCard from "src/components/MainCard";
 
-const CreateCategory = () => {
+const EditCategory = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [createCategory, { isLoading }] = useCreateCategoryMutation();
+  const { data: getCategory } = useGetCategoryQuery(id);
+  const [updateCategory, { isLoading }] = useUpdateCategoryMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Category
+            Edit Category
           </Typography>
         </Grid>
         <Grid item />
@@ -27,31 +32,25 @@ const CreateCategory = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: "",
-              description: "",
+              name: getCategory?.name || "",
+              description: getCategory?.description || "",
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
               description: Yup.string(),
             })}
-            onSubmit={async (values, { setStatus, setSubmitting }) => {
-              try {
-                await createCategory({
-                  name: values.name,
-                  description: values.description,
-                }).unwrap();
-                navigate(-1);
-                enqueueSnackbar("Category created successfully.", {
-                  variant: "success",
-                });
-
-                setStatus({ success: false });
-                setSubmitting(false);
-              } catch (err) {
-                setStatus({ success: false });
-                setSubmitting(false);
-              }
+            onSubmit={async (values) => {
+              await updateCategory({
+                id: parseInt(id),
+                name: values.name,
+                description: values.description,
+              }).unwrap();
+              navigate(-1);
+              enqueueSnackbar("Category updated successfully.", {
+                variant: "success",
+              });
             }}
+            enableReinitialize
           >
             {({
               errors,
@@ -145,4 +144,4 @@ const CreateCategory = () => {
   );
 };
 
-export default CreateCategory;
+export default EditCategory;
