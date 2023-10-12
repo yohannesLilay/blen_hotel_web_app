@@ -1,8 +1,7 @@
 import { GridViewOutlined } from "@mui/icons-material";
 
 const dashboard = {
-  id: "group-dashboard",
-  title: "Navigation",
+  id: "navigation",
   type: "group",
   children: [
     {

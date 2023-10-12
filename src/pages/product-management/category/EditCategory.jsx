@@ -7,7 +7,7 @@ import { Formik } from "formik";
 import {
   useUpdateCategoryMutation,
   useGetCategoryQuery,
-} from "src/store/slices/configurations/categoryApiSlice";
+} from "src/store/slices/product-management/categoryApiSlice";
 import MainCard from "src/components/MainCard";
 
 const EditCategory = () => {

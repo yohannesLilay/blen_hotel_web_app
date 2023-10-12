@@ -12,11 +12,12 @@ const Dashboard = Loadable(lazy(() => import("src/pages/Dashboard")));
 import PermissionRoutes from "./security/PermissionRoutes";
 import RoleRoutes from "./security/RoleRoutes";
 import UserRoutes from "./security/UserRoutes";
-import CategoryRoutes from "./configurations/CategoryRoutes";
-import ProductRoutes from "./configurations/ProductRoutes";
+import CategoryRoutes from "./product-management/CategoryRoutes";
+import ProductRoutes from "./product-management/ProductRoutes";
 import SupplierRoutes from "./configurations/SupplierRoutes";
 import CompanyRoutes from "./configurations/CompanyRoutes";
 import OrderRoutes from "./purchases/OrderRoutes";
+import ReceivableRoutes from "./purchases/ReceivableRoutes";
 
 const MainRoutes = {
   path: "/",
@@ -31,6 +32,7 @@ const MainRoutes = {
     { path: "suppliers", children: [...SupplierRoutes] },
     { path: "companies", children: [...CompanyRoutes] },
     { path: "purchases/orders", children: [...OrderRoutes] },
+    { path: "purchases/receivables", children: [...ReceivableRoutes] },
   ],
 };
 

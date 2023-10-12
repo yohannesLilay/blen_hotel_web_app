@@ -4,8 +4,9 @@ const PRODUCT_ENDPOINT = "products";
 export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: () => ({
+      query: ({page, limit, search }) => ({
         url: PRODUCT_ENDPOINT,
+        params: { page, limit, search },
       }),
     }),
     getProductTemplate: builder.query({

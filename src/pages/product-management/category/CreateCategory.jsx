@@ -4,7 +4,7 @@ import { Box, Button, Grid, TextField, Stack, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
 
-import { useCreateCategoryMutation } from "src/store/slices/configurations/categoryApiSlice";
+import { useCreateCategoryMutation } from "src/store/slices/product-management/categoryApiSlice";
 import MainCard from "src/components/MainCard";
 
 const CreateCategory = () => {

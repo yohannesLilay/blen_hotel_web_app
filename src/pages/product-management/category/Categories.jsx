@@ -21,19 +21,19 @@ import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import {
-  useGetProductsQuery,
-  useDeleteProductMutation,
-} from "src/store/slices/configurations/productApiSlice";
+  useGetCategoriesQuery,
+  useDeleteCategoryMutation,
+} from "src/store/slices/product-management/categoryApiSlice";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Product">
+      <Tooltip title="Edit Category">
         <IconButton color="primary" size="small" onClick={onEdit}>
           <EditOutlined />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Delete Product">
+      <Tooltip title="Delete Category">
         <IconButton color="error" size="small" onClick={onDelete}>
           <DeleteOutlined />
         </IconButton>
@@ -42,7 +42,7 @@ const ActionButtons = ({ onEdit, onDelete }) => {
   );
 };
 
-const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
+const CategoryTableRow = ({ index, row, onDelete, onEdit }) => {
   return (
     <TableRow
       key={row.id}
@@ -52,10 +52,7 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
         {index + 1}
       </TableCell>
       <TableCell>{row.name}</TableCell>
-      <TableCell>{row.unit_of_measure}</TableCell>
-      <TableCell>{row.category.name}</TableCell>
-      <TableCell>{row.safety_stock_level}</TableCell>
-      <TableCell>{row.notes}</TableCell>
+      <TableCell>{row.description}</TableCell>
       <TableCell>
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
@@ -63,42 +60,42 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
   );
 };
 
-const Products = () => {
+const Categories = () => {
   const navigate = useNavigate();
-  const { data, isSuccess } = useGetProductsQuery();
-  const [productDeleteApi] = useDeleteProductMutation();
+  const { data, isSuccess } = useGetCategoriesQuery();
+  const [categoryDeleteApi] = useDeleteCategoryMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteProductId, setDeleteProductId] = useState(null);
+  const [deleteCategoryId, setDeleteCategoryId] = useState(null);
   const [rows, setRows] = useState(data || []);
   useEffect(() => {
     if (isSuccess) setRows(data);
   }, [isSuccess, data]);
 
-  const handleEdit = (productId) => {
-    navigate(`${productId}/edit`);
+  const handleEdit = (categoryId) => {
+    navigate(`${categoryId}/edit`);
   };
 
-  const handleDelete = (productId) => {
+  const handleDelete = (categoryId) => {
     setShowDeleteModal(true);
-    setDeleteProductId(productId);
+    setDeleteCategoryId(categoryId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await productDeleteApi(deleteProductId).unwrap();
-      enqueueSnackbar("Product deleted successfully.", {
+      await categoryDeleteApi(deleteCategoryId).unwrap();
+      enqueueSnackbar("Category deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((product) => product.id !== deleteProductId)
+        prevRows.filter((category) => category.id !== deleteCategoryId)
       );
 
       setShowDeleteModal(false);
-      setDeleteProductId(null);
+      setDeleteCategoryId(null);
     } catch (err) {
-      setDeleteProductId(null);
+      setDeleteCategoryId(null);
       setShowDeleteModal(false);
     }
   };
@@ -108,7 +105,7 @@ const Products = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Products</Typography>
+            <Typography variant="h5">List of Categories</Typography>
           </Grid>
           <Grid item>
             <Button
@@ -116,7 +113,7 @@ const Products = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Add Product
+              <AddOutlined /> Add Category
             </Button>
           </Grid>
         </Grid>
@@ -128,16 +125,13 @@ const Products = () => {
                   <TableRow>
                     <TableCell>Index</TableCell>
                     <TableCell>Name</TableCell>
-                    <TableCell>UoM</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Safety Stock Level</TableCell>
-                    <TableCell>Notes</TableCell>
+                    <TableCell>Description</TableCell>
                     <TableCell>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.map((row, index) => (
-                    <ProductTableRow
+                    <CategoryTableRow
                       key={row.id}
                       index={index}
                       row={row}
@@ -156,7 +150,7 @@ const Products = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this product?"
+        dialogContent="Are you sure you want to delete this category?"
       />
     </>
   );
@@ -168,11 +162,11 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
 };
 
-ProductTableRow.propTypes = {
+CategoryTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
 
-export default Products;
+export default Categories;
