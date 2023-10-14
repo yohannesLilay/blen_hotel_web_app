@@ -21,6 +21,13 @@ export const productsApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    importProduct: builder.mutation({
+      query: (data) => ({
+        url: `${PRODUCT_ENDPOINT}/import`,
+        method: "POST",
+        body: data
+      })
+    }),
     getProduct: builder.query({
       query: (id) => ({
         url: `${PRODUCT_ENDPOINT}/${id}`,
@@ -46,6 +53,7 @@ export const {
   useGetProductsQuery,
   useGetProductTemplateQuery,
   useCreateProductMutation,
+  useImportProductMutation,
   useGetProductQuery,
   useUpdateProductMutation,
   useDeleteProductMutation,

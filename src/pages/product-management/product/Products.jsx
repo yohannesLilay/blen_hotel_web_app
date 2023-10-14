@@ -19,12 +19,19 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { AddOutlined, EditOutlined, DeleteOutlined } from "@mui/icons-material";
+import {
+  AddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ImportExportOutlined,
+} from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
+import ImportDialog from "src/components/modals/ImportModal";
 import {
   useGetProductsQuery,
+  useImportProductMutation,
   useDeleteProductMutation,
 } from "src/store/slices/product-management/productApiSlice";
 
@@ -79,9 +86,11 @@ const Products = () => {
     search: searchQuery,
   });
   const [productDeleteApi] = useDeleteProductMutation();
+  const [importProduct] = useImportProductMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const [rows, setRows] = useState(data?.products || []);
   const totalProducts = data?.total || 0;
@@ -138,6 +147,22 @@ const Products = () => {
     }
   };
 
+  const handleImport = async (importData) => {
+    try {
+      await importProduct(importData).unwrap();
+      setPage(1);
+      refetch();
+
+      enqueueSnackbar("Product Item imported successfully.", {
+        variant: "success",
+      });
+
+      setShowImportModal(false);
+    } catch (err) {
+      setShowImportModal(false);
+    }
+  };
+
   return (
     <>
       <Grid item xs={12} md={7} lg={8}>
@@ -146,6 +171,14 @@ const Products = () => {
             <Typography variant="h5">List of Products</Typography>
           </Grid>
           <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setShowImportModal(true)}
+              style={{ marginRight: "10px" }}
+            >
+              <ImportExportOutlined /> Import Product
+            </Button>
             <Button
               variant="contained"
               color="primary"
@@ -237,6 +270,15 @@ const Products = () => {
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
         dialogContent="Are you sure you want to delete this product?"
+      />
+
+      <ImportDialog
+        isOpen={showImportModal}
+        onClose={() => {
+          setShowImportModal(false);
+        }}
+        onImport={handleImport}
+        dialogContent="Import Categories"
       />
     </>
   );
