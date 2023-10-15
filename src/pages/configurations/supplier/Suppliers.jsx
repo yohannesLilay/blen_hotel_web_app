@@ -55,7 +55,7 @@ const SupplierTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.email}</TableCell>
       <TableCell>{row.phone_number}</TableCell>
       <TableCell>{row.address}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>
@@ -122,7 +122,7 @@ const Suppliers = () => {
         <MainCard sx={{ mt: 2 }} content={false}>
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
@@ -130,7 +130,7 @@ const Suppliers = () => {
                     <TableCell>Email</TableCell>
                     <TableCell>Phone No</TableCell>
                     <TableCell>Address</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
