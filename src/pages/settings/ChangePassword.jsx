@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -17,10 +18,12 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import MainCard from "src/components/MainCard";
+import { logout } from "src/store/slices/authSlice";
 import { useChangePasswordMutation } from "src/store/slices/security/authApiSlice";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [changePassword, { isLoading }] = useChangePasswordMutation();
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -78,6 +81,8 @@ const ChangePassword = () => {
                   new_password: values.newPassword,
                   confirm_password: values.confirmPassword,
                 }).unwrap();
+                dispatch(logout());
+                navigate("/login");
 
                 enqueueSnackbar("Password changed successfully.", {
                   variant: "success",
