@@ -4,7 +4,7 @@ import MinimalLayout from "src/layout/MinimalLayout";
 
 //Pages
 const AuthLogin = Loadable(
-  lazy(() => import("src/pages/authentication/Login"))
+  lazy(() => import("src/pages/authentication/login/Login"))
 );
 
 const AuthRoutes = {

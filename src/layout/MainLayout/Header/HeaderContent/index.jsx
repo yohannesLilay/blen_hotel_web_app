@@ -58,6 +58,13 @@ const Profile = () => {
   const [selectedIndex, setSelectedIndex] = useState();
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
+    setOpen(false);
+    if (index === 0) {
+      navigate("/settings/profile");
+    }
+    if (index === 1) {
+      navigate("/settings/change-password");
+    }
   };
 
   const handleClose = (event) => {
@@ -162,21 +169,21 @@ const Profile = () => {
                           >
                             <ListItemButton
                               selected={selectedIndex === 0}
-                              onClick={(event) => handleListItemClick(event, 0)}
-                            >
-                              <ListItemIcon>
-                                <EditOutlined />
-                              </ListItemIcon>
-                              <ListItemText primary="Edit Profile" />
-                            </ListItemButton>
-                            <ListItemButton
-                              selected={selectedIndex === 1}
-                              onClick={(event) => handleListItemClick(event, 1)}
+                              onClick={() => handleListItemClick(event, 0)}
                             >
                               <ListItemIcon>
                                 <PersonOutlineOutlined />
                               </ListItemIcon>
                               <ListItemText primary="View Profile" />
+                            </ListItemButton>
+                            <ListItemButton
+                              selected={selectedIndex === 1}
+                              onClick={() => handleListItemClick(event, 1)}
+                            >
+                              <ListItemIcon>
+                                <EditOutlined />
+                              </ListItemIcon>
+                              <ListItemText primary="Change Password" />
                             </ListItemButton>
                             <ListItemButton
                               selected={selectedIndex === 2}
