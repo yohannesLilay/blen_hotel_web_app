@@ -113,7 +113,7 @@ const OrderTableRow = ({
       <TableCell>{row.checked_by?.name}</TableCell>
       <TableCell>{row.approved_by?.name}</TableCell>
       <TableCell>{row.status}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons
           onEdit={onEdit}
           onDelete={onDelete}
@@ -233,7 +233,7 @@ const Orders = () => {
         <MainCard sx={{ mt: 2 }} content={false}>
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
@@ -243,7 +243,7 @@ const Orders = () => {
                     <TableCell>Checked By</TableCell>
                     <TableCell>Approved By</TableCell>
                     <TableCell>Status</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

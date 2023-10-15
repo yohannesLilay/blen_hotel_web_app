@@ -36,11 +36,6 @@ const Breadcrumbs = ({ navigation, ...others }) => {
     });
   });
 
-  // only used for component demo breadcrumbs
-  if (location.pathname === "/breadcrumbs") {
-    location.pathname = "/dashboard/analytics";
-  }
-
   let mainContent;
   let itemContent;
   let breadcrumbContent = <Typography />;

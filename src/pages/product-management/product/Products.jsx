@@ -19,12 +19,19 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { AddOutlined, EditOutlined, DeleteOutlined } from "@mui/icons-material";
+import {
+  AddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ImportExportOutlined,
+} from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
+import ImportDialog from "src/components/modals/ImportModal";
 import {
   useGetProductsQuery,
+  useImportProductMutation,
   useDeleteProductMutation,
 } from "src/store/slices/product-management/productApiSlice";
 
@@ -60,7 +67,7 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.stock_quantity}</TableCell>
       <TableCell>{row.safety_stock_level}</TableCell>
       <TableCell>{row.notes}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>
@@ -79,9 +86,11 @@ const Products = () => {
     search: searchQuery,
   });
   const [productDeleteApi] = useDeleteProductMutation();
+  const [importProduct] = useImportProductMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const [rows, setRows] = useState(data?.products || []);
   const totalProducts = data?.total || 0;
@@ -138,6 +147,22 @@ const Products = () => {
     }
   };
 
+  const handleImport = async (importData) => {
+    try {
+      await importProduct(importData).unwrap();
+      setPage(1);
+      refetch();
+
+      enqueueSnackbar("Product Item imported successfully.", {
+        variant: "success",
+      });
+
+      setShowImportModal(false);
+    } catch (err) {
+      setShowImportModal(false);
+    }
+  };
+
   return (
     <>
       <Grid item xs={12} md={7} lg={8}>
@@ -146,6 +171,14 @@ const Products = () => {
             <Typography variant="h5">List of Products</Typography>
           </Grid>
           <Grid item>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setShowImportModal(true)}
+              style={{ marginRight: "10px" }}
+            >
+              <ImportExportOutlined /> Import Product
+            </Button>
             <Button
               variant="contained"
               color="primary"
@@ -193,7 +226,7 @@ const Products = () => {
 
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
@@ -203,7 +236,7 @@ const Products = () => {
                     <TableCell>Qty in Stoke</TableCell>
                     <TableCell>Safety Stock Level</TableCell>
                     <TableCell>Notes</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -237,6 +270,15 @@ const Products = () => {
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
         dialogContent="Are you sure you want to delete this product?"
+      />
+
+      <ImportDialog
+        isOpen={showImportModal}
+        onClose={() => {
+          setShowImportModal(false);
+        }}
+        onImport={handleImport}
+        dialogContent="Import Categories"
       />
     </>
   );
