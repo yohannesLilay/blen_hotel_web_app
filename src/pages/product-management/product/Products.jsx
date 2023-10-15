@@ -67,7 +67,7 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.stock_quantity}</TableCell>
       <TableCell>{row.safety_stock_level}</TableCell>
       <TableCell>{row.notes}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>
@@ -226,7 +226,7 @@ const Products = () => {
 
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
@@ -236,7 +236,7 @@ const Products = () => {
                     <TableCell>Qty in Stoke</TableCell>
                     <TableCell>Safety Stock Level</TableCell>
                     <TableCell>Notes</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

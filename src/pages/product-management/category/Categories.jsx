@@ -25,6 +25,8 @@ import {
   DeleteOutlined,
   ImportExportOutlined,
 } from "@mui/icons-material";
+// import { MUITable } from "@mui/material/styles";
+
 import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
@@ -58,12 +60,12 @@ const CategoryTableRow = ({ index, row, onDelete, onEdit }) => {
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
+      <TableCell component="th" scope="row" align="left">
         {index + 1}
       </TableCell>
-      <TableCell>{row.name}</TableCell>
-      <TableCell>{row.description}</TableCell>
-      <TableCell>
+      <TableCell align="left">{row.name}</TableCell>
+      <TableCell align="left">{row.description}</TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>
@@ -221,13 +223,13 @@ const Categories = () => {
 
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Description</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

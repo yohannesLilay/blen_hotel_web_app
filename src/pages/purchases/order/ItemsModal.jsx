@@ -126,7 +126,7 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                 sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}
               >
                 <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                  <Table aria-label="simple table">
                     <TableHead>
                       <TableRow>
                         <TableCell>Index</TableCell>
@@ -136,7 +136,7 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                         <TableCell>Unit Price</TableCell>
                         <TableCell>Total Price</TableCell>
                         <TableCell>Remark</TableCell>
-                        <TableCell>Action</TableCell>
+                        <TableCell align="right">Action</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

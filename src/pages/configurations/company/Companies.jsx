@@ -53,7 +53,7 @@ const CompanyTableRow = ({ index, row, onDelete, onEdit }) => {
       </TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.description}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>
@@ -120,13 +120,13 @@ const Companies = () => {
         <MainCard sx={{ mt: 2 }} content={false}>
           <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Description</TableCell>
-                    <TableCell>Action</TableCell>
+                    <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
