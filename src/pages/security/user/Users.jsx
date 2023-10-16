@@ -61,9 +61,7 @@ const UserTableRow = ({ index, row, onDelete, onEdit, onToggleStatus }) => {
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
-        {index + 1}
-      </TableCell>
+      <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.email}</TableCell>
       <TableCell>{row.phone_number}</TableCell>
