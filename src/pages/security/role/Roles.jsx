@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { AddOutlined, EditOutlined, DeleteOutlined } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import {
@@ -28,16 +29,20 @@ import {
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Role">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete Role">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      <PermissionGuard permission="change_role">
+        <Tooltip title="Edit Role">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="delete_role">
+        <Tooltip title="Delete Role">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
     </div>
   );
 };
@@ -106,13 +111,15 @@ const Roles = () => {
             <Typography variant="h5">List of Roles</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add Role
-            </Button>
+            <PermissionGuard permission="add_role">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add Role
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>

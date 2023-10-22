@@ -25,9 +25,8 @@ import {
   DeleteOutlined,
   ImportExportOutlined,
 } from "@mui/icons-material";
-// import { MUITable } from "@mui/material/styles";
-
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
@@ -40,16 +39,20 @@ import {
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Category">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete Category">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      <PermissionGuard permission="change_category">
+        <Tooltip title="Edit Category">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="delete_category">
+        <Tooltip title="Delete Category">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
     </div>
   );
 };
@@ -166,21 +169,25 @@ const Categories = () => {
             <Typography variant="h5">List of Categories</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setShowImportModal(true)}
-              style={{ marginRight: "10px" }}
-            >
-              <ImportExportOutlined /> Import Category
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add Category
-            </Button>
+            <PermissionGuard permission="import_category">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setShowImportModal(true)}
+                style={{ marginRight: "10px" }}
+              >
+                <ImportExportOutlined /> Import Category
+              </Button>
+            </PermissionGuard>
+            <PermissionGuard permission="add_category">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add Category
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
