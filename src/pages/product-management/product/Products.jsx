@@ -26,6 +26,7 @@ import {
   ImportExportOutlined,
 } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
@@ -38,16 +39,20 @@ import {
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Product">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete Product">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      <PermissionGuard permission="change_product">
+        <Tooltip title="Edit Product">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="delete_product">
+        <Tooltip title="Delete Product">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
     </div>
   );
 };
@@ -58,9 +63,7 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
-        {index + 1}
-      </TableCell>
+      <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.unit_of_measure}</TableCell>
       <TableCell>{row.category.name}</TableCell>
@@ -171,21 +174,25 @@ const Products = () => {
             <Typography variant="h5">List of Products</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setShowImportModal(true)}
-              style={{ marginRight: "10px" }}
-            >
-              <ImportExportOutlined /> Import Product
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add Product
-            </Button>
+            <PermissionGuard permission="import_product">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setShowImportModal(true)}
+                style={{ marginRight: "10px" }}
+              >
+                <ImportExportOutlined /> Import Product
+              </Button>
+            </PermissionGuard>
+            <PermissionGuard permission="add_product">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add Product
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>

@@ -24,6 +24,7 @@ import {
   ToggleOnOutlined,
 } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
@@ -36,21 +37,27 @@ import {
 const ActionButtons = ({ onEdit, onDelete, onToggleStatus, status }) => {
   return (
     <div>
-      <Tooltip title={status ? "Deactivate User" : "Activate User"}>
-        <IconButton color="primary" size="small" onClick={onToggleStatus}>
-          {status ? <ToggleOffOutlined /> : <ToggleOnOutlined />}
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Edit User">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete User">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      <PermissionGuard permission="change_user">
+        <Tooltip title={status ? "Deactivate User" : "Activate User"}>
+          <IconButton color="primary" size="small" onClick={onToggleStatus}>
+            {status ? <ToggleOffOutlined /> : <ToggleOnOutlined />}
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="change_user">
+        <Tooltip title="Edit User">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="delete_user">
+        <Tooltip title="Delete User">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
     </div>
   );
 };
@@ -61,9 +68,7 @@ const UserTableRow = ({ index, row, onDelete, onEdit, onToggleStatus }) => {
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
-        {index + 1}
-      </TableCell>
+      <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.email}</TableCell>
       <TableCell>{row.phone_number}</TableCell>
@@ -165,13 +170,15 @@ const Users = () => {
             <Typography variant="h5">List of Users</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> AddUser
-            </Button>
+            <PermissionGuard permission="add_user">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> AddUser
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>

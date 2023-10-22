@@ -8,12 +8,14 @@ const security = {
   id: "security",
   title: "Security",
   type: "group",
+  permissions: ["view_permission", "view_role", "view_user"],
   children: [
     {
       id: "permission",
       title: "Permission",
       type: "item",
       url: "/permissions",
+      permission: "view_permission",
       icon: LockOutlined,
     },
     {
@@ -21,6 +23,7 @@ const security = {
       title: "Role",
       type: "item",
       url: "/roles",
+      permission: "view_role",
       icon: WorkspacesOutlined,
     },
     {
@@ -28,6 +31,7 @@ const security = {
       title: "User",
       type: "item",
       url: "/users",
+      permission: "view_user",
       icon: PersonOutlineOutlined,
     },
   ],
