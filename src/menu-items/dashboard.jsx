@@ -9,6 +9,7 @@ const dashboard = {
       title: "Dashboard",
       type: "item",
       url: "/dashboard",
+      permission: "",
       icon: GridViewOutlined,
       breadcrumbs: false,
     },

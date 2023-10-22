@@ -147,9 +147,7 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                             "&:last-child td, &:last-child th": { border: 0 },
                           }}
                         >
-                          <TableCell component="th" scope="row">
-                            {index + 1}
-                          </TableCell>
+                          <TableCell align="left">{index + 1}</TableCell>
                           <TableCell>{row.product?.name}</TableCell>
                           <TableCell>{row.product?.unit_of_measure}</TableCell>
                           <TableCell>{row.quantity}</TableCell>

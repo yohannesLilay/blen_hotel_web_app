@@ -1,23 +1,29 @@
-import { CategoryOutlined } from "@mui/icons-material";
+import {
+  ShoppingCartCheckoutOutlined,
+  ReceiptLongOutlined,
+} from "@mui/icons-material";
 
 const purchases = {
   id: "group-purchases",
   title: "Purchases",
   type: "group",
+  permissions: ["view_purchase_order", "view_purchase_receivable"],
   children: [
     {
       id: "purchase",
       title: "Purchase",
       type: "item",
       url: "/purchases/orders",
-      icon: CategoryOutlined,
+      permission: "view_purchase_order",
+      icon: ShoppingCartCheckoutOutlined,
     },
     {
       id: "receivable",
       title: "Receivable",
       type: "item",
       url: "/purchases/receivables",
-      icon: CategoryOutlined,
+      permission: "view_purchase_receivable",
+      icon: ReceiptLongOutlined,
     },
   ],
 };

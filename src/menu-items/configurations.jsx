@@ -4,12 +4,14 @@ const configurations = {
   id: "group-configurations",
   title: "Configurations",
   type: "group",
+  permissions: ["view_supplier", "view_company"],
   children: [
     {
       id: "supplier",
       title: "Supplier",
       type: "item",
       url: "/suppliers",
+      permission: "view_supplier",
       icon: BusinessOutlined,
     },
     {
@@ -17,6 +19,7 @@ const configurations = {
       title: "Company",
       type: "item",
       url: "/companies",
+      permission: "view_company",
       icon: AccountTreeOutlined,
     },
   ],

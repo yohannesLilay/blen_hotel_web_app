@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { AddOutlined, EditOutlined, DeleteOutlined } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import {
@@ -28,16 +29,20 @@ import {
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <Tooltip title="Edit Supplier">
-        <IconButton color="primary" size="small" onClick={onEdit}>
-          <EditOutlined />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete Supplier">
-        <IconButton color="error" size="small" onClick={onDelete}>
-          <DeleteOutlined />
-        </IconButton>
-      </Tooltip>
+      <PermissionGuard permission="change_supplier">
+        <Tooltip title="Edit Supplier">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
+      <PermissionGuard permission="delete_supplier">
+        <Tooltip title="Delete Supplier">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
     </div>
   );
 };
@@ -48,9 +53,7 @@ const SupplierTableRow = ({ index, row, onDelete, onEdit }) => {
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
-        {index + 1}
-      </TableCell>
+      <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.email}</TableCell>
       <TableCell>{row.phone_number}</TableCell>
@@ -110,13 +113,15 @@ const Suppliers = () => {
             <Typography variant="h5">List of Suppliers</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add Supplier
-            </Button>
+            <PermissionGuard permission="add_supplier">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add Supplier
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>

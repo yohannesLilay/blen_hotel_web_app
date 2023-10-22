@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
@@ -54,38 +55,41 @@ const ActionButtons = ({
           <MoreVertOutlined />
         </IconButton>
       </Tooltip>
-      {status !== "Approved" && (
-        <Tooltip
-          title={
-            status === "Requested"
-              ? "Check Purchase Order"
-              : status === "Checked"
-              ? "Approve Purchase Order"
-              : null
-          }
-        >
-          <IconButton color="primary" size="small" onClick={onStatusAction}>
-            {status === "Requested" ? (
+      {status === "Requested" && (
+        <PermissionGuard permission="check_purchase_order">
+          <Tooltip title="Check Purchase Order">
+            <IconButton color="primary" size="small" onClick={onStatusAction}>
               <CheckCircleOutline />
-            ) : (
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
+      )}
+      {status === "Checked" && (
+        <PermissionGuard permission="check_purchase_order">
+          <Tooltip title="Approve Purchase Order">
+            <IconButton color="primary" size="small" onClick={onStatusAction}>
               <FactCheckOutlined />
-            )}
-          </IconButton>
-        </Tooltip>
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
       )}
       {status === "Requested" && requestedBy === currentUser.userId && (
-        <Tooltip title="Edit Order">
-          <IconButton color="primary" size="small" onClick={onEdit}>
-            <EditOutlined />
-          </IconButton>
-        </Tooltip>
+        <PermissionGuard permission="change_purchase_order">
+          <Tooltip title="Edit Order">
+            <IconButton color="primary" size="small" onClick={onEdit}>
+              <EditOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
       )}
       {status === "Requested" && requestedBy === currentUser.userId && (
-        <Tooltip title="Delete Order">
-          <IconButton color="error" size="small" onClick={onDelete}>
-            <DeleteOutlined />
-          </IconButton>
-        </Tooltip>
+        <PermissionGuard permission="delete_purchase_order">
+          <Tooltip title="Delete Order">
+            <IconButton color="error" size="small" onClick={onDelete}>
+              <DeleteOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
       )}
     </div>
   );
@@ -104,9 +108,7 @@ const OrderTableRow = ({
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
-      <TableCell component="th" scope="row">
-        {index + 1}
-      </TableCell>
+      <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.order_number}</TableCell>
       <TableCell>{dayjs(row.order_date).format("DD-MM-YYYY")}</TableCell>
       <TableCell>{row.requested_by?.name}</TableCell>
@@ -221,13 +223,15 @@ const Orders = () => {
             <Typography variant="h5">List of Purchase Orders</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add Purchase Order
-            </Button>
+            <PermissionGuard permission="add_purchase_order">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add Purchase Order
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>

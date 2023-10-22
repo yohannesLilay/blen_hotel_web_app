@@ -247,7 +247,7 @@ const CreateOrder = () => {
                                     },
                                   }}
                                 >
-                                  <TableCell component="th" scope="row">
+                                  <TableCell align="left">
                                     {index + 1}
                                   </TableCell>
                                   <TableCell>
