@@ -21,9 +21,9 @@ import {
   AddOutlined,
   EditOutlined,
   DeleteOutlined,
-  MoreVertOutlined,
   CheckCircleOutline,
   FactCheckOutlined,
+  VisibilityOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -52,7 +52,7 @@ const ActionButtons = ({
     <div>
       <Tooltip title="View Order items">
         <IconButton color="primary" size="small" onClick={onDetail}>
-          <MoreVertOutlined />
+          <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       {status === "Requested" && (

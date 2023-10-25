@@ -320,9 +320,9 @@ const CreateUser = () => {
                           )}
                         />
                       </FormControl>
-                      {touched.permissions && errors.permissions && (
+                      {touched.roles && errors.roles && (
                         <Typography variant="body2" color="error">
-                          {errors.permissions}
+                          {errors.roles}
                         </Typography>
                       )}
                     </Stack>
