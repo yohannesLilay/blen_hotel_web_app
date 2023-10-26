@@ -1,10 +1,14 @@
-import { BusinessOutlined, AccountTreeOutlined } from "@mui/icons-material";
+import {
+  BusinessOutlined,
+  AccountTreeOutlined,
+  TimelineOutlined,
+} from "@mui/icons-material";
 
 const configurations = {
   id: "group-configurations",
   title: "Configurations",
   type: "group",
-  permissions: ["view_supplier", "view_company"],
+  permissions: ["view_supplier", "view_company", "view_work_flow"],
   children: [
     {
       id: "supplier",
@@ -21,6 +25,14 @@ const configurations = {
       url: "/companies",
       permission: "view_company",
       icon: AccountTreeOutlined,
+    },
+    {
+      id: "workFlow",
+      title: "Work Flow",
+      type: "item",
+      url: "/work-flows",
+      permission: "view_work_flow",
+      icon: TimelineOutlined,
     },
   ],
 };

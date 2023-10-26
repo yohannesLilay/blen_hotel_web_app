@@ -21,22 +21,20 @@ import {
   AddOutlined,
   EditOutlined,
   DeleteOutlined,
-  CheckCircleOutline,
+  MoreVertOutlined,
   FactCheckOutlined,
-  VisibilityOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
-import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
-import OrderItemsModal from "./ItemsModal";
+import ReceivableItemsModal from "./ItemsModal";
 import {
-  useGetOrdersQuery,
-  useUpdateOrderStatusMutation,
-  useDeleteOrderMutation,
-} from "src/store/slices/purchases/orderApiSlice";
+  useGetReceivablesQuery,
+  useUpdateReceivableStatusMutation,
+  useDeleteReceivableMutation,
+} from "src/store/slices/purchases/receivableApiSlice";
 
 const ActionButtons = ({
   onDetail,
@@ -50,52 +48,37 @@ const ActionButtons = ({
 
   return (
     <div>
-      <Tooltip title="View Order items">
+      <Tooltip title="View Receivable items">
         <IconButton color="primary" size="small" onClick={onDetail}>
-          <VisibilityOutlined />
+          <MoreVertOutlined />
         </IconButton>
       </Tooltip>
-      {status === "Requested" && (
-        <PermissionGuard permission="check_purchase_order">
-          <Tooltip title="Check Purchase Order">
-            <IconButton color="primary" size="small" onClick={onStatusAction}>
-              <CheckCircleOutline />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
-      {status === "Checked" && (
-        <PermissionGuard permission="check_purchase_order">
-          <Tooltip title="Approve Purchase Order">
-            <IconButton color="primary" size="small" onClick={onStatusAction}>
-              <FactCheckOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
+      {status !== "Approved" && (
+        <Tooltip title="Approve Receivable">
+          <IconButton color="primary" size="small" onClick={onStatusAction}>
+            <FactCheckOutlined />
+          </IconButton>
+        </Tooltip>
       )}
       {status === "Requested" && requestedBy === currentUser.userId && (
-        <PermissionGuard permission="change_purchase_order">
-          <Tooltip title="Edit Order">
-            <IconButton color="primary" size="small" onClick={onEdit}>
-              <EditOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
+        <Tooltip title="Edit Receivable">
+          <IconButton color="primary" size="small" onClick={onEdit}>
+            <EditOutlined />
+          </IconButton>
+        </Tooltip>
       )}
       {status === "Requested" && requestedBy === currentUser.userId && (
-        <PermissionGuard permission="delete_purchase_order">
-          <Tooltip title="Delete Order">
-            <IconButton color="error" size="small" onClick={onDelete}>
-              <DeleteOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
+        <Tooltip title="Delete Receivable">
+          <IconButton color="error" size="small" onClick={onDelete}>
+            <DeleteOutlined />
+          </IconButton>
+        </Tooltip>
       )}
     </div>
   );
 };
 
-const OrderTableRow = ({
+const ReceivableTableRow = ({
   index,
   row,
   onDelete,
@@ -109,10 +92,11 @@ const OrderTableRow = ({
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{index + 1}</TableCell>
+      <TableCell>{row.receivable_number}</TableCell>
       <TableCell>{row.order_number}</TableCell>
-      <TableCell>{dayjs(row.order_date).format("DD-MM-YYYY")}</TableCell>
+      <TableCell>{dayjs(row.receivable_date).format("DD-MM-YYYY")}</TableCell>
+      <TableCell>{row.supplier?.name}</TableCell>
       <TableCell>{row.requested_by?.name}</TableCell>
-      <TableCell>{row.checked_by?.name}</TableCell>
       <TableCell>{row.approved_by?.name}</TableCell>
       <TableCell>{row.status}</TableCell>
       <TableCell align="right">
@@ -129,88 +113,84 @@ const OrderTableRow = ({
   );
 };
 
-const Orders = () => {
+const Receivables = () => {
   const navigate = useNavigate();
 
-  const { data, isSuccess } = useGetOrdersQuery();
-  const [orderDeleteApi] = useDeleteOrderMutation();
-  const [updateOrderStatusApi] = useUpdateOrderStatusMutation();
+  const { data, isSuccess } = useGetReceivablesQuery();
+  const [receivableDeleteApi] = useDeleteReceivableMutation();
+  const [updateReceivableStatusApi] = useUpdateReceivableStatusMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [deleteOrderId, setDeleteOrderId] = useState(null);
+  const [deleteReceivableId, setDeleteReceivableId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
-  const [detailOrder, setDetailOrder] = useState(null);
+  const [detailReceivable, setDetailReceivable] = useState(null);
   const [showChangeStatusModal, setShowChangeStatusModal] = useState(false);
   const [changeStatusId, setChangeStatusId] = useState(null);
-  const [changeOrderStatus, setChangeOrderStatus] = useState("");
   const [rows, setRows] = useState(data || []);
+
   useEffect(() => {
     if (isSuccess) setRows(data);
   }, [isSuccess, data]);
 
-  const handleEdit = (orderId) => {
-    navigate(`${orderId}/edit`);
+  const handleEdit = (receivableId) => {
+    navigate(`${receivableId}/edit`);
   };
 
-  const handleDetail = (orderId, items) => {
+  const handleDetail = (receivableId, items) => {
     setShowDetailModal(true);
     setDetailItems(items);
-    setDetailOrder(orderId);
+    setDetailReceivable(receivableId);
   };
 
-  const handleStatusAction = (orderId, status) => {
+  const handleStatusAction = (receivableId) => {
     setShowChangeStatusModal(true);
-    setChangeStatusId(orderId);
-    setChangeOrderStatus(status);
+    setChangeStatusId(receivableId);
   };
 
   const handleChangeStatusConfirmed = async () => {
     try {
-      let command = "";
-      if (changeOrderStatus == "Requested") command = "Checked";
-      if (changeOrderStatus == "Checked") command = "Approved";
-      const response = await updateOrderStatusApi({
+      const response = await updateReceivableStatusApi({
         id: parseInt(changeStatusId),
-        command,
+        command: "Approved",
       }).unwrap();
       setRows((prevRows) =>
-        prevRows.map((order) => (order.id === response.id ? response : order))
+        prevRows.map((receivable) =>
+          receivable.id === response.id ? response : receivable
+        )
       );
 
-      enqueueSnackbar(`Order ${command} successfully.`, {
+      enqueueSnackbar(`Receivable approved successfully.`, {
         variant: "success",
       });
       setChangeStatusId(null);
       setShowChangeStatusModal(false);
-      setChangeOrderStatus("");
     } catch (err) {
       setChangeStatusId(null);
       setShowChangeStatusModal(false);
-      setChangeOrderStatus("");
     }
   };
 
-  const handleDelete = (orderId) => {
+  const handleDelete = (receivableId) => {
     setShowDeleteModal(true);
-    setDeleteOrderId(orderId);
+    setDeleteReceivableId(receivableId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await orderDeleteApi(deleteOrderId).unwrap();
-      enqueueSnackbar("Purchase Order deleted successfully.", {
+      await receivableDeleteApi(deleteReceivableId).unwrap();
+      enqueueSnackbar("Purchase Receivable deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((order) => order.id !== deleteOrderId)
+        prevRows.filter((receivable) => receivable.id !== deleteReceivableId)
       );
 
       setShowDeleteModal(false);
-      setDeleteOrderId(null);
+      setDeleteReceivableId(null);
     } catch (err) {
-      setDeleteOrderId(null);
+      setDeleteReceivableId(null);
       setShowDeleteModal(false);
     }
   };
@@ -220,18 +200,16 @@ const Orders = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Purchase Orders</Typography>
+            <Typography variant="h5">List of Purchase Receivables</Typography>
           </Grid>
           <Grid item>
-            <PermissionGuard permission="add_purchase_order">
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate("create")}
-              >
-                <AddOutlined /> Add Purchase Order
-              </Button>
-            </PermissionGuard>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => navigate("create")}
+            >
+              <AddOutlined /> Add Purchase Receivable
+            </Button>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
@@ -241,10 +219,11 @@ const Orders = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
+                    <TableCell>Receivable Number</TableCell>
                     <TableCell>Order Number</TableCell>
-                    <TableCell>Order Date</TableCell>
+                    <TableCell>Receivable Date</TableCell>
+                    <TableCell>Supplier</TableCell>
                     <TableCell>Requested By</TableCell>
-                    <TableCell>Checked By</TableCell>
                     <TableCell>Approved By</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell align="right">Action</TableCell>
@@ -252,16 +231,14 @@ const Orders = () => {
                 </TableHead>
                 <TableBody>
                   {rows.map((row, index) => (
-                    <OrderTableRow
+                    <ReceivableTableRow
                       key={row.id}
                       index={index}
                       row={row}
                       onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
                       onDetail={() => handleDetail(row.id, row.items)}
-                      onStatusAction={() =>
-                        handleStatusAction(row.id, row.status)
-                      }
+                      onStatusAction={() => handleStatusAction(row.id)}
                     />
                   ))}
                 </TableBody>
@@ -276,12 +253,8 @@ const Orders = () => {
         open={showChangeStatusModal}
         onClose={() => setShowChangeStatusModal(false)}
         onConfirm={handleChangeStatusConfirmed}
-        dialogTitle={`Confirm ${
-          changeOrderStatus == "Requested" ? "Check" : "Approve"
-        } Order`}
-        dialogContent={`Are you sure you want to ${
-          changeOrderStatus == "Requested" ? "check" : "approve"
-        } this order?`}
+        dialogTitle={`Confirm Approve Receivable`}
+        dialogContent={`Are you sure you want to approve this receivable?`}
         dialogActionName="Confirm"
       />
 
@@ -289,14 +262,14 @@ const Orders = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this purchase order?"
+        dialogContent="Are you sure you want to delete this purchase receivable?"
       />
 
-      <OrderItemsModal
+      <ReceivableItemsModal
         isOpen={showDetailModal}
         onModalClose={() => setShowDetailModal(false)}
-        orderItems={detailItems}
-        orderId={detailOrder}
+        receivableItems={detailItems}
+        receivableId={detailReceivable}
       />
     </>
   );
@@ -312,7 +285,7 @@ ActionButtons.propTypes = {
   requestedBy: PropTypes.number.isRequired,
 };
 
-OrderTableRow.propTypes = {
+ReceivableTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
@@ -321,4 +294,4 @@ OrderTableRow.propTypes = {
   onStatusAction: PropTypes.func.isRequired,
 };
 
-export default Orders;
+export default Receivables;

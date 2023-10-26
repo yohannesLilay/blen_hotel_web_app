@@ -127,9 +127,7 @@ const EditRole = () => {
                               target: { name: "permissions", value: newValue },
                             });
                           }}
-                          getOptionLabel={(option) =>
-                            option ? option.code_name : ""
-                          }
+                          getOptionLabel={(option) => option.code_name}
                           renderOption={(props, option, state) => (
                             <li {...props}>
                               <Checkbox

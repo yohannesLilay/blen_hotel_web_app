@@ -176,7 +176,7 @@ const Users = () => {
                 color="primary"
                 onClick={() => navigate("create")}
               >
-                <AddOutlined /> AddUser
+                <AddOutlined /> Add User
               </Button>
             </PermissionGuard>
           </Grid>

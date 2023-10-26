@@ -10,8 +10,8 @@ const purchases = {
   permissions: ["view_purchase_order", "view_purchase_receivable"],
   children: [
     {
-      id: "purchase",
-      title: "Purchase",
+      id: "order",
+      title: "Order",
       type: "item",
       url: "/purchases/orders",
       permission: "view_purchase_order",

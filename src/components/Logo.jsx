@@ -17,7 +17,7 @@ const Logo = ({ sx, to }) => {
       to={!to ? config.defaultPath : to}
       sx={sx}
     >
-      <img src={logo} alt="Mantis" width="150" />
+      <img src={logo} alt="Blen Hotel" width="150" />
     </ButtonBase>
   );
 };

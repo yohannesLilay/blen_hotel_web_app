@@ -20,26 +20,26 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useUpdateUserMutation,
-  useGetUserQuery,
-  useGetUsersTemplateQuery,
-} from "src/store/slices/security/userApiSlice";
+  useUpdateWorkFlowMutation,
+  useGetWorkFlowQuery,
+  useGetWorkFlowsTemplateQuery,
+} from "src/store/slices/configurations/workFlowApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditUser = () => {
+const EditWorkFlow = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: getTemplate } = useGetUsersTemplateQuery();
-  const { data: getUser } = useGetUserQuery(id);
-  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const { data: getTemplate } = useGetWorkFlowsTemplateQuery();
+  const { data: getWorkFlow } = useGetWorkFlowQuery(id);
+  const [updateWorkFlow, { isLoading }] = useUpdateWorkFlowMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit User
+            Edit Work Flow
           </Typography>
         </Grid>
         <Grid item />
@@ -49,11 +49,9 @@ const EditUser = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: getUser?.name || "",
-              email: getUser?.email || "",
-              gender: getUser?.gender || "",
-              phone_number: (getUser?.phone_number || "").replace(/^\+251/, ""),
-              roles: (getUser?.roles || []).map(
+              step: getWorkFlow?.step || "",
+              flow_step: getWorkFlow?.flow_step || "",
+              notify_to: (getWorkFlow?.notify_to || []).map(
                 (role) =>
                   getTemplate?.roleOptions.find(
                     (option) => option.name == role.name
@@ -61,39 +59,19 @@ const EditUser = () => {
               ),
             }}
             validationSchema={Yup.object().shape({
-              name: Yup.string().required("Full Name is required"),
-              email: Yup.string()
-                .email("Must be a valid email")
-                .required("Email is required"),
-              phone_number: Yup.string()
-                .required("Phone Number is required")
-                .test(
-                  "is-nine-digits",
-                  "Phone Number must be a 9-digit number",
-                  (value) => {
-                    if (value === undefined) return true;
-                    const stringValue = value.toString();
-                    return (
-                      stringValue.length === 9 && /^\d+$/.test(stringValue)
-                    );
-                  }
-                ),
-              gender: Yup.string().required("Gender is required"),
-              roles: Yup.array()
-                .required("Roles are required")
-                .min(1, "At least one role is required"),
+              flow_step: Yup.string().required("Flow Step is required"),
+              step: Yup.string().required("Step is required"),
+              notify_to: Yup.array(),
             })}
             onSubmit={async (values) => {
-              await updateUser({
+              await updateWorkFlow({
                 id: parseInt(id),
-                name: values.name,
-                email: values.email,
-                gender: values.gender,
-                phone_number: "+251" + values.phone_number,
-                roles: values.roles.map((role) => role.id),
+                flow_step: values.flow_step,
+                step: values.step,
+                notify_to: values.notify_to.map((role) => role.id),
               }).unwrap();
               navigate(-1);
-              enqueueSnackbar("User updated successfully.", {
+              enqueueSnackbar("Work Flow updated successfully.", {
                 variant: "success",
               });
             }}
@@ -112,89 +90,29 @@ const EditUser = () => {
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="name"
-                        value={values.name}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Full Name"
-                        error={Boolean(touched.name && errors.name)}
-                      />
-                      {touched.name && errors.name && (
-                        <Typography variant="body2" color="error">
-                          {errors.name}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        type="email"
-                        name="email"
-                        value={values.email}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Email Address"
-                        error={Boolean(touched.email && errors.email)}
-                      />
-                      {touched.email && errors.email && (
-                        <Typography variant="body2" color="error">
-                          {errors.email}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="phone_number"
-                        value={values.phone_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Phone Number"
-                        error={Boolean(
-                          touched.phone_number && errors.phone_number
-                        )}
-                      />
-                      {touched.phone_number && errors.phone_number && (
-                        <Typography variant="body2" color="error">
-                          {errors.phone_number}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
                       <FormControl
                         fullWidth
                         variant="outlined"
-                        error={Boolean(touched.gender && errors.gender)}
+                        error={Boolean(touched.flow_type && errors.flow_type)}
                       >
-                        <InputLabel id="gender-label">Gender</InputLabel>
+                        <InputLabel id="flow-type-label">Flow Type</InputLabel>
                         <Select
-                          labelId="gender-label"
-                          id="gender"
+                          labelId="flow-type-label"
+                          id="flow_type"
                           variant="outlined"
-                          name="gender"
-                          value={values.gender || ""}
+                          name="flow_type"
+                          value={values.flow_type || ""}
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          label="Gender"
-                          error={Boolean(touched.gender && errors.gender)}
+                          label="Flow Type"
+                          error={Boolean(touched.flow_type && errors.flow_type)}
                           endAdornment={
-                            values.gender && (
+                            values.flow_type && (
                               <IconButton
                                 size="small"
                                 onClick={() =>
                                   handleChange({
-                                    target: { name: "gender", value: "" },
+                                    target: { name: "flow_type", value: "" },
                                   })
                                 }
                               >
@@ -204,19 +122,19 @@ const EditUser = () => {
                           }
                         >
                           <MenuItem value="" disabled>
-                            Select a gender
+                            Select a flow type
                           </MenuItem>
-                          {getTemplate?.genderOptions &&
-                            Object.keys(getTemplate.genderOptions).map(
+                          {getTemplate?.flowTypeOptions &&
+                            Object.keys(getTemplate.flowTypeOptions).map(
                               (key) => (
                                 <MenuItem key={key} value={key}>
-                                  {getTemplate.genderOptions[key]}
+                                  {getTemplate.flowTypeOptions[key]}
                                 </MenuItem>
                               )
                             )}
                         </Select>
                       </FormControl>
-                      {touched.gender && errors.gender && (
+                      {touched.flow_type && errors.flow_type && (
                         <Typography variant="body2" color="error">
                           {errors.gender}
                         </Typography>
@@ -228,18 +146,71 @@ const EditUser = () => {
                       <FormControl
                         fullWidth
                         variant="outlined"
-                        error={Boolean(touched.roles && errors.roles)}
+                        error={Boolean(touched.step && errors.step)}
+                      >
+                        <InputLabel id="flow-type-label">Step</InputLabel>
+                        <Select
+                          labelId="flow-type-label"
+                          id="step"
+                          variant="outlined"
+                          name="step"
+                          value={values.step || ""}
+                          onBlur={handleBlur}
+                          onChange={handleChange}
+                          label="Step"
+                          error={Boolean(touched.step && errors.step)}
+                          endAdornment={
+                            values.step && (
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleChange({
+                                    target: { name: "step", value: "" },
+                                  })
+                                }
+                              >
+                                <ClearOutlined />
+                              </IconButton>
+                            )
+                          }
+                        >
+                          <MenuItem value="" disabled>
+                            Select a step
+                          </MenuItem>
+                          {getTemplate?.flowStepOptions &&
+                            Object.keys(getTemplate.flowStepOptions).map(
+                              (key) => (
+                                <MenuItem key={key} value={key}>
+                                  {getTemplate.flowStepOptions[key]}
+                                </MenuItem>
+                              )
+                            )}
+                        </Select>
+                      </FormControl>
+                      {touched.step && errors.step && (
+                        <Typography variant="body2" color="error">
+                          {errors.gender}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.notify_to && errors.notify_to)}
                       >
                         <Autocomplete
                           multiple
                           limitTags={2}
                           disableCloseOnSelect
-                          id="roles"
+                          id="notify_to"
                           options={getTemplate?.roleOptions || []}
-                          value={values.roles}
+                          value={values.notify_to}
                           onChange={(event, newValue) => {
                             handleChange({
-                              target: { name: "roles", value: newValue },
+                              target: { name: "notify_to", value: newValue },
                             });
                           }}
                           getOptionLabel={(option) => option.name}
@@ -255,16 +226,18 @@ const EditUser = () => {
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              label="Roles"
+                              label="Notify To"
                               variant="outlined"
-                              error={Boolean(touched.roles && errors.roles)}
+                              error={Boolean(
+                                touched.notify_to && errors.notify_to
+                              )}
                             />
                           )}
                         />
                       </FormControl>
-                      {touched.roles && errors.roles && (
+                      {touched.notify_to && errors.notify_to && (
                         <Typography variant="body2" color="error">
-                          {errors.roles}
+                          {errors.notify_to}
                         </Typography>
                       )}
                     </Stack>
@@ -310,4 +283,4 @@ const EditUser = () => {
   );
 };
 
-export default EditUser;
+export default EditWorkFlow;
