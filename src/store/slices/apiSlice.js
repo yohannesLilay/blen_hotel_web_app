@@ -3,7 +3,7 @@ import { enqueueSnackbar } from "notistack";
 import { logout as logoutAction } from "./authSlice";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:3000/api/",
+  baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/`,
   credentials: "include",
 });
 
@@ -55,7 +55,7 @@ const baseQueryWithInterceptors = async (args, api, extraOptions) => {
 
 export const apiSlice = createApi({
   baseQuery: baseQueryWithInterceptors,
-  tagTypes: ["Auth", "User", "Role", "Permission", "Branch", "Machine", "Customer", "Vendor", "ExpenseType", "ProductCategory", "Product"],
+  tagTypes: ["Auth", "User", "Role", "Permission", "Supplier", "Company", "WorkFlow", "Category", "Product"],
   keepUnusedDataFor: 0,
   // eslint-disable-next-line no-unused-vars
   endpoints: (builder) => ({}),
