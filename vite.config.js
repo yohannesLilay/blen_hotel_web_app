@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3002,
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://blen-hotel-server.vercel.app",
         changeOrigin: true,
         secure: false,
       },
