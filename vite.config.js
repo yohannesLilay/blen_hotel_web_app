@@ -6,13 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3002,
-    proxy: {
-      "/api": {
-        target: "https://blen-hotel-server.vercel.app",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
   },
   resolve: {
     alias: {
