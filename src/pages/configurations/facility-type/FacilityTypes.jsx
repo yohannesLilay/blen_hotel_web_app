@@ -22,22 +22,22 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import {
-  useGetCompaniesQuery,
-  useDeleteCompanyMutation,
-} from "src/store/slices/configurations/companyApiSlice";
+  useGetFacilityTypesQuery,
+  useDeleteFacilityTypeMutation,
+} from "src/store/slices/configurations/facilityTypeApiSlice";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <PermissionGuard permission="change_company">
-        <Tooltip title="Edit Company">
+      <PermissionGuard permission="change_facility_type">
+        <Tooltip title="Edit Facility Type">
           <IconButton color="primary" size="small" onClick={onEdit}>
             <EditOutlined />
           </IconButton>
         </Tooltip>
       </PermissionGuard>
-      <PermissionGuard permission="delete_company">
-        <Tooltip title="Delete Company">
+      <PermissionGuard permission="delete_facility_type">
+        <Tooltip title="Delete Facility Type">
           <IconButton color="error" size="small" onClick={onDelete}>
             <DeleteOutlined />
           </IconButton>
@@ -47,7 +47,7 @@ const ActionButtons = ({ onEdit, onDelete }) => {
   );
 };
 
-const CompanyTableRow = ({ index, row, onDelete, onEdit }) => {
+const FacilityTypeTableRow = ({ index, row, onDelete, onEdit }) => {
   return (
     <TableRow
       key={row.id}
@@ -56,6 +56,9 @@ const CompanyTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.description}</TableCell>
+      <TableCell>
+        {row.responsible_roles.map((role) => role.name).join(", ")}
+      </TableCell>
       <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
@@ -63,42 +66,44 @@ const CompanyTableRow = ({ index, row, onDelete, onEdit }) => {
   );
 };
 
-const Companies = () => {
+const FacilityTypes = () => {
   const navigate = useNavigate();
-  const { data, isSuccess } = useGetCompaniesQuery();
-  const [companyDeleteApi] = useDeleteCompanyMutation();
+  const { data, isSuccess } = useGetFacilityTypesQuery();
+  const [facilityTypeDeleteApi] = useDeleteFacilityTypeMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteCompanyId, setDeleteCompanyId] = useState(null);
+  const [deleteFacilityTypeId, setDeleteFacilityTypeId] = useState(null);
   const [rows, setRows] = useState(data || []);
   useEffect(() => {
     if (isSuccess) setRows(data);
   }, [isSuccess, data]);
 
-  const handleEdit = (companyId) => {
-    navigate(`${companyId}/edit`);
+  const handleEdit = (facilityTypeId) => {
+    navigate(`${facilityTypeId}/edit`);
   };
 
-  const handleDelete = (companyId) => {
+  const handleDelete = (facilityTypeId) => {
     setShowDeleteModal(true);
-    setDeleteCompanyId(companyId);
+    setDeleteFacilityTypeId(facilityTypeId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await companyDeleteApi(deleteCompanyId).unwrap();
-      enqueueSnackbar("Company deleted successfully.", {
+      await facilityTypeDeleteApi(deleteFacilityTypeId).unwrap();
+      enqueueSnackbar("Facility Type deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((company) => company.id !== deleteCompanyId)
+        prevRows.filter(
+          (facilityType) => facilityType.id !== deleteFacilityTypeId
+        )
       );
 
       setShowDeleteModal(false);
-      setDeleteCompanyId(null);
+      setDeleteFacilityTypeId(null);
     } catch (err) {
-      setDeleteCompanyId(null);
+      setDeleteFacilityTypeId(null);
       setShowDeleteModal(false);
     }
   };
@@ -108,16 +113,16 @@ const Companies = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Companies</Typography>
+            <Typography variant="h5">List of Facility Types</Typography>
           </Grid>
           <Grid item>
-            <PermissionGuard permission="add_company">
+            <PermissionGuard permission="add_facility_type">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("create")}
               >
-                <AddOutlined /> Add Company
+                <AddOutlined /> Add Facility Type
               </Button>
             </PermissionGuard>
           </Grid>
@@ -131,12 +136,13 @@ const Companies = () => {
                     <TableCell>Index</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Description</TableCell>
+                    <TableCell>Responsible Roles</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {rows.map((row, index) => (
-                    <CompanyTableRow
+                    <FacilityTypeTableRow
                       key={row.id}
                       index={index}
                       row={row}
@@ -155,7 +161,7 @@ const Companies = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this company?"
+        dialogContent="Are you sure you want to delete this facility type?"
       />
     </>
   );
@@ -167,11 +173,11 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
 };
 
-CompanyTableRow.propTypes = {
+FacilityTypeTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
 
-export default Companies;
+export default FacilityTypes;

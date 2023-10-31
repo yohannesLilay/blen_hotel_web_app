@@ -16,7 +16,7 @@ import SettingRoutes from "./settings/SettingRoutes";
 import CategoryRoutes from "./product-management/CategoryRoutes";
 import ProductRoutes from "./product-management/ProductRoutes";
 import SupplierRoutes from "./configurations/SupplierRoutes";
-import CompanyRoutes from "./configurations/CompanyRoutes";
+import FacilityTypeRoutes from "./configurations/FacilityTypeRoutes";
 import WorkFlowRoutes from "./configurations/WorkFlowRoutes";
 import OrderRoutes from "./purchases/OrderRoutes";
 import ReceivableRoutes from "./purchases/ReceivableRoutes";
@@ -34,7 +34,7 @@ const MainRoutes = {
     { path: "products", children: [...ProductRoutes] },
     { path: "suppliers", children: [...SupplierRoutes] },
     { path: "work-flows", children: [...WorkFlowRoutes] },
-    { path: "companies", children: [...CompanyRoutes] },
+    { path: "facility-types", children: [...FacilityTypeRoutes] },
     { path: "purchases/orders", children: [...OrderRoutes] },
     { path: "purchases/receivables", children: [...ReceivableRoutes] },
   ],
