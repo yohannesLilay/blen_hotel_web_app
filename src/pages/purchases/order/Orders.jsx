@@ -153,10 +153,10 @@ const Orders = () => {
     navigate(`${orderId}/edit`);
   };
 
-  const handleDetail = (orderId, items) => {
+  const handleDetail = (orderId, orderStatus, items) => {
     setShowDetailModal(true);
     setDetailItems(items);
-    setDetailOrder(orderId);
+    setDetailOrder({ orderId: orderId, orderStatus: orderStatus });
   };
 
   const handleStatusAction = (orderId, status) => {
@@ -258,7 +258,9 @@ const Orders = () => {
                       row={row}
                       onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() => handleDetail(row.id, row.items)}
+                      onDetail={() =>
+                        handleDetail(row.id, row.status, row.items)
+                      }
                       onStatusAction={() =>
                         handleStatusAction(row.id, row.status)
                       }
@@ -296,7 +298,8 @@ const Orders = () => {
         isOpen={showDetailModal}
         onModalClose={() => setShowDetailModal(false)}
         orderItems={detailItems}
-        orderId={detailOrder}
+        orderId={detailOrder?.orderId || null}
+        orderStatus={detailOrder?.orderStatus || null}
       />
     </>
   );

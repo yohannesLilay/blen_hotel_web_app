@@ -27,7 +27,13 @@ import {
   useGetOrderTemplateQuery,
 } from "src/store/slices/purchases/orderApiSlice";
 
-const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
+const OrderItemsModal = ({
+  isOpen,
+  onModalClose,
+  orderItems,
+  orderId,
+  orderStatus,
+}) => {
   const { data: getTemplate } = useGetOrderTemplateQuery();
   const [orderDeleteApi] = useDeleteOrderItemMutation();
   const [orderCreateApi] = useCreateOrderItemMutation();
@@ -112,13 +118,15 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                 </Typography>
               </Grid>
               <Grid item>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddItemClick}
-                >
-                  <AddOutlined /> Add Item
-                </Button>
+                {orderStatus === "Requested" && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleAddItemClick}
+                  >
+                    <AddOutlined /> Add Item
+                  </Button>
+                )}
               </Grid>
             </Grid>
             <MainCard sx={{ mt: 2 }} content={false}>
@@ -136,7 +144,10 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                         <TableCell>Unit Price</TableCell>
                         <TableCell>Total Price</TableCell>
                         <TableCell>Remark</TableCell>
-                        <TableCell align="right">Action</TableCell>
+
+                        <TableCell align="right">
+                          {orderStatus === "Requested" && "Action"}
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -155,15 +166,17 @@ const OrderItemsModal = ({ isOpen, onModalClose, orderItems, orderId }) => {
                           <TableCell>{row.total_price}</TableCell>
                           <TableCell>{row.remark}</TableCell>
                           <TableCell>
-                            <Tooltip title="Delete Order Item">
-                              <IconButton
-                                color="error"
-                                size="small"
-                                onClick={() => handleDelete(row.id)}
-                              >
-                                <DeleteOutlined />
-                              </IconButton>
-                            </Tooltip>
+                            {orderStatus === "Requested" && (
+                              <Tooltip title="Delete Order Item">
+                                <IconButton
+                                  color="error"
+                                  size="small"
+                                  onClick={() => handleDelete(row.id)}
+                                >
+                                  <DeleteOutlined />
+                                </IconButton>
+                              </Tooltip>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -201,6 +214,7 @@ OrderItemsModal.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   orderItems: PropTypes.array.isRequired,
   orderId: PropTypes.number,
+  orderStatus: PropTypes.string,
 };
 
 export default OrderItemsModal;
