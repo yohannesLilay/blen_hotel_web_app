@@ -57,7 +57,7 @@ const WorkFlowTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.flow_type}</TableCell>
       <TableCell>{row.step}</TableCell>
       <TableCell>{row.notify_to.map((role) => role.name).join(", ")}</TableCell>
-      <TableCell>
+      <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
     </TableRow>

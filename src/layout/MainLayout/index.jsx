@@ -5,8 +5,8 @@ import { useTheme } from "@mui/material/styles";
 import { Box, Toolbar, useMediaQuery } from "@mui/material";
 import Drawer from "./Drawer";
 import Header from "./Header";
-import navigation from "src/menu-items";
-import Breadcrumbs from "src/components/Breadcrumbs";
+// import navigation from "src/menu-items";
+// import Breadcrumbs from "src/components/Breadcrumbs";
 import { openDrawer } from "src/store/slices/menuSlice";
 
 const MainLayout = () => {
@@ -43,7 +43,7 @@ const MainLayout = () => {
         sx={{ width: "100%", flexGrow: 1, p: { xs: 2, sm: 3 } }}
       >
         <Toolbar />
-        <Breadcrumbs navigation={navigation} />
+        {/* <Breadcrumbs navigation={navigation} /> */}
         <Outlet />
       </Box>
     </Box>
