@@ -4,8 +4,9 @@ const ORDER_ENDPOINT = "purchase-orders";
 export const ordersApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getOrders: builder.query({
-      query: () => ({
+      query: ({page, limit, search }) => ({
         url: ORDER_ENDPOINT,
+        params: { page, limit, search },
       }),
     }),
     getOrderTemplate: builder.query({
