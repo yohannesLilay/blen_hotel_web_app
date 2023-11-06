@@ -9,8 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 
-// header style
-const headerSX = {
+// card header style
+const cardHeaderSX = {
   p: 2.5,
   "& .MuiCardHeader-action": { m: "0px auto", alignSelf: "center" },
 };
@@ -31,6 +31,7 @@ const MainCard = forwardRef(
       sx = {},
       title,
       codeHighlight,
+      headerSX,
       ...others
     },
     ref
@@ -64,7 +65,7 @@ const MainCard = forwardRef(
         {/* card header and action */}
         {!darkTitle && title && (
           <CardHeader
-            sx={headerSX}
+            sx={{ ...cardHeaderSX, ...headerSX }}
             titleTypographyProps={{ variant: "subtitle1" }}
             title={title}
             action={secondary}
@@ -72,7 +73,7 @@ const MainCard = forwardRef(
         )}
         {darkTitle && title && (
           <CardHeader
-            sx={headerSX}
+            sx={{ ...cardHeaderSX, ...headerSX }}
             title={<Typography variant="h3">{title}</Typography>}
             action={secondary}
           />
@@ -106,6 +107,7 @@ MainCard.propTypes = {
   sx: PropTypes.object,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   codeHighlight: PropTypes.bool,
+  headerSX: PropTypes.object,
   content: PropTypes.bool,
   children: PropTypes.node,
 };

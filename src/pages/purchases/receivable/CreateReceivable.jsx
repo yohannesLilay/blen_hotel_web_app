@@ -32,7 +32,6 @@ import {
   useCreateReceivableMutation,
   useGetReceivableTemplateQuery,
 } from "src/store/slices/purchases/receivableApiSlice";
-import { useGetOrderQuery } from "src/store/slices/purchases/orderApiSlice";
 import MainCard from "src/components/MainCard";
 import AddItemModal from "./AddItemModal";
 
@@ -230,6 +229,12 @@ const CreateReceivable = () => {
                             handleChange({
                               target: { name: "order", value: newValue },
                             });
+
+                            console.log("here");
+
+                            if (newValue && newValue.items) {
+                              setRows(newValue.items);
+                            } else setRows([]);
                           }}
                           getOptionLabel={(option) => option.order_number}
                           renderInput={(params) => (
@@ -294,17 +299,19 @@ const CreateReceivable = () => {
                     justifyContent="flex-end"
                     spacing={1}
                   >
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        setCurrentItem(null); // Set the current item to null (new item)
-                        setIsAddItemModalOpen(true); // Open the AddItemModal
-                      }}
-                      disabled={currentItem !== null}
-                    >
-                      Add Item
-                    </Button>
+                    {values.order == null && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          setCurrentItem(null); // Set the current item to null (new item)
+                          setIsAddItemModalOpen(true); // Open the AddItemModal
+                        }}
+                        disabled={currentItem !== null}
+                      >
+                        Add Item
+                      </Button>
+                    )}
                   </Grid>
                   <Grid item xs={12}>
                     <MainCard content={false}>
@@ -335,7 +342,7 @@ const CreateReceivable = () => {
                                   key={row.id}
                                   sx={{
                                     "&:last-child td, &:last-child th": {
-                                      breceivable: 0,
+                                      border: 0,
                                     },
                                   }}
                                 >

@@ -1,28 +1,37 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
-import { Box, Button, Grid, TextField, Stack, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Checkbox,
+  FormControl,
+  Grid,
+  TextField,
+  Stack,
+  Typography,
+} from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useUpdateCompanyMutation,
-  useGetCompanyQuery,
-} from "src/store/slices/configurations/companyApiSlice";
+  useCreateFacilityTypeMutation,
+  useGetFacilityTypesTemplateQuery,
+} from "src/store/slices/configurations/facilityTypeApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditCompany = () => {
+const CreateFacilityType = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
 
-  const { data: getCompany } = useGetCompanyQuery(id);
-  const [updateCompany, { isLoading }] = useUpdateCompanyMutation();
+  const { data: getTemplate } = useGetFacilityTypesTemplateQuery();
+  const [createFacilityType, { isLoading }] = useCreateFacilityTypeMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit Company
+            Add Facility Type
           </Typography>
         </Grid>
         <Grid item />
@@ -32,25 +41,36 @@ const EditCompany = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: getCompany?.name || "",
-              description: getCompany?.description || "",
+              name: "",
+              description: "",
+              roles: [],
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
               description: Yup.string(),
+              roles: Yup.array()
+                .required("Responsible Roles are required")
+                .min(1, "At least one role is required"),
             })}
-            onSubmit={async (values) => {
-              await updateCompany({
-                id: parseInt(id),
-                name: values.name,
-                description: values.description,
-              }).unwrap();
-              navigate(-1);
-              enqueueSnackbar("Company updated successfully.", {
-                variant: "success",
-              });
+            onSubmit={async (values, { setStatus, setSubmitting }) => {
+              try {
+                await createFacilityType({
+                  name: values.name,
+                  description: values.description,
+                  responsible_roles: values.roles.map((role) => role.id),
+                }).unwrap();
+                navigate(-1);
+                enqueueSnackbar("Facility Type created successfully.", {
+                  variant: "success",
+                });
+
+                setStatus({ success: false });
+                setSubmitting(false);
+              } catch (err) {
+                setStatus({ success: false });
+                setSubmitting(false);
+              }
             }}
-            enableReinitialize
           >
             {({
               errors,
@@ -103,6 +123,52 @@ const EditCompany = () => {
                       )}
                     </Stack>
                   </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.roles && errors.roles)}
+                      >
+                        <Autocomplete
+                          multiple
+                          limitTags={2}
+                          disableCloseOnSelect
+                          id="roles"
+                          options={getTemplate?.roleOptions || []}
+                          value={values.roles}
+                          onChange={(event, newValue) => {
+                            handleChange({
+                              target: { name: "roles", value: newValue },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderOption={(props, option, state) => (
+                            <li {...props}>
+                              <Checkbox
+                                checked={state.selected}
+                                onChange={() => {}}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Roles"
+                              variant="outlined"
+                              error={Boolean(touched.roles && errors.roles)}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.roles && errors.roles && (
+                        <Typography variant="body2" color="error">
+                          {errors.roles}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
                   <Grid
                     item
                     xs={12}
@@ -144,4 +210,4 @@ const EditCompany = () => {
   );
 };
 
-export default EditCompany;
+export default CreateFacilityType;

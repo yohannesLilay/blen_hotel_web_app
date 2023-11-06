@@ -50,7 +50,7 @@ const EditWorkFlow = () => {
           <Formik
             initialValues={{
               step: getWorkFlow?.step || "",
-              flow_step: getWorkFlow?.flow_step || "",
+              flow_type: getWorkFlow?.flow_type || "",
               notify_to: (getWorkFlow?.notify_to || []).map(
                 (role) =>
                   getTemplate?.roleOptions.find(
@@ -59,14 +59,14 @@ const EditWorkFlow = () => {
               ),
             }}
             validationSchema={Yup.object().shape({
-              flow_step: Yup.string().required("Flow Step is required"),
+              flow_type: Yup.string().required("Flow Step is required"),
               step: Yup.string().required("Step is required"),
               notify_to: Yup.array(),
             })}
             onSubmit={async (values) => {
               await updateWorkFlow({
                 id: parseInt(id),
-                flow_step: values.flow_step,
+                flow_type: values.flow_type,
                 step: values.step,
                 notify_to: values.notify_to.map((role) => role.id),
               }).unwrap();
@@ -101,7 +101,7 @@ const EditWorkFlow = () => {
                           id="flow_type"
                           variant="outlined"
                           name="flow_type"
-                          value={values.flow_type || ""}
+                          value={values.flow_type}
                           onBlur={handleBlur}
                           onChange={handleChange}
                           label="Flow Type"

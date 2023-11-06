@@ -8,7 +8,7 @@ const configurations = {
   id: "group-configurations",
   title: "Configurations",
   type: "group",
-  permissions: ["view_supplier", "view_company", "view_work_flow"],
+  permissions: ["view_supplier", "view_facility_type", "view_work_flow"],
   children: [
     {
       id: "supplier",
@@ -19,11 +19,11 @@ const configurations = {
       icon: BusinessOutlined,
     },
     {
-      id: "company",
-      title: "Company",
+      id: "facilityType",
+      title: "Facility Type",
       type: "item",
-      url: "/companies",
-      permission: "view_company",
+      url: "/facility-types",
+      permission: "view_facility_type",
       icon: AccountTreeOutlined,
     },
     {
