@@ -1,7 +1,11 @@
 import { Grid, Typography } from "@mui/material";
 import AnalyticEcommerce from "../components/statistics/AnalyticEcommerce";
 
+import { useGetInfoReportQuery } from "src/store/slices/reports/reportApiSlice";
+
 const Dashboard = () => {
+  const { data } = useGetInfoReportQuery();
+
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
       {/* row 1 */}
@@ -10,38 +14,26 @@ const Dashboard = () => {
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <AnalyticEcommerce
-          title="Total Page Views"
-          count="4,42,236"
-          percentage={59.3}
-          extra="35,000"
+          title="Total Categories"
+          count={data?.categoryCount?.toString()}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <AnalyticEcommerce
-          title="Total Users"
-          count="78,250"
-          percentage={70.5}
-          extra="8,900"
+          title="Total Inventory Items"
+          count={data?.productCount?.toString()}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <AnalyticEcommerce
-          title="Total Order"
-          count="18,800"
-          percentage={27.4}
-          isLoss
-          color="warning"
-          extra="1,943"
+          title="Total Active Order"
+          count={data?.activeOrderCount?.toString()}
         />
       </Grid>
       <Grid item xs={12} sm={6} md={4} lg={3}>
         <AnalyticEcommerce
-          title="Total Sales"
-          count="$35,078"
-          percentage={27.4}
-          isLoss
-          color="warning"
-          extra="$20,395"
+          title="Total Active Receivables"
+          count={data?.activeReceivableCount?.toString()}
         />
       </Grid>
 
