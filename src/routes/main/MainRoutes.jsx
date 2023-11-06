@@ -8,6 +8,9 @@ import PrivateRoute from "src/components/PrivateRoute";
 /** Dashboard Routes */
 const Dashboard = Loadable(lazy(() => import("src/pages/Dashboard")));
 
+/** Notification Routes */
+const Notifications = Loadable(lazy(() => import("src/pages/Notifications")));
+
 /** Routes*/
 import PermissionRoutes from "./security/PermissionRoutes";
 import RoleRoutes from "./security/RoleRoutes";
@@ -26,6 +29,10 @@ const MainRoutes = {
   element: <MainLayout />,
   children: [
     { path: "dashboard", element: <PrivateRoute element={<Dashboard />} /> },
+    {
+      path: "notifications",
+      element: <PrivateRoute element={<Notifications />} />,
+    },
     { path: "permissions", children: [PermissionRoutes] },
     { path: "roles", children: [...RoleRoutes] },
     { path: "users", children: [...UserRoutes] },
