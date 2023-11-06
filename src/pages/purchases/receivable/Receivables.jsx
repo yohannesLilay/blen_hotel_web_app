@@ -213,7 +213,7 @@ const Receivables = () => {
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
+          <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
               <Table aria-label="simple table">
                 <TableHead>

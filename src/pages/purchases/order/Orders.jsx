@@ -7,12 +7,15 @@ import {
   Button,
   Grid,
   IconButton,
+  InputAdornment,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
+  TextField,
   Tooltip,
   Typography,
   Paper,
@@ -132,7 +135,15 @@ const OrderTableRow = ({
 const Orders = () => {
   const navigate = useNavigate();
 
-  const { data, isSuccess } = useGetOrdersQuery();
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data, isSuccess, refetch } = useGetOrdersQuery({
+    page,
+    limit,
+    search: searchQuery,
+  });
   const [orderDeleteApi] = useDeleteOrderMutation();
   const [updateOrderStatusApi] = useUpdateOrderStatusMutation();
 
@@ -144,10 +155,33 @@ const Orders = () => {
   const [showChangeStatusModal, setShowChangeStatusModal] = useState(false);
   const [changeStatusId, setChangeStatusId] = useState(null);
   const [changeOrderStatus, setChangeOrderStatus] = useState("");
-  const [rows, setRows] = useState(data || []);
+
+  const [rows, setRows] = useState(data?.orders || []);
+  const totalOrders = data?.total || 0;
+
   useEffect(() => {
-    if (isSuccess) setRows(data);
+    if (isSuccess) setRows(data?.orders || []);
   }, [isSuccess, data]);
+
+  const handleChangePage = async (event, newPage) => {
+    setPage(newPage + 1);
+    refetch({ page: newPage + 1, limit });
+  };
+
+  const handleChangeRowsPerPage = async (event) => {
+    const newLimit = +event.target.value;
+    setLimit(newLimit);
+    setPage(1);
+    refetch({ page: 1, limit: newLimit });
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.length > 0) {
+      setPage(1);
+
+      refetch({ page, limit, search: searchQuery });
+    }
+  };
 
   const handleEdit = (orderId) => {
     navigate(`${orderId}/edit`);
@@ -235,7 +269,42 @@ const Orders = () => {
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <Box sx={{ minHeight: 400, width: "99.8%", maxWidth: "100%", p: 1 }}>
+          <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
+            <TextField
+              label="Search by order number"
+              variant="outlined"
+              size="small"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+              sx={{
+                width: "100%",
+                "@media (min-width: 960px)": { width: "40%" },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end" sx={{}}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSearch}
+                      sx={{
+                        padding: 0.5,
+                      }}
+                    >
+                      Search
+                    </Button>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
               <Table aria-label="simple table">
                 <TableHead>
@@ -269,6 +338,15 @@ const Orders = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 20, 50, 100]}
+              component="div"
+              count={totalOrders}
+              rowsPerPage={limit}
+              page={page - 1}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
           </Box>
         </MainCard>
       </Grid>
