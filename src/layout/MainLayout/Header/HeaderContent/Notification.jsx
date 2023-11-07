@@ -55,20 +55,21 @@ const Notification = () => {
   const { data, isSuccess, refetch } = useGetNotificationsQuery({
     page: 1,
     limit: 5,
+    exclude_read: true,
   });
 
   useEffect(() => {
     if (isSuccess) {
       setRows(data?.notifications || []);
-      dispatch(setNotificationCount(data?.notifications.length || 0));
+      dispatch(setNotificationCount(data?.total || 0));
     }
   }, [isSuccess, data, dispatch]);
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
     if (!open) {
-      refetch({ page: 1, limit: 5 });
-      dispatch(setNotificationCount(data?.notifications.length || 0));
+      refetch({ page: 1, limit: 5, exclude_read: true });
+      dispatch(setNotificationCount(data?.total || 0));
     }
   };
 
@@ -165,14 +166,25 @@ const Notification = () => {
                   >
                     {rows.map((notification, index) => (
                       <div key={index}>
-                        <ListItemButton>
-                          <ListItemText
-                            primary={
-                              <Typography variant="h6">
-                                {notification.message}
-                              </Typography>
-                            }
-                          />
+                        <ListItemButton
+                          onClick={() => {
+                            setOpen((prevOpen) => !prevOpen);
+                            navigate("/notifications");
+                          }}
+                        >
+                          {notification.read ? (
+                            <ListItemText
+                              primary={
+                                <Typography variant="h6">
+                                  {notification.message}
+                                </Typography>
+                              }
+                            />
+                          ) : (
+                            <Typography component="span" variant="subtitle1">
+                              {notification.message}
+                            </Typography>
+                          )}
                         </ListItemButton>
                         {index !== rows.length - 1 && <Divider />}
                       </div>
