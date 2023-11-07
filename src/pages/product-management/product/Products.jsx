@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   IconButton,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -109,13 +108,14 @@ const Products = () => {
 
   const handleChangeRowsPerPage = async (event) => {
     const newLimit = +event.target.value;
+
     setLimit(newLimit);
     setPage(1);
     refetch({ page: 1, limit: newLimit });
   };
 
   const handleSearch = () => {
-    if (searchQuery.length > 0) {
+    if (searchQuery.length > 2) {
       setPage(1);
 
       refetch({ page, limit, search: searchQuery });
@@ -205,28 +205,13 @@ const Products = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
+                  e.preventDefault();
                   handleSearch();
                 }
               }}
               sx={{
                 width: "100%",
                 "@media (min-width: 960px)": { width: "40%" },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end" sx={{}}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSearch}
-                      sx={{
-                        padding: 0.5,
-                      }}
-                    >
-                      Search
-                    </Button>
-                  </InputAdornment>
-                ),
               }}
             />
           </Grid>

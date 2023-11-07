@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   IconButton,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -110,7 +109,7 @@ const Categories = () => {
   };
 
   const handleSearch = () => {
-    if (searchQuery.length > 0) {
+    if (searchQuery.length > 2) {
       setPage(1);
 
       refetch({ page, limit, search: searchQuery });
@@ -206,22 +205,6 @@ const Categories = () => {
               sx={{
                 width: "100%",
                 "@media (min-width: 960px)": { width: "40%" },
-              }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end" sx={{}}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleSearch}
-                      sx={{
-                        padding: 0.5,
-                      }}
-                    >
-                      Search
-                    </Button>
-                  </InputAdornment>
-                ),
               }}
             />
           </Grid>
