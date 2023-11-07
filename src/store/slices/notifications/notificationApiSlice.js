@@ -9,9 +9,14 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
         params: { page, limit, exclude_read },
       }),
     }),
+    getUnreadNotificationsCount: builder.query({
+      query: () => ({
+        url: `${NOTIFICATION_ENDPOINT}/unread-count`,
+      }),
+    }),
     updateNotification: builder.mutation({
       query: (data) => ({
-        url: `${NOTIFICATION_ENDPOINT}`,
+        url: `${NOTIFICATION_ENDPOINT}/mark-as-read`,
         method: "PATCH",
         body: data,
       }),
@@ -21,5 +26,6 @@ export const notificationsApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useGetNotificationsQuery,
+  useGetUnreadNotificationsCountQuery,
   useUpdateNotificationMutation
 } = notificationsApiSlice;
