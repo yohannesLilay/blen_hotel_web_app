@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
 import {
   Box,
   Button,
+  Checkbox,
   Grid,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   TablePagination,
   Typography,
@@ -21,24 +21,16 @@ import {
 } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import MainCard from "src/components/MainCard";
+import { setNotificationCount } from "src/store/slices/notifications/notificationSlice";
 import {
   useGetNotificationsQuery,
+  useGetUnreadNotificationsCountQuery,
   useUpdateNotificationMutation,
 } from "src/store/slices/notifications/notificationApiSlice";
 
-const NotificationTableRow = ({ row }) => {
-  return (
-    <TableRow
-      key={row.id}
-      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-    >
-      <TableCell align="left">{row.name}</TableCell>
-      <TableCell align="left">{row.description}</TableCell>
-    </TableRow>
-  );
-};
-
 const Notifications = () => {
+  const dispatch = useDispatch();
+  const [selected, setSelected] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
@@ -49,12 +41,15 @@ const Notifications = () => {
     exclude_read: showOnlyUnread,
   });
   const [updateNotification] = useUpdateNotificationMutation();
+  const { data: notificationCount, refetch: countRefetch } =
+    useGetUnreadNotificationsCountQuery();
+  dispatch(setNotificationCount(notificationCount || 0));
 
   const [rows, setRows] = useState(data?.notifications || []);
   const totalNotifications = data?.total || 0;
 
   useEffect(() => {
-    if (isSuccess) setRows(data?.Notifications || []);
+    if (isSuccess) setRows(data?.notifications || []);
   }, [isSuccess, data]);
 
   const handleChangePage = async (event, newPage) => {
@@ -64,9 +59,7 @@ const Notifications = () => {
 
   const toggleUnreadFilter = () => {
     setShowOnlyUnread(!showOnlyUnread);
-    if (showOnlyUnread) {
-      refetch({ page: 1, limit, exclude_read: false });
-    }
+    refetch({ page: 1, limit, exclude_read: !showOnlyUnread });
   };
 
   const handleChangeRowsPerPage = async (event) => {
@@ -76,14 +69,18 @@ const Notifications = () => {
     refetch({ page: 1, limit: newLimit, exclude_read: showOnlyUnread });
   };
 
-  const markAllNotificationsAsRead = async () => {
-    const notificationIds = rows.reduce((ids, row) => {
-      if (!row.read) {
-        ids.push(parseInt(row.id));
-      }
-      return ids;
-    }, []);
+  const markNotificationsAsRead = async (notificationIds) => {
+    if (notificationIds.length === 0) {
+      return;
+    }
+
     await updateNotification({ notification_ids: notificationIds }).unwrap();
+
+    await countRefetch();
+    dispatch(setNotificationCount(notificationCount || 0));
+    await refetch({ page, limit, exclude_read: showOnlyUnread });
+
+    setSelected([]);
 
     const markedCount = notificationIds.length;
     const message = `${markedCount} notification${
@@ -92,6 +89,39 @@ const Notifications = () => {
 
     enqueueSnackbar(message, { variant: "success" });
   };
+
+  const markAllNotificationsAsRead = async () => {
+    const unreadNotificationIds = rows
+      .filter((row) => !row.read)
+      .map((row) => parseInt(row.id));
+
+    markNotificationsAsRead(unreadNotificationIds);
+  };
+
+  const markSelectedNotificationsAsRead = async () => {
+    markNotificationsAsRead(selected);
+  };
+
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1)
+      );
+    }
+    setSelected(newSelected);
+  };
+
+  const isSelected = (id) => selected.indexOf(id) !== -1;
 
   return (
     <>
@@ -120,9 +150,14 @@ const Notifications = () => {
             <Button
               variant="contained"
               color="primary"
-              onClick={markAllNotificationsAsRead}
+              onClick={
+                selected.length > 0
+                  ? markSelectedNotificationsAsRead
+                  : markAllNotificationsAsRead
+              }
             >
-              <MailOutline /> Mark all as read
+              <MailOutline />{" "}
+              {selected.length > 0 ? "Mark as read" : "Mark all as read"}
             </Button>
           </Grid>
         </Grid>
@@ -130,15 +165,36 @@ const Notifications = () => {
           <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
               <Table aria-label="simple table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Message</TableCell>
-                    <TableCell>Type</TableCell>
-                  </TableRow>
-                </TableHead>
                 <TableBody>
                   {rows.map((row) => (
-                    <NotificationTableRow key={row.id} row={row} />
+                    <TableRow
+                      key={row.id}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        "& td, th": {
+                          paddingTop: "16px !important",
+                          paddingBottom: "16px !important",
+                          paddingLeft: "5px !important",
+                        },
+                      }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={isSelected(row.id)}
+                          onChange={(event) => handleClick(event, row.id)}
+                        />
+                      </TableCell>
+                      <TableCell align="left">
+                        {row.read ? (
+                          row.message
+                        ) : (
+                          <Typography variant="subtitle1">
+                            {row.message}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="right"></TableCell>
+                    </TableRow>
                   ))}
                 </TableBody>
               </Table>
@@ -157,10 +213,6 @@ const Notifications = () => {
       </Grid>
     </>
   );
-};
-
-NotificationTableRow.propTypes = {
-  row: PropTypes.object.isRequired,
 };
 
 export default Notifications;
