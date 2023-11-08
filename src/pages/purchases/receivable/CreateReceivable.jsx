@@ -44,19 +44,30 @@ const CreateReceivable = () => {
   const [rows, setRows] = useState([]);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
+  const [isDerivedFromOrder, setIsDerivedFromOrder] = useState(false);
 
   const handleAddItem = (itemData) => {
-    if (currentItem === null) {
-      setRows([...rows, itemData]);
-    } else {
-      const updatedRows = rows.map((row, index) =>
-        index === currentItem ? itemData : row
-      );
-      setRows(updatedRows);
-    }
+    const existingIndex = rows.findIndex(
+      (row) => row.product_id === itemData.product_id
+    );
 
-    setIsAddItemModalOpen(false);
-    setCurrentItem(null);
+    if (existingIndex === -1) {
+      if (currentItem === null) {
+        setRows([...rows, itemData]);
+      } else {
+        const updatedRows = rows.map((row, index) =>
+          index === currentItem ? itemData : row
+        );
+        setRows(updatedRows);
+      }
+
+      setIsAddItemModalOpen(false);
+      setCurrentItem(null);
+    } else {
+      enqueueSnackbar("Item already exists. Please edit the existing item.", {
+        variant: "error",
+      });
+    }
   };
 
   const editItem = (index) => {
@@ -67,6 +78,13 @@ const CreateReceivable = () => {
   const deleteItem = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
+  };
+
+  const calculateTotalPrice = () => {
+    return rows.reduce(
+      (total, row) => total + row.quantity * row.unit_price,
+      0
+    );
   };
 
   return (
@@ -99,12 +117,14 @@ const CreateReceivable = () => {
               ),
               order: Yup.object()
                 .shape({
-                  id: Yup.number().required("Purchase Order is required"),
+                  id: Yup.number(),
                 })
-                .required("Purchase Order is required"),
-              supplier: Yup.object().shape({
-                id: Yup.number(),
-              }),
+                .nullable(),
+              supplier: Yup.object()
+                .shape({
+                  id: Yup.number(),
+                })
+                .nullable(),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
@@ -230,11 +250,27 @@ const CreateReceivable = () => {
                               target: { name: "order", value: newValue },
                             });
 
-                            console.log("here");
-
                             if (newValue && newValue.items) {
-                              setRows(newValue.items);
-                            } else setRows([]);
+                              const modifiedItems = newValue.items.map(
+                                (item) => {
+                                  if (item.product && item.product.id) {
+                                    return {
+                                      ...item,
+                                      product_id: item.product.id,
+                                      product: undefined,
+                                    };
+                                  } else {
+                                    return item;
+                                  }
+                                }
+                              );
+
+                              setRows(modifiedItems);
+                              setIsDerivedFromOrder(true);
+                            } else {
+                              setRows([]);
+                              setIsDerivedFromOrder(false);
+                            }
                           }}
                           getOptionLabel={(option) => option.order_number}
                           renderInput={(params) => (
@@ -245,6 +281,7 @@ const CreateReceivable = () => {
                               error={Boolean(touched.order && errors.order)}
                             />
                           )}
+                          disabled={rows.length > 0 && values.order === null}
                         />
                       </FormControl>
                       {touched.order && errors.order && (
@@ -360,7 +397,7 @@ const CreateReceivable = () => {
                                     {row.quantity * row.unit_price}
                                   </TableCell>
                                   <TableCell>{row.remark}</TableCell>
-                                  <TableCell>
+                                  <TableCell align="right">
                                     <Tooltip title="Edit Item">
                                       <IconButton
                                         color="primary"
@@ -370,18 +407,31 @@ const CreateReceivable = () => {
                                         <EditOutlined />
                                       </IconButton>
                                     </Tooltip>
-                                    <Tooltip title="Delete Item">
-                                      <IconButton
-                                        color="error"
-                                        size="small"
-                                        onClick={() => deleteItem(index)}
-                                      >
-                                        <DeleteOutlined />
-                                      </IconButton>
-                                    </Tooltip>
+                                    {values.order == null && (
+                                      <Tooltip title="Delete Item">
+                                        <IconButton
+                                          color="error"
+                                          size="small"
+                                          onClick={() => deleteItem(index)}
+                                        >
+                                          <DeleteOutlined />
+                                        </IconButton>
+                                      </Tooltip>
+                                    )}
                                   </TableCell>
                                 </TableRow>
                               ))}
+                              {rows.length > 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={3}></TableCell>
+                                  <TableCell align="right">
+                                    <strong>Total</strong>:
+                                  </TableCell>
+                                  <TableCell>{calculateTotalPrice()}</TableCell>
+                                  <TableCell></TableCell>
+                                  <TableCell></TableCell>
+                                </TableRow>
+                              )}
                             </TableBody>
                           </Table>
                         </TableContainer>
@@ -434,8 +484,9 @@ const CreateReceivable = () => {
           setIsAddItemModalOpen(false);
         }}
         onAdd={handleAddItem}
-        currentItem={currentItem !== null ? rows[currentItem] : null} // Pass the currentItem for editing
+        currentItem={currentItem !== null ? rows[currentItem] : null}
         getTemplate={getTemplate || {}}
+        areItemsFromOrder={isDerivedFromOrder}
       />
     </Grid>
   );
