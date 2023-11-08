@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { DeleteOutlined, AddOutlined } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import AddItemModal from "./AddItemModal";
@@ -93,6 +94,10 @@ const OrderItemsModal = ({
     }
   };
 
+  const calculateTotalPrice = () => {
+    return rows.reduce((total, item) => total + item.total_price, 0);
+  };
+
   return (
     <>
       <Modal open={isOpen} onClose={onModalClose}>
@@ -105,7 +110,7 @@ const OrderItemsModal = ({
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
-            maxWidth: 800,
+            maxWidth: 1200,
             width: "100%",
             textAlign: "center",
           }}
@@ -119,13 +124,15 @@ const OrderItemsModal = ({
               </Grid>
               <Grid item>
                 {orderStatus === "Requested" && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleAddItemClick}
-                  >
-                    <AddOutlined /> Add Item
-                  </Button>
+                  <PermissionGuard permission="add_purchase_order">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddItemClick}
+                    >
+                      <AddOutlined /> Add Item
+                    </Button>
+                  </PermissionGuard>
                 )}
               </Grid>
             </Grid>
@@ -142,9 +149,10 @@ const OrderItemsModal = ({
                         <TableCell>Unit Price</TableCell>
                         <TableCell>Total Price</TableCell>
                         <TableCell>Remark</TableCell>
-
                         <TableCell align="right">
-                          {orderStatus === "Requested" && "Action"}
+                          <PermissionGuard permission="add_purchase_order">
+                            {orderStatus === "Requested" && "Action"}
+                          </PermissionGuard>
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -163,21 +171,29 @@ const OrderItemsModal = ({
                           <TableCell>{row.unit_price}</TableCell>
                           <TableCell>{row.total_price}</TableCell>
                           <TableCell>{row.remark}</TableCell>
-                          <TableCell>
+                          <TableCell align="right">
                             {orderStatus === "Requested" && (
-                              <Tooltip title="Delete Order Item">
-                                <IconButton
-                                  color="error"
-                                  size="small"
-                                  onClick={() => handleDelete(row.id)}
-                                >
-                                  <DeleteOutlined />
-                                </IconButton>
-                              </Tooltip>
+                              <PermissionGuard permission="add_purchase_order">
+                                <Tooltip title="Delete Order Item">
+                                  <IconButton
+                                    color="error"
+                                    size="small"
+                                    onClick={() => handleDelete(row.id)}
+                                  >
+                                    <DeleteOutlined />
+                                  </IconButton>
+                                </Tooltip>
+                              </PermissionGuard>
                             )}
                           </TableCell>
                         </TableRow>
                       ))}
+                      <TableRow>
+                        <TableCell colSpan={5} align="right">
+                          <strong>Total</strong>:
+                        </TableCell>
+                        <TableCell>{calculateTotalPrice()}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>
