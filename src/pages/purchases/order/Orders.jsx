@@ -36,7 +36,8 @@ import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import OrderItemsModal from "./ItemsModal";
 import {
   useGetOrdersQuery,
-  useUpdateOrderStatusMutation,
+  useCheckOrderMutation,
+  useApproveOrderMutation,
   useDeleteOrderMutation,
 } from "src/store/slices/purchases/orderApiSlice";
 
@@ -44,7 +45,8 @@ const ActionButtons = ({
   onDetail,
   onEdit,
   onDelete,
-  onStatusAction,
+  onCheck,
+  onApprove,
   status,
   requestedBy,
 }) => {
@@ -60,16 +62,16 @@ const ActionButtons = ({
       {status === "Requested" && (
         <PermissionGuard permission="check_purchase_order">
           <Tooltip title="Check Purchase Order">
-            <IconButton color="primary" size="small" onClick={onStatusAction}>
+            <IconButton color="primary" size="small" onClick={onCheck}>
               <CheckCircleOutline />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
       {status === "Checked" && (
-        <PermissionGuard permission="check_purchase_order">
+        <PermissionGuard permission="approve_purchase_order">
           <Tooltip title="Approve Purchase Order">
-            <IconButton color="primary" size="small" onClick={onStatusAction}>
+            <IconButton color="primary" size="small" onClick={onApprove}>
               <FactCheckOutlined />
             </IconButton>
           </Tooltip>
@@ -103,7 +105,8 @@ const OrderTableRow = ({
   onDelete,
   onEdit,
   onDetail,
-  onStatusAction,
+  onCheck,
+  onApprove,
 }) => {
   return (
     <TableRow
@@ -122,7 +125,8 @@ const OrderTableRow = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onDetail={onDetail}
-          onStatusAction={onStatusAction}
+          onCheck={onCheck}
+          onApprove={onApprove}
           status={row.status}
           requestedBy={row.requested_by?.id}
         />
@@ -144,16 +148,17 @@ const Orders = () => {
     search: searchQuery,
   });
   const [orderDeleteApi] = useDeleteOrderMutation();
-  const [updateOrderStatusApi] = useUpdateOrderStatusMutation();
+  const [orderCheckApi] = useCheckOrderMutation();
+  const [orderApproveApi] = useApproveOrderMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
   const [detailOrder, setDetailOrder] = useState(null);
-  const [showChangeStatusModal, setShowChangeStatusModal] = useState(false);
+  const [showCheckActionModal, setShowCheckActionModal] = useState(false);
+  const [showApproveActionModal, setShowApproveActionModal] = useState(false);
   const [changeStatusId, setChangeStatusId] = useState(null);
-  const [changeOrderStatus, setChangeOrderStatus] = useState("");
 
   const [rows, setRows] = useState(data?.orders || []);
   const totalOrders = data?.total || 0;
@@ -192,35 +197,53 @@ const Orders = () => {
     setDetailOrder({ orderId: orderId, orderStatus: orderStatus });
   };
 
-  const handleStatusAction = (orderId, status) => {
-    setShowChangeStatusModal(true);
+  const handleCheckAction = (orderId) => {
+    setShowCheckActionModal(true);
     setChangeStatusId(orderId);
-    setChangeOrderStatus(status);
   };
 
-  const handleChangeStatusConfirmed = async () => {
+  const handleApproveAction = (orderId) => {
+    setShowApproveActionModal(true);
+    setChangeStatusId(orderId);
+  };
+
+  const handleCheckActionConfirmed = async () => {
     try {
-      let command = "";
-      if (changeOrderStatus == "Requested") command = "Checked";
-      if (changeOrderStatus == "Checked") command = "Approved";
-      const response = await updateOrderStatusApi({
+      const response = await orderCheckApi({
         id: parseInt(changeStatusId),
-        command,
       }).unwrap();
       setRows((prevRows) =>
         prevRows.map((order) => (order.id === response.id ? response : order))
       );
 
-      enqueueSnackbar(`Order ${command} successfully.`, {
+      enqueueSnackbar(`Purchase order checked successfully.`, {
         variant: "success",
       });
       setChangeStatusId(null);
-      setShowChangeStatusModal(false);
-      setChangeOrderStatus("");
+      setShowCheckActionModal(false);
     } catch (err) {
       setChangeStatusId(null);
-      setShowChangeStatusModal(false);
-      setChangeOrderStatus("");
+      setShowCheckActionModal(false);
+    }
+  };
+
+  const handleApproveActionConfirmed = async () => {
+    try {
+      const response = await orderApproveApi({
+        id: parseInt(changeStatusId),
+      }).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((order) => (order.id === response.id ? response : order))
+      );
+
+      enqueueSnackbar(`Purchase order approved successfully.`, {
+        variant: "success",
+      });
+      setChangeStatusId(null);
+      setShowApproveActionModal(false);
+    } catch (err) {
+      setChangeStatusId(null);
+      setShowApproveActionModal(false);
     }
   };
 
@@ -232,7 +255,7 @@ const Orders = () => {
   const handleDeleteConfirmed = async () => {
     try {
       await orderDeleteApi(deleteOrderId).unwrap();
-      enqueueSnackbar("Purchase Order deleted successfully.", {
+      enqueueSnackbar("Purchase order deleted successfully.", {
         variant: "success",
       });
 
@@ -313,9 +336,8 @@ const Orders = () => {
                       onDetail={() =>
                         handleDetail(row.id, row.status, row.items)
                       }
-                      onStatusAction={() =>
-                        handleStatusAction(row.id, row.status)
-                      }
+                      onCheck={() => handleCheckAction(row.id)}
+                      onApprove={() => handleApproveAction(row.id)}
                     />
                   ))}
                 </TableBody>
@@ -336,15 +358,20 @@ const Orders = () => {
 
       {/* Confirmation Modal */}
       <ConfirmationModal
-        open={showChangeStatusModal}
-        onClose={() => setShowChangeStatusModal(false)}
-        onConfirm={handleChangeStatusConfirmed}
-        dialogTitle={`Confirm ${
-          changeOrderStatus == "Requested" ? "Check" : "Approve"
-        } Order`}
-        dialogContent={`Are you sure you want to ${
-          changeOrderStatus == "Requested" ? "check" : "approve"
-        } this order?`}
+        open={showCheckActionModal}
+        onClose={() => setShowCheckActionModal(false)}
+        onConfirm={handleCheckActionConfirmed}
+        dialogTitle="Confirm Check Order"
+        dialogContent={`Are you sure you want to check this order?`}
+        dialogActionName="Confirm"
+      />
+
+      <ConfirmationModal
+        open={showApproveActionModal}
+        onClose={() => setShowApproveActionModal(false)}
+        onConfirm={handleApproveActionConfirmed}
+        dialogTitle="Confirm Approve Order"
+        dialogContent={`Are you sure you want to approve this order?`}
         dialogActionName="Confirm"
       />
 
@@ -371,7 +398,8 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
-  onStatusAction: PropTypes.func.isRequired,
+  onCheck: PropTypes.func.isRequired,
+  onApprove: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   requestedBy: PropTypes.number.isRequired,
 };
@@ -382,7 +410,8 @@ OrderTableRow.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
-  onStatusAction: PropTypes.func.isRequired,
+  onCheck: PropTypes.func.isRequired,
+  onApprove: PropTypes.func.isRequired,
 };
 
 export default Orders;

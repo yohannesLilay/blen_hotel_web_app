@@ -44,17 +44,27 @@ const CreateOrder = () => {
   const [currentItem, setCurrentItem] = useState(null);
 
   const handleAddItem = (itemData) => {
-    if (currentItem === null) {
-      setRows([...rows, itemData]);
-    } else {
-      const updatedRows = rows.map((row, index) =>
-        index === currentItem ? itemData : row
-      );
-      setRows(updatedRows);
-    }
+    const existingIndex = rows.findIndex(
+      (row) => row.product_id === itemData.product_id
+    );
 
-    setIsAddItemModalOpen(false);
-    setCurrentItem(null);
+    if (existingIndex === -1) {
+      if (currentItem === null) {
+        setRows([...rows, itemData]);
+      } else {
+        const updatedRows = rows.map((row, index) =>
+          index === currentItem ? itemData : row
+        );
+        setRows(updatedRows);
+      }
+
+      setIsAddItemModalOpen(false);
+      setCurrentItem(null);
+    } else {
+      enqueueSnackbar("Item already exists. Please edit the existing item.", {
+        variant: "error",
+      });
+    }
   };
 
   const editItem = (index) => {
@@ -65,6 +75,13 @@ const CreateOrder = () => {
   const deleteItem = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
+  };
+
+  const calculateTotalPrice = () => {
+    return rows.reduce(
+      (total, row) => total + row.quantity * row.unit_price,
+      0
+    );
   };
 
   return (
@@ -283,6 +300,17 @@ const CreateOrder = () => {
                                   </TableCell>
                                 </TableRow>
                               ))}
+                              {rows.length > 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={3}></TableCell>
+                                  <TableCell align="right">
+                                    <strong>Total</strong>:
+                                  </TableCell>
+                                  <TableCell>{calculateTotalPrice()}</TableCell>
+                                  <TableCell></TableCell>
+                                  <TableCell></TableCell>
+                                </TableRow>
+                              )}
                             </TableBody>
                           </Table>
                         </TableContainer>

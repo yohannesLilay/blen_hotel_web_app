@@ -14,7 +14,14 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 import MainCard from "src/components/MainCard";
 
-const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
+const AddItemModal = ({
+  isOpen,
+  onClose,
+  onAdd,
+  currentItem,
+  getTemplate,
+  areItemsFromOrder,
+}) => {
   return (
     <Modal open={isOpen} onClose={onClose}>
       <MainCard sx={{ mt: 2 }} content={false}>
@@ -120,6 +127,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                                 )}
                               />
                             )}
+                            disabled={areItemsFromOrder}
                           />
                         </FormControl>
                         {touched.product && errors.product && (
@@ -140,6 +148,7 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                           onChange={handleChange}
                           label="Quantity"
                           error={Boolean(touched.quantity && errors.quantity)}
+                          disabled={areItemsFromOrder}
                         />
                         {touched.quantity && errors.quantity && (
                           <Typography variant="body2" color="error">
@@ -236,11 +245,16 @@ AddItemModal.propTypes = {
   onAdd: PropTypes.func.isRequired,
   getTemplate: PropTypes.object.isRequired,
   currentItem: PropTypes.shape({
-    quantity: PropTypes.string.isRequired,
-    product_id: PropTypes.string.isRequired,
-    unit_price: PropTypes.string.isRequired,
+    quantity: PropTypes.number.isRequired,
+    product_id: PropTypes.number.isRequired,
+    unit_price: PropTypes.number.isRequired,
     remark: PropTypes.string.isRequired,
   }),
+  areItemsFromOrder: PropTypes.bool,
+};
+
+AddItemModal.defaultProps = {
+  areItemsFromOrder: false,
 };
 
 export default AddItemModal;

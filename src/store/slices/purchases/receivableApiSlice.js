@@ -4,8 +4,9 @@ const RECEIVABLE_ENDPOINT = "purchase-receivables";
 export const receivablesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getReceivables: builder.query({
-      query: () => ({
+      query: ({page, limit, search }) => ({
         url: RECEIVABLE_ENDPOINT,
+        params: { page, limit, search },
       }),
     }),
     getReceivableTemplate: builder.query({
@@ -39,11 +40,10 @@ export const receivablesApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-    updateReceivableStatus: builder.mutation({
-      query: ({id, command}) => ({
-        url: `${RECEIVABLE_ENDPOINT}/${id}/change-status`,
+    approveReceivable: builder.mutation({
+      query: ({id}) => ({
+        url: `${RECEIVABLE_ENDPOINT}/${id}/approve`,
         method: "PATCH",
-        params: { command },
       }),
     }),
     deleteReceivable: builder.mutation({
@@ -68,7 +68,7 @@ export const {
   useCreateReceivableItemMutation,
   useGetReceivableQuery,
   useUpdateReceivableMutation,
-  useUpdateReceivableStatusMutation,
+  useApproveReceivableMutation,
   useDeleteReceivableMutation,
   useDeleteReceivableItemMutation
 } = receivablesApiSlice;
