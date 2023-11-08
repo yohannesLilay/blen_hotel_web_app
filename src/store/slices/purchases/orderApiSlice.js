@@ -40,11 +40,16 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
-    updateOrderStatus: builder.mutation({
-      query: ({id, command}) => ({
-        url: `${ORDER_ENDPOINT}/${id}/change-status`,
+    checkOrder: builder.mutation({
+      query: ({id}) => ({
+        url: `${ORDER_ENDPOINT}/${id}/check`,
         method: "PATCH",
-        params: { command },
+      }),
+    }),
+    approveOrder: builder.mutation({
+      query: ({id}) => ({
+        url: `${ORDER_ENDPOINT}/${id}/approve`,
+        method: "PATCH",
       }),
     }),
     deleteOrder: builder.mutation({
@@ -69,7 +74,8 @@ export const {
   useCreateOrderItemMutation,
   useGetOrderQuery,
   useUpdateOrderMutation,
-  useUpdateOrderStatusMutation,
+  useCheckOrderMutation,
+  useApproveOrderMutation,
   useDeleteOrderMutation,
   useDeleteOrderItemMutation
 } = ordersApiSlice;
