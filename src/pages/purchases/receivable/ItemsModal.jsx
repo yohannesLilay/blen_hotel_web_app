@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { DeleteOutlined, AddOutlined } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
+import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import AddItemModal from "./AddItemModal";
@@ -32,6 +33,7 @@ const ReceivableItemsModal = ({
   onModalClose,
   receivableItems,
   receivableId,
+  receivableStatus,
 }) => {
   const { data: getTemplate } = useGetReceivableTemplateQuery();
   const [receivableDeleteApi] = useDeleteReceivableItemMutation();
@@ -57,7 +59,7 @@ const ReceivableItemsModal = ({
         ...itemData,
         id: receivableId,
       }).unwrap();
-      enqueueSnackbar("Purchase Receivable Item added successfully.", {
+      enqueueSnackbar("Purchase receivable item added successfully.", {
         variant: "success",
       });
 
@@ -79,7 +81,7 @@ const ReceivableItemsModal = ({
         id: receivableId,
         item_id: deleteReceivableItemId,
       }).unwrap();
-      enqueueSnackbar("Purchase Receivable Item deleted successfully.", {
+      enqueueSnackbar("Purchase receivable item deleted successfully.", {
         variant: "success",
       });
 
@@ -95,6 +97,10 @@ const ReceivableItemsModal = ({
     }
   };
 
+  const calculateTotalPrice = () => {
+    return rows.reduce((total, item) => total + item.total_price, 0);
+  };
+
   return (
     <>
       <Modal open={isOpen} onClose={onModalClose}>
@@ -107,7 +113,7 @@ const ReceivableItemsModal = ({
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
-            maxWidth: 800,
+            maxWidth: 1200,
             width: "100%",
             textAlign: "center",
           }}
@@ -120,13 +126,17 @@ const ReceivableItemsModal = ({
                 </Typography>
               </Grid>
               <Grid item>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleAddItemClick}
-                >
-                  <AddOutlined /> Add Item
-                </Button>
+                {receivableStatus === "Requested" && (
+                  <PermissionGuard permission="add_purchase_receivable">
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleAddItemClick}
+                    >
+                      <AddOutlined /> Add Item
+                    </Button>
+                  </PermissionGuard>
+                )}
               </Grid>
             </Grid>
             <MainCard sx={{ mt: 2 }} content={false}>
@@ -142,7 +152,11 @@ const ReceivableItemsModal = ({
                         <TableCell>Unit Price</TableCell>
                         <TableCell>Total Price</TableCell>
                         <TableCell>Remark</TableCell>
-                        <TableCell align="right">Action</TableCell>
+                        <TableCell align="right">
+                          <PermissionGuard permission="add_purchase_order">
+                            {receivableStatus === "Requested" && "Action"}
+                          </PermissionGuard>
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -162,19 +176,29 @@ const ReceivableItemsModal = ({
                           <TableCell>{row.unit_price}</TableCell>
                           <TableCell>{row.total_price}</TableCell>
                           <TableCell>{row.remark}</TableCell>
-                          <TableCell>
-                            <Tooltip title="Delete Receivable Item">
-                              <IconButton
-                                color="error"
-                                size="small"
-                                onClick={() => handleDelete(row.id)}
-                              >
-                                <DeleteOutlined />
-                              </IconButton>
-                            </Tooltip>
+                          <TableCell align="right">
+                            {receivableStatus === "Requested" && (
+                              <PermissionGuard permission="add_purchase_receivable">
+                                <Tooltip title="Delete Receivable Item">
+                                  <IconButton
+                                    color="error"
+                                    size="small"
+                                    onClick={() => handleDelete(row.id)}
+                                  >
+                                    <DeleteOutlined />
+                                  </IconButton>
+                                </Tooltip>
+                              </PermissionGuard>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
+                      <TableRow>
+                        <TableCell colSpan={5} align="right">
+                          <strong>Total</strong>:
+                        </TableCell>
+                        <TableCell>{calculateTotalPrice()}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -209,6 +233,7 @@ ReceivableItemsModal.propTypes = {
   onModalClose: PropTypes.func.isRequired,
   receivableItems: PropTypes.array.isRequired,
   receivableId: PropTypes.number,
+  receivableStatus: PropTypes.string,
 };
 
 export default ReceivableItemsModal;
