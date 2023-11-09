@@ -43,14 +43,14 @@ const Notifications = () => {
   const [updateNotification] = useUpdateNotificationMutation();
   const { data: notificationCount, refetch: countRefetch } =
     useGetUnreadNotificationsCountQuery();
-  dispatch(setNotificationCount(notificationCount || 0));
 
   const [rows, setRows] = useState(data?.notifications || []);
   const totalNotifications = data?.total || 0;
 
   useEffect(() => {
     if (isSuccess) setRows(data?.notifications || []);
-  }, [isSuccess, data]);
+    dispatch(setNotificationCount(notificationCount || 0));
+  }, [isSuccess, data, notificationCount, dispatch]);
 
   const handleChangePage = async (event, newPage) => {
     setPage(newPage + 1);
