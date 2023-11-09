@@ -17,10 +17,15 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { NotificationsNoneOutlined, CloseOutlined } from "@mui/icons-material";
+import io from "socket.io-client";
+import { enqueueSnackbar } from "notistack";
 
 import MainCard from "src/components/MainCard";
 import Transitions from "src/components/Transitions";
-import { setNotificationCount } from "src/store/slices/notifications/notificationSlice";
+import {
+  setNotificationCount,
+  incrementNotificationCount,
+} from "src/store/slices/notifications/notificationSlice";
 import { useGetNotificationsQuery } from "src/store/slices/notifications/notificationApiSlice";
 
 const avatarSX = {
@@ -44,9 +49,34 @@ const Notification = () => {
   const matchesXs = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const { userInfo } = useSelector((state) => state.auth);
   const notificationCount = useSelector(
     (state) => state.notifications.notificationCount
   );
+
+  useEffect(() => {
+    const socket = io(`${import.meta.env.VITE_SERVER_URL}`, {
+      query: {
+        userId: userInfo.userId,
+      },
+    });
+
+    socket.on("connect", () => {
+      socket.emit("joinRoom", String(userInfo.userId));
+    });
+
+    socket.on("notification", (data) => {
+      if (data) {
+        dispatch(incrementNotificationCount());
+        enqueueSnackbar("You have new notification.", { variant: "info" });
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [dispatch, userInfo]);
 
   const anchorRef = useRef(null);
   const [open, setOpen] = useState(false);

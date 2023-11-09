@@ -55,11 +55,8 @@ const EditReceivable = () => {
                 "Receivable Number is required"
               ),
               receivable_date: Yup.date()
-                .required("Effective Date is required")
-                .min(
-                  new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
-                  "Effective Date must be greater than today"
-                ),
+                .required("Receivable Date is required")
+                .max(new Date(), "Receivable Date cannot be in the future"),
             })}
             onSubmit={async (values) => {
               await updateReceivable({
@@ -117,7 +114,7 @@ const EditReceivable = () => {
                                 touched.receivable_date &&
                                 errors.receivable_date
                               }
-                              label="Effective Date"
+                              label="Receivable Date"
                               fullWidth
                             />
                           )}

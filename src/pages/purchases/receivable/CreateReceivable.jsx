@@ -110,8 +110,8 @@ const CreateReceivable = () => {
             }}
             validationSchema={Yup.object().shape({
               receivable_date: Yup.date()
-                .required("Effective Date is required")
-                .max(new Date(), "Effective Date cannot be in the future"),
+                .required("Receivable Date is required")
+                .max(new Date(), "Receivable Date cannot be in the future"),
               receivable_number: Yup.string().required(
                 "Receivable Number is required"
               ),
@@ -198,7 +198,7 @@ const CreateReceivable = () => {
                                 touched.receivable_date &&
                                 errors.receivable_date
                               }
-                              label="Effective Date"
+                              label="Receivable Date"
                               fullWidth
                             />
                           )}

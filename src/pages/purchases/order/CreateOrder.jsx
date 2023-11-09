@@ -105,8 +105,8 @@ const CreateOrder = () => {
             }}
             validationSchema={Yup.object().shape({
               order_date: Yup.date()
-                .required("Effective Date is required")
-                .max(new Date(), "Effective Date cannot be in the future"),
+                .required("Order Date is required")
+                .max(new Date(), "Order Date cannot be in the future"),
               order_number: Yup.string().required("Order Number is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
@@ -177,7 +177,7 @@ const CreateOrder = () => {
                               helperText={
                                 touched.order_date && errors.order_date
                               }
-                              label="Effective Date"
+                              label="Order Date"
                               fullWidth
                             />
                           )}
