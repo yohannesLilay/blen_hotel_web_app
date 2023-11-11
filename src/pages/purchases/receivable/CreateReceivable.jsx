@@ -48,7 +48,8 @@ const CreateReceivable = () => {
 
   const handleAddItem = (itemData) => {
     const existingIndex = rows.findIndex(
-      (row) => row.product_id === itemData.product_id
+      (row, index) =>
+        index !== currentItem && row.product_id === itemData.product_id
     );
 
     if (existingIndex === -1) {
@@ -92,7 +93,7 @@ const CreateReceivable = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Purchase Receivable
+            Create GRV
           </Typography>
         </Grid>
         <Grid item />
@@ -110,10 +111,10 @@ const CreateReceivable = () => {
             }}
             validationSchema={Yup.object().shape({
               receivable_date: Yup.date()
-                .required("Receivable Date is required")
-                .max(new Date(), "Receivable Date cannot be in the future"),
+                .required("GRV Date is required")
+                .max(new Date(), "GRV Date cannot be in the future"),
               receivable_number: Yup.string().required(
-                "Receivable Number is required"
+                "GRV Number is required"
               ),
               order: Yup.object()
                 .shape({
@@ -142,7 +143,7 @@ const CreateReceivable = () => {
                     items: rows,
                   }).unwrap();
                   navigate(-1);
-                  enqueueSnackbar("Purchase Receivable created successfully.", {
+                  enqueueSnackbar("GRV created successfully.", {
                     variant: "success",
                   });
 
@@ -170,7 +171,7 @@ const CreateReceivable = () => {
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                          label="Receivable Date"
+                          label="GRV Date"
                           variant="outlined"
                           format="DD-MM-YYYY"
                           maxDate={dayjs()}
@@ -198,7 +199,7 @@ const CreateReceivable = () => {
                                 touched.receivable_date &&
                                 errors.receivable_date
                               }
-                              label="Receivable Date"
+                              label="GRV Date"
                               fullWidth
                             />
                           )}
@@ -220,7 +221,7 @@ const CreateReceivable = () => {
                         value={values.receivable_number}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Receivable Number"
+                        label="GRV Number"
                         error={Boolean(
                           touched.receivable_number && errors.receivable_number
                         )}
