@@ -51,14 +51,14 @@ const ActionButtons = ({
 
   return (
     <div>
-      <Tooltip title="View Receivable items">
+      <Tooltip title="View GRV items">
         <IconButton color="primary" size="small" onClick={onDetail}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       {status === "Requested" && (
         <PermissionGuard permission="approve_purchase_receivable">
-          <Tooltip title="Approve Receivable">
+          <Tooltip title="Approve GRV">
             <IconButton color="primary" size="small" onClick={onApprove}>
               <FactCheckOutlined />
             </IconButton>
@@ -66,14 +66,14 @@ const ActionButtons = ({
         </PermissionGuard>
       )}
       {status === "Requested" && preparedBy === currentUser.userId && (
-        <Tooltip title="Edit Receivable">
+        <Tooltip title="Edit GRV">
           <IconButton color="primary" size="small" onClick={onEdit}>
             <EditOutlined />
           </IconButton>
         </Tooltip>
       )}
       {status === "Requested" && preparedBy === currentUser.userId && (
-        <Tooltip title="Delete Receivable">
+        <Tooltip title="Delete GRV">
           <IconButton color="error" size="small" onClick={onDelete}>
             <DeleteOutlined />
           </IconButton>
@@ -198,7 +198,7 @@ const Receivables = () => {
         )
       );
 
-      enqueueSnackbar(`Purchase receivable approved successfully.`, {
+      enqueueSnackbar(`GRV approved successfully.`, {
         variant: "success",
       });
       setApproveId(null);
@@ -217,7 +217,7 @@ const Receivables = () => {
   const handleDeleteConfirmed = async () => {
     try {
       await receivableDeleteApi(deleteReceivableId).unwrap();
-      enqueueSnackbar("Purchase receivable deleted successfully.", {
+      enqueueSnackbar("GRV deleted successfully.", {
         variant: "success",
       });
 
@@ -238,7 +238,7 @@ const Receivables = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Purchase Receivables</Typography>
+            <Typography variant="h5">List of GRVs</Typography>
           </Grid>
           <Grid item>
             <Button
@@ -246,14 +246,14 @@ const Receivables = () => {
               color="primary"
               onClick={() => navigate("create")}
             >
-              <AddOutlined /> Add Purchase Receivable
+              <AddOutlined /> Add GRV
             </Button>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
             <TextField
-              label="Search by receivable number"
+              label="Search by grv number"
               variant="outlined"
               size="small"
               value={searchQuery}
@@ -276,9 +276,9 @@ const Receivables = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
-                    <TableCell>Receivable Number</TableCell>
+                    <TableCell>GRV Number</TableCell>
                     <TableCell>Order Number</TableCell>
-                    <TableCell>Receivable Date</TableCell>
+                    <TableCell>GRV Date</TableCell>
                     <TableCell>Supplier</TableCell>
                     <TableCell>Prepared By</TableCell>
                     <TableCell>Received By</TableCell>
@@ -321,8 +321,8 @@ const Receivables = () => {
         open={showApproveModal}
         onClose={() => setShowApproveModal(false)}
         onConfirm={handleApproveConfirmed}
-        dialogTitle={`Confirm Approve Receivable`}
-        dialogContent={`Are you sure you want to approve this receivable?`}
+        dialogTitle={`Confirm Approve GRV`}
+        dialogContent={`Are you sure you want to approve this GRV?`}
         dialogActionName="Confirm"
       />
 
@@ -330,7 +330,7 @@ const Receivables = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this purchase receivable?"
+        dialogContent="Are you sure you want to delete this GRV?"
       />
 
       <ReceivableItemsModal

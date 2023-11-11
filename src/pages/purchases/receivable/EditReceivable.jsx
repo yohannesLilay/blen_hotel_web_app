@@ -37,7 +37,7 @@ const EditReceivable = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit Receivable
+            Edit GRV
           </Typography>
         </Grid>
         <Grid item />
@@ -52,11 +52,11 @@ const EditReceivable = () => {
             }}
             validationSchema={Yup.object().shape({
               receivable_number: Yup.string().required(
-                "Receivable Number is required"
+                "GRV Number is required"
               ),
               receivable_date: Yup.date()
-                .required("Receivable Date is required")
-                .max(new Date(), "Receivable Date cannot be in the future"),
+                .required("GRV Date is required")
+                .max(new Date(), "GRV Date cannot be in the future"),
             })}
             onSubmit={async (values) => {
               await updateReceivable({
@@ -65,7 +65,7 @@ const EditReceivable = () => {
                 unit_of_measure: values.unit_of_measure,
               }).unwrap();
               navigate(-1);
-              enqueueSnackbar("Receivable updated successfully.", {
+              enqueueSnackbar("GRV updated successfully.", {
                 variant: "success",
               });
             }}
@@ -86,7 +86,7 @@ const EditReceivable = () => {
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                          label="Receivable Date"
+                          label="GRV Date"
                           variant="outlined"
                           format="DD-MM-YYYY"
                           maxDate={dayjs()}
@@ -114,7 +114,7 @@ const EditReceivable = () => {
                                 touched.receivable_date &&
                                 errors.receivable_date
                               }
-                              label="Receivable Date"
+                              label="GRV Date"
                               fullWidth
                             />
                           )}
@@ -136,7 +136,7 @@ const EditReceivable = () => {
                         value={values.receivable_number}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Receivable Number"
+                        label="GRV Number"
                         error={Boolean(
                           touched.receivable_number && errors.receivable_number
                         )}

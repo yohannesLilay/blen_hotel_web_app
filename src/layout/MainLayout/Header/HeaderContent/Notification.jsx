@@ -56,14 +56,14 @@ const Notification = () => {
   );
 
   useEffect(() => {
+    const userId = userInfo ? userInfo.userId : null;
+
     const socket = io(`${import.meta.env.VITE_SERVER_URL}`, {
-      query: {
-        userId: userInfo.userId,
-      },
+      query: { userId: userId },
     });
 
     socket.on("connect", () => {
-      socket.emit("joinRoom", String(userInfo.userId));
+      socket.emit("joinRoom", String(userId));
     });
 
     socket.on("notification", (data) => {

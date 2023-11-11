@@ -39,7 +39,7 @@ const AddItemModal = ({
             textAlign: "center",
           }}
         >
-          <Typography variant="h5">Add Purchase receivable Item</Typography>
+          <Typography variant="h5">Add GRV Item</Typography>
 
           <Box sx={{ p: 2 }}>
             <Formik

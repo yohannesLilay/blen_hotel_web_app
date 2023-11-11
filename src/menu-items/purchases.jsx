@@ -19,7 +19,7 @@ const purchases = {
     },
     {
       id: "receivable",
-      title: "Receivable",
+      title: "GRV",
       type: "item",
       url: "/purchases/receivables",
       permission: "view_purchase_receivable",

@@ -59,7 +59,7 @@ const ReceivableItemsModal = ({
         ...itemData,
         id: receivableId,
       }).unwrap();
-      enqueueSnackbar("Purchase receivable item added successfully.", {
+      enqueueSnackbar("GRV item added successfully.", {
         variant: "success",
       });
 
@@ -81,7 +81,7 @@ const ReceivableItemsModal = ({
         id: receivableId,
         item_id: deleteReceivableItemId,
       }).unwrap();
-      enqueueSnackbar("Purchase receivable item deleted successfully.", {
+      enqueueSnackbar("GRV item deleted successfully.", {
         variant: "success",
       });
 
@@ -121,9 +121,7 @@ const ReceivableItemsModal = ({
           <Grid item xs={12} md={7} lg={8}>
             <Grid container alignItems="center" justifyContent="space-between">
               <Grid item>
-                <Typography variant="h5">
-                  List of Purchase Receivable Items
-                </Typography>
+                <Typography variant="h5">List of GRV Items</Typography>
               </Grid>
               <Grid item>
                 {receivableStatus === "Requested" && (
