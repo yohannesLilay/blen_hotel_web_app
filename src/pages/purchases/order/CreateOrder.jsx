@@ -45,7 +45,8 @@ const CreateOrder = () => {
 
   const handleAddItem = (itemData) => {
     const existingIndex = rows.findIndex(
-      (row) => row.product_id === itemData.product_id
+      (row, index) =>
+        index !== currentItem && row.product_id === itemData.product_id
     );
 
     if (existingIndex === -1) {
@@ -278,7 +279,7 @@ const CreateOrder = () => {
                                     {row.quantity * row.unit_price}
                                   </TableCell>
                                   <TableCell>{row.remark}</TableCell>
-                                  <TableCell>
+                                  <TableCell align="right">
                                     <Tooltip title="Edit Item">
                                       <IconButton
                                         color="primary"
