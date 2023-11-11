@@ -236,9 +236,9 @@ AddItemModal.propTypes = {
   onAdd: PropTypes.func.isRequired,
   getTemplate: PropTypes.object.isRequired,
   currentItem: PropTypes.shape({
-    quantity: PropTypes.string.isRequired,
-    product_id: PropTypes.string.isRequired,
-    unit_price: PropTypes.string.isRequired,
+    quantity: PropTypes.number.isRequired,
+    product_id: PropTypes.number.isRequired,
+    unit_price: PropTypes.number.isRequired,
     remark: PropTypes.string.isRequired,
   }),
 };
