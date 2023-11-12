@@ -256,6 +256,15 @@ const CreateOrder = () => {
                               </TableRow>
                             </TableHead>
                             <TableBody>
+                              {rows.length === 0 && (
+                                <TableRow>
+                                  <TableCell colSpan={8} align="center">
+                                    <Typography variant="body1">
+                                      No items available.
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+                              )}
                               {rows.map((row, index) => (
                                 <TableRow
                                   key={row.id}
