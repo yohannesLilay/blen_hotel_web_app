@@ -198,6 +198,15 @@ const Users = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
+                  {rows.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center">
+                        <Typography variant="body1">
+                          No data available.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {rows.map((row, index) => (
                     <UserTableRow
                       key={row.id}
