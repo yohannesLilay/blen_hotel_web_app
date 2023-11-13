@@ -23,6 +23,7 @@ import FacilityTypeRoutes from "./configurations/FacilityTypeRoutes";
 import WorkFlowRoutes from "./configurations/WorkFlowRoutes";
 import OrderRoutes from "./purchases/OrderRoutes";
 import ReceivableRoutes from "./purchases/ReceivableRoutes";
+import StoreRequisitionRoutes from "./sales/StoreRequisitionRoutes";
 
 const MainRoutes = {
   path: "/",
@@ -44,6 +45,7 @@ const MainRoutes = {
     { path: "facility-types", children: [...FacilityTypeRoutes] },
     { path: "purchases/orders", children: [...OrderRoutes] },
     { path: "purchases/receivables", children: [...ReceivableRoutes] },
+    { path: "sales/store-requisitions", children: [...StoreRequisitionRoutes] },
   ],
 };
 
