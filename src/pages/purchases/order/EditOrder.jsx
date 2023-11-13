@@ -49,7 +49,7 @@ const EditOrder = () => {
               await updateOrder({
                 id: parseInt(id),
                 order_number: values.order_number,
-                unit_of_measure: values.unit_of_measure,
+                order_date: values.order_date,
               }).unwrap();
               navigate(-1);
               enqueueSnackbar("Order updated successfully.", {
