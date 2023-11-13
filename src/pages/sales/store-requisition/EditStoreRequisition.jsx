@@ -9,24 +9,25 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 
 import {
-  useUpdateOrderMutation,
-  useGetOrderQuery,
-} from "src/store/slices/purchases/orderApiSlice";
+  useUpdateStoreRequisitionMutation,
+  useGetStoreRequisitionQuery,
+} from "src/store/slices/sales/storeRequisitionApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditOrder = () => {
+const EditStoreRequisition = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: getOrder } = useGetOrderQuery(id);
-  const [updateOrder, { isLoading }] = useUpdateOrderMutation();
+  const { data: getStoreRequisition } = useGetStoreRequisitionQuery(id);
+  const [updateStoreRequisition, { isLoading }] =
+    useUpdateStoreRequisitionMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit Order
+            Edit Store Requisition
           </Typography>
         </Grid>
         <Grid item />
@@ -36,23 +37,30 @@ const EditOrder = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              order_number: getOrder?.order_number || "",
-              order_date: dayjs(getOrder?.order_date) || null,
+              store_requisition_number:
+                getStoreRequisition?.store_requisition_number || "",
+              store_requisition_date:
+                dayjs(getStoreRequisition?.store_requisition_date) || null,
             }}
             validationSchema={Yup.object().shape({
-              order_number: Yup.string().required("Order Number is required"),
-              order_date: Yup.date()
-                .required("Order Date is required")
-                .max(new Date(), "Order Date cannot be in the future"),
+              store_requisition_number: Yup.string().required(
+                "Store Requisition Number is required"
+              ),
+              store_requisition_date: Yup.date()
+                .required("Store Requisition Date is required")
+                .max(
+                  new Date(),
+                  "Store Requisition Date cannot be in the future"
+                ),
             })}
             onSubmit={async (values) => {
-              await updateOrder({
+              await updateStoreRequisition({
                 id: parseInt(id),
-                order_number: values.order_number,
-                order_date: values.order_date,
+                store_requisition_number: values.store_requisition_number,
+                store_requisition_date: values.store_requisition_date,
               }).unwrap();
               navigate(-1);
-              enqueueSnackbar("Order updated successfully.", {
+              enqueueSnackbar("Store Requisition updated successfully.", {
                 variant: "success",
               });
             }}
@@ -69,68 +77,77 @@ const EditOrder = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                          label="Order Date"
+                          label="Store Requisition Date"
                           variant="outlined"
                           format="DD-MM-YYYY"
                           maxDate={dayjs()}
                           disableFuture
-                          value={values.order_date}
-                          name="order_date"
-                          id="order_date"
+                          value={values.store_requisition_date}
+                          name="store_requisition_date"
+                          id="store_requisition_date"
                           onBlur={handleBlur}
                           onChange={(date) => {
                             handleChange({
-                              target: { name: "order_date", value: date },
+                              target: {
+                                name: "store_requisition_date",
+                                value: date,
+                              },
                             });
                           }}
                           error={Boolean(
-                            touched.order_date && errors.order_date
+                            touched.store_requisition_date &&
+                              errors.store_requisition_date
                           )}
                           textField={(props) => (
                             <TextField
                               {...props}
                               error={Boolean(
-                                touched.order_date && errors.order_date
+                                touched.store_requisition_date &&
+                                  errors.store_requisition_date
                               )}
                               helperText={
-                                touched.order_date && errors.order_date
+                                touched.store_requisition_date &&
+                                errors.store_requisition_date
                               }
-                              label="Order Date"
+                              label="Store Requisition Date"
                               fullWidth
                             />
                           )}
                         />
                       </LocalizationProvider>
-                      {touched.order_date && errors.order_date && (
-                        <Typography variant="body2" color="error">
-                          {errors.order_date}
-                        </Typography>
-                      )}
+                      {touched.store_requisition_date &&
+                        errors.store_requisition_date && (
+                          <Typography variant="body2" color="error">
+                            {errors.store_requisition_date}
+                          </Typography>
+                        )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
                         variant="outlined"
-                        name="order_number"
-                        value={values.order_number}
+                        name="store_requisition_number"
+                        value={values.store_requisition_number}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Order Number"
+                        label="Store Requisition Number"
                         error={Boolean(
-                          touched.order_number && errors.order_number
+                          touched.store_requisition_number &&
+                            errors.store_requisition_number
                         )}
                       />
-                      {touched.order_number && errors.order_number && (
-                        <Typography variant="body2" color="error">
-                          {errors.order_number}
-                        </Typography>
-                      )}
+                      {touched.store_requisition_number &&
+                        errors.store_requisition_number && (
+                          <Typography variant="body2" color="error">
+                            {errors.store_requisition_number}
+                          </Typography>
+                        )}
                     </Stack>
                   </Grid>
                   <Grid
@@ -174,4 +191,4 @@ const EditOrder = () => {
   );
 };
 
-export default EditOrder;
+export default EditStoreRequisition;

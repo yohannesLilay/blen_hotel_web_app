@@ -32,12 +32,12 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
-import ReceivableItemsModal from "./ItemsModal";
+import StoreRequisitionItemsModal from "./ItemsModal";
 import {
-  useGetReceivablesQuery,
-  useApproveReceivableMutation,
-  useDeleteReceivableMutation,
-} from "src/store/slices/purchases/receivableApiSlice";
+  useGetStoreRequisitionsQuery,
+  useApproveStoreRequisitionMutation,
+  useDeleteStoreRequisitionMutation,
+} from "src/store/slices/sales/storeRequisitionApiSlice";
 
 const ActionButtons = ({
   onDetail,
@@ -45,38 +45,38 @@ const ActionButtons = ({
   onDelete,
   onApprove,
   status,
-  preparedBy,
+  requestedBy,
 }) => {
   const currentUser = useSelector((state) => state.auth.userInfo);
 
   return (
     <div>
-      <Tooltip title="View GRV items">
+      <Tooltip title="View Store Requisition items">
         <IconButton color="primary" size="small" onClick={onDetail}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       {status === "Requested" && (
-        <PermissionGuard permission="approve_purchase_receivable">
-          <Tooltip title="Approve GRV">
+        <PermissionGuard permission="approve_store_requisition">
+          <Tooltip title="Approve Store Requisition">
             <IconButton color="primary" size="small" onClick={onApprove}>
               <FactCheckOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && preparedBy === currentUser.userId && (
-        <PermissionGuard permission="change_purchase_receivable">
-          <Tooltip title="Edit GRV">
+      {status === "Requested" && requestedBy === currentUser.userId && (
+        <PermissionGuard permission="change_store_requisition">
+          <Tooltip title="Edit Store Requisition">
             <IconButton color="primary" size="small" onClick={onEdit}>
               <EditOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && preparedBy === currentUser.userId && (
-        <PermissionGuard permission="delete_purchase_receivable">
-          <Tooltip title="Delete GRV">
+      {status === "Requested" && requestedBy === currentUser.userId && (
+        <PermissionGuard permission="delete_store_requisition">
+          <Tooltip title="Delete Store Requisition">
             <IconButton color="error" size="small" onClick={onDelete}>
               <DeleteOutlined />
             </IconButton>
@@ -87,7 +87,7 @@ const ActionButtons = ({
   );
 };
 
-const ReceivableTableRow = ({
+const StoreRequisitionTableRow = ({
   index,
   row,
   onDelete,
@@ -101,12 +101,12 @@ const ReceivableTableRow = ({
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{index + 1}</TableCell>
-      <TableCell>{row.receivable_number}</TableCell>
-      <TableCell>{row.order?.order_number}</TableCell>
-      <TableCell>{dayjs(row.receivable_date).format("DD-MM-YYYY")}</TableCell>
-      <TableCell>{row.supplier?.name}</TableCell>
-      <TableCell>{row.prepared_by?.name}</TableCell>
-      <TableCell>{row.received_by?.name}</TableCell>
+      <TableCell>{row.store_requisition_number}</TableCell>
+      <TableCell>
+        {dayjs(row.store_requisition_date).format("DD-MM-YYYY")}
+      </TableCell>
+      <TableCell>{row.requested_by?.name}</TableCell>
+      <TableCell>{row.approved_by?.name}</TableCell>
       <TableCell>{row.status}</TableCell>
       <TableCell align="right">
         <ActionButtons
@@ -115,41 +115,42 @@ const ReceivableTableRow = ({
           onDetail={onDetail}
           onApprove={onApprove}
           status={row.status}
-          preparedBy={row.prepared_by?.id}
+          requestedBy={row.requested_by?.id}
         />
       </TableCell>
     </TableRow>
   );
 };
 
-const Receivables = () => {
+const StoreRequisitions = () => {
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, isSuccess, refetch } = useGetReceivablesQuery({
+  const { data, isSuccess, refetch } = useGetStoreRequisitionsQuery({
     page,
     limit,
     search: searchQuery,
   });
-  const [receivableDeleteApi] = useDeleteReceivableMutation();
-  const [approveReceivableApi] = useApproveReceivableMutation();
+  const [storeRequisitionDeleteApi] = useDeleteStoreRequisitionMutation();
+  const [approveStoreRequisitionApi] = useApproveStoreRequisitionMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [deleteReceivableId, setDeleteReceivableId] = useState(null);
+  const [deleteStoreRequisitionId, setDeleteStoreRequisitionId] =
+    useState(null);
   const [detailItems, setDetailItems] = useState([]);
-  const [detailReceivable, setDetailReceivable] = useState(null);
+  const [detailStoreRequisition, setDetailStoreRequisition] = useState(null);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [changeStatusId, setApproveId] = useState(null);
 
-  const [rows, setRows] = useState(data?.receivables || []);
-  const totalReceivables = data?.total || 0;
+  const [rows, setRows] = useState(data?.storeRequisitions || []);
+  const totalStoreRequisitions = data?.total || 0;
 
   useEffect(() => {
-    if (isSuccess) setRows(data?.receivables || []);
+    if (isSuccess) setRows(data?.storeRequisitions || []);
   }, [isSuccess, data]);
 
   const handleChangePage = async (event, newPage) => {
@@ -172,36 +173,36 @@ const Receivables = () => {
     }
   };
 
-  const handleEdit = (receivableId) => {
-    navigate(`${receivableId}/edit`);
+  const handleEdit = (storeRequisitionId) => {
+    navigate(`${storeRequisitionId}/edit`);
   };
 
-  const handleDetail = (receivableId, receivableStatus, items) => {
+  const handleDetail = (storeRequisitionId, storeRequisitionStatus, items) => {
     setShowDetailModal(true);
     setDetailItems(items);
-    setDetailReceivable({
-      receivableId: receivableId,
-      receivableStatus: receivableStatus,
+    setDetailStoreRequisition({
+      storeRequisitionId: storeRequisitionId,
+      storeRequisitionStatus: storeRequisitionStatus,
     });
   };
 
-  const handleApprove = (receivableId) => {
+  const handleApprove = (storeRequisitionId) => {
     setShowApproveModal(true);
-    setApproveId(receivableId);
+    setApproveId(storeRequisitionId);
   };
 
   const handleApproveConfirmed = async () => {
     try {
-      const response = await approveReceivableApi({
+      const response = await approveStoreRequisitionApi({
         id: parseInt(changeStatusId),
       }).unwrap();
       setRows((prevRows) =>
-        prevRows.map((receivable) =>
-          receivable.id === response.id ? response : receivable
+        prevRows.map((storeRequisition) =>
+          storeRequisition.id === response.id ? response : storeRequisition
         )
       );
 
-      enqueueSnackbar(`GRV approved successfully.`, {
+      enqueueSnackbar(`Store Requisition approved successfully.`, {
         variant: "success",
       });
       setApproveId(null);
@@ -212,26 +213,28 @@ const Receivables = () => {
     }
   };
 
-  const handleDelete = (receivableId) => {
+  const handleDelete = (storeRequisitionId) => {
     setShowDeleteModal(true);
-    setDeleteReceivableId(receivableId);
+    setDeleteStoreRequisitionId(storeRequisitionId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await receivableDeleteApi(deleteReceivableId).unwrap();
-      enqueueSnackbar("GRV deleted successfully.", {
+      await storeRequisitionDeleteApi(deleteStoreRequisitionId).unwrap();
+      enqueueSnackbar("Store Requisition deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((receivable) => receivable.id !== deleteReceivableId)
+        prevRows.filter(
+          (storeRequisition) => storeRequisition.id !== deleteStoreRequisitionId
+        )
       );
 
       setShowDeleteModal(false);
-      setDeleteReceivableId(null);
+      setDeleteStoreRequisitionId(null);
     } catch (err) {
-      setDeleteReceivableId(null);
+      setDeleteStoreRequisitionId(null);
       setShowDeleteModal(false);
     }
   };
@@ -241,16 +244,16 @@ const Receivables = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of GRVs</Typography>
+            <Typography variant="h5">List of Store Requisitions</Typography>
           </Grid>
           <Grid item>
-            <PermissionGuard permission="add_purchase_receivable">
+            <PermissionGuard permission="add_store_requisition">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("create")}
               >
-                <AddOutlined /> Add GRV
+                <AddOutlined /> Add Store Requisition
               </Button>
             </PermissionGuard>
           </Grid>
@@ -258,7 +261,7 @@ const Receivables = () => {
         <MainCard sx={{ mt: 2 }} content={false}>
           <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
             <TextField
-              label="Search by grv number"
+              label="Search by store requisition number"
               variant="outlined"
               size="small"
               value={searchQuery}
@@ -281,12 +284,10 @@ const Receivables = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
-                    <TableCell>GRV Number</TableCell>
-                    <TableCell>Order Number</TableCell>
-                    <TableCell>GRV Date</TableCell>
-                    <TableCell>Supplier</TableCell>
-                    <TableCell>Prepared By</TableCell>
-                    <TableCell>Received By</TableCell>
+                    <TableCell>Store Requisition Number</TableCell>
+                    <TableCell>Store Requisition Date</TableCell>
+                    <TableCell>Requested By</TableCell>
+                    <TableCell>Approved By</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
@@ -302,7 +303,7 @@ const Receivables = () => {
                     </TableRow>
                   )}
                   {rows.map((row, index) => (
-                    <ReceivableTableRow
+                    <StoreRequisitionTableRow
                       key={row.id}
                       index={index}
                       row={row}
@@ -320,7 +321,7 @@ const Receivables = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 20, 50, 100]}
               component="div"
-              count={totalReceivables}
+              count={totalStoreRequisitions}
               rowsPerPage={limit}
               page={page - 1}
               onPageChange={handleChangePage}
@@ -335,8 +336,8 @@ const Receivables = () => {
         open={showApproveModal}
         onClose={() => setShowApproveModal(false)}
         onConfirm={handleApproveConfirmed}
-        dialogTitle={`Confirm Approve GRV`}
-        dialogContent={`Are you sure you want to approve this GRV?`}
+        dialogTitle={`Confirm Approve Store Requisition`}
+        dialogContent={`Are you sure you want to approve this Store Requisition?`}
         dialogActionName="Confirm"
       />
 
@@ -344,15 +345,17 @@ const Receivables = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this GRV?"
+        dialogContent="Are you sure you want to delete this Store Requisition?"
       />
 
-      <ReceivableItemsModal
+      <StoreRequisitionItemsModal
         isOpen={showDetailModal}
         onModalClose={() => setShowDetailModal(false)}
-        receivableItems={detailItems}
-        receivableId={detailReceivable?.receivableId}
-        receivableStatus={detailReceivable?.receivableStatus || null}
+        storeRequisitionItems={detailItems}
+        storeRequisitionId={detailStoreRequisition?.storeRequisitionId}
+        storeRequisitionStatus={
+          detailStoreRequisition?.storeRequisitionStatus || null
+        }
       />
     </>
   );
@@ -365,10 +368,10 @@ ActionButtons.propTypes = {
   onDetail: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
-  preparedBy: PropTypes.number.isRequired,
+  requestedBy: PropTypes.number.isRequired,
 };
 
-ReceivableTableRow.propTypes = {
+StoreRequisitionTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
@@ -377,4 +380,4 @@ ReceivableTableRow.propTypes = {
   onApprove: PropTypes.func.isRequired,
 };
 
-export default Receivables;
+export default StoreRequisitions;

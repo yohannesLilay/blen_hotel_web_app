@@ -49,6 +49,10 @@ const EditReceivable = () => {
             initialValues={{
               receivable_number: getReceivable?.receivable_number || "",
               receivable_date: dayjs(getReceivable?.receivable_date) || null,
+              supplier:
+                getTemplate?.supplierOptions.find(
+                  (option) => option.id === getReceivable?.supplier?.id
+                ) || null,
             }}
             validationSchema={Yup.object().shape({
               receivable_number: Yup.string().required(
@@ -57,12 +61,18 @@ const EditReceivable = () => {
               receivable_date: Yup.date()
                 .required("GRV Date is required")
                 .max(new Date(), "GRV Date cannot be in the future"),
+              supplier: Yup.object()
+                .shape({
+                  id: Yup.number(),
+                })
+                .nullable(),
             })}
             onSubmit={async (values) => {
               await updateReceivable({
                 id: parseInt(id),
                 receivable_number: values.receivable_number,
-                unit_of_measure: values.unit_of_measure,
+                receivable_date: values.receivable_date,
+                supplier_id: values.supplier?.id || null,
               }).unwrap();
               navigate(-1);
               enqueueSnackbar("GRV updated successfully.", {
