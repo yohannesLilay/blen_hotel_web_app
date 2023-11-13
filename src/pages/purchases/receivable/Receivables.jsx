@@ -66,18 +66,22 @@ const ActionButtons = ({
         </PermissionGuard>
       )}
       {status === "Requested" && preparedBy === currentUser.userId && (
-        <Tooltip title="Edit GRV">
-          <IconButton color="primary" size="small" onClick={onEdit}>
-            <EditOutlined />
-          </IconButton>
-        </Tooltip>
+        <PermissionGuard permission="change_purchase_receivable">
+          <Tooltip title="Edit GRV">
+            <IconButton color="primary" size="small" onClick={onEdit}>
+              <EditOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
       )}
       {status === "Requested" && preparedBy === currentUser.userId && (
-        <Tooltip title="Delete GRV">
-          <IconButton color="error" size="small" onClick={onDelete}>
-            <DeleteOutlined />
-          </IconButton>
-        </Tooltip>
+        <PermissionGuard permission="delete_purchase_receivable">
+          <Tooltip title="Delete GRV">
+            <IconButton color="error" size="small" onClick={onDelete}>
+              <DeleteOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
       )}
     </div>
   );
@@ -175,7 +179,6 @@ const Receivables = () => {
   const handleDetail = (receivableId, receivableStatus, items) => {
     setShowDetailModal(true);
     setDetailItems(items);
-    setDetailReceivable(receivableId);
     setDetailReceivable({
       receivableId: receivableId,
       receivableStatus: receivableStatus,
@@ -241,13 +244,15 @@ const Receivables = () => {
             <Typography variant="h5">List of GRVs</Typography>
           </Grid>
           <Grid item>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("create")}
-            >
-              <AddOutlined /> Add GRV
-            </Button>
+            <PermissionGuard permission="add_purchase_receivable">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("create")}
+              >
+                <AddOutlined /> Add GRV
+              </Button>
+            </PermissionGuard>
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
@@ -346,7 +351,7 @@ const Receivables = () => {
         isOpen={showDetailModal}
         onModalClose={() => setShowDetailModal(false)}
         receivableItems={detailItems}
-        receivableId={detailReceivable}
+        receivableId={detailReceivable?.receivableId}
         receivableStatus={detailReceivable?.receivableStatus || null}
       />
     </>
