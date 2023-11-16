@@ -2,13 +2,19 @@ import {
   BusinessOutlined,
   AccountTreeOutlined,
   TimelineOutlined,
+  RestaurantMenuOutlined,
 } from "@mui/icons-material";
 
 const configurations = {
   id: "group-configurations",
   title: "Configurations",
   type: "group",
-  permissions: ["view_supplier", "view_facility_type", "view_work_flow"],
+  permissions: [
+    "view_supplier",
+    "view_facility_type",
+    "view_work_flow",
+    "view_menu",
+  ],
   children: [
     {
       id: "supplier",
@@ -33,6 +39,14 @@ const configurations = {
       url: "/work-flows",
       permission: "view_work_flow",
       icon: TimelineOutlined,
+    },
+    {
+      id: "menu",
+      title: "Menu",
+      type: "item",
+      url: "/menus",
+      permission: "view_menu",
+      icon: RestaurantMenuOutlined,
     },
   ],
 };

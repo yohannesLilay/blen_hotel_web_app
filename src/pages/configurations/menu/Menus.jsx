@@ -30,23 +30,23 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
 import {
-  useGetProductsQuery,
-  useImportProductMutation,
-  useDeleteProductMutation,
-} from "src/store/slices/product-management/productApiSlice";
+  useGetMenusQuery,
+  useImportMenuMutation,
+  useDeleteMenuMutation,
+} from "src/store/slices/configurations/menuApiSlice";
 
 const ActionButtons = ({ onEdit, onDelete }) => {
   return (
     <div>
-      <PermissionGuard permission="change_product">
-        <Tooltip title="Edit Product">
+      <PermissionGuard permission="change_menu">
+        <Tooltip title="Edit Menu">
           <IconButton color="primary" size="small" onClick={onEdit}>
             <EditOutlined />
           </IconButton>
         </Tooltip>
       </PermissionGuard>
-      <PermissionGuard permission="delete_product">
-        <Tooltip title="Delete Product">
+      <PermissionGuard permission="delete_menu">
+        <Tooltip title="Delete Menu">
           <IconButton color="error" size="small" onClick={onDelete}>
             <DeleteOutlined />
           </IconButton>
@@ -56,19 +56,16 @@ const ActionButtons = ({ onEdit, onDelete }) => {
   );
 };
 
-const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
+const MenuTableRow = ({ index, row, onDelete, onEdit }) => {
   return (
     <TableRow
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{index + 1}</TableCell>
-      <TableCell>{row.name}</TableCell>
-      <TableCell>{row.unit_of_measure}</TableCell>
-      <TableCell>{row.category.name}</TableCell>
-      <TableCell>{row.stock_quantity}</TableCell>
-      <TableCell>{row.safety_stock_level}</TableCell>
-      <TableCell>{row.notes}</TableCell>
+      <TableCell>{row.item}</TableCell>
+      <TableCell>{row.price} BIRR</TableCell>
+      <TableCell>{row.description}</TableCell>
       <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
       </TableCell>
@@ -76,29 +73,29 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
   );
 };
 
-const Products = () => {
+const Menus = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data, isSuccess, refetch } = useGetProductsQuery({
+  const { data, isSuccess, refetch } = useGetMenusQuery({
     page,
     limit,
     search: searchQuery,
   });
-  const [productDeleteApi] = useDeleteProductMutation();
-  const [importProduct] = useImportProductMutation();
+  const [menuDeleteApi] = useDeleteMenuMutation();
+  const [importMenu] = useImportMenuMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteProductId, setDeleteProductId] = useState(null);
+  const [deleteMenuId, setDeleteMenuId] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
 
-  const [rows, setRows] = useState(data?.products || []);
-  const totalProducts = data?.total || 0;
+  const [rows, setRows] = useState(data?.menus || []);
+  const totalMenus = data?.total || 0;
 
   useEffect(() => {
-    if (isSuccess) setRows(data?.products || []);
+    if (isSuccess) setRows(data?.menus || []);
   }, [isSuccess, data]);
 
   const handleChangePage = async (event, newPage) => {
@@ -122,41 +119,41 @@ const Products = () => {
     }
   };
 
-  const handleEdit = (productId) => {
-    navigate(`${productId}/edit`);
+  const handleEdit = (menuId) => {
+    navigate(`${menuId}/edit`);
   };
 
-  const handleDelete = (productId) => {
+  const handleDelete = (menuId) => {
     setShowDeleteModal(true);
-    setDeleteProductId(productId);
+    setDeleteMenuId(menuId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await productDeleteApi(deleteProductId).unwrap();
-      enqueueSnackbar("Product deleted successfully.", {
+      await menuDeleteApi(deleteMenuId).unwrap();
+      enqueueSnackbar("Menu deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((product) => product.id !== deleteProductId)
+        prevRows.filter((menu) => menu.id !== deleteMenuId)
       );
 
       setShowDeleteModal(false);
-      setDeleteProductId(null);
+      setDeleteMenuId(null);
     } catch (err) {
-      setDeleteProductId(null);
+      setDeleteMenuId(null);
       setShowDeleteModal(false);
     }
   };
 
   const handleImport = async (importData) => {
     try {
-      await importProduct(importData).unwrap();
+      await importMenu(importData).unwrap();
       setPage(1);
       refetch();
 
-      enqueueSnackbar("Product Item imported successfully.", {
+      enqueueSnackbar("Menu Item imported successfully.", {
         variant: "success",
       });
 
@@ -171,26 +168,26 @@ const Products = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Products</Typography>
+            <Typography variant="h5">List of Menus</Typography>
           </Grid>
           <Grid item>
-            <PermissionGuard permission="import_product">
+            <PermissionGuard permission="import_menu">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => setShowImportModal(true)}
                 style={{ marginRight: "10px" }}
               >
-                <ImportExportOutlined /> Import Product
+                <ImportExportOutlined /> Import Menu
               </Button>
             </PermissionGuard>
-            <PermissionGuard permission="add_product">
+            <PermissionGuard permission="add_menu">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("create")}
               >
-                <AddOutlined /> Add Product
+                <AddOutlined /> Add Menu
               </Button>
             </PermissionGuard>
           </Grid>
@@ -198,7 +195,7 @@ const Products = () => {
         <MainCard sx={{ mt: 2 }} content={false}>
           <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
             <TextField
-              label="Search by name"
+              label="Search by item"
               variant="outlined"
               size="small"
               value={searchQuery}
@@ -222,12 +219,9 @@ const Products = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>UoM</TableCell>
-                    <TableCell>Category</TableCell>
-                    <TableCell>Qty in Stoke</TableCell>
-                    <TableCell>Safety Stock Level</TableCell>
-                    <TableCell>Notes</TableCell>
+                    <TableCell>Item</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Description</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
@@ -242,7 +236,7 @@ const Products = () => {
                     </TableRow>
                   )}
                   {rows.map((row, index) => (
-                    <ProductTableRow
+                    <MenuTableRow
                       key={row.id}
                       index={index}
                       row={row}
@@ -256,7 +250,7 @@ const Products = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 20, 50, 100]}
               component="div"
-              count={totalProducts}
+              count={totalMenus}
               rowsPerPage={limit}
               page={page - 1}
               onPageChange={handleChangePage}
@@ -270,7 +264,7 @@ const Products = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this product?"
+        dialogContent="Are you sure you want to delete this menu?"
       />
 
       <ImportDialog
@@ -279,7 +273,7 @@ const Products = () => {
           setShowImportModal(false);
         }}
         onImport={handleImport}
-        dialogContent="Import Products"
+        dialogContent="Import Menus"
       />
     </>
   );
@@ -291,11 +285,11 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
 };
 
-ProductTableRow.propTypes = {
+MenuTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 };
 
-export default Products;
+export default Menus;
