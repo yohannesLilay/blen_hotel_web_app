@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
+  Autocomplete,
   Box,
   Button,
   Grid,
+  FormControl,
   IconButton,
   Paper,
   Stack,
@@ -27,18 +29,17 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useCreateStoreRequisitionMutation,
-  useGetStoreRequisitionTemplateQuery,
-} from "src/store/slices/sales/storeRequisitionApiSlice";
+  useCreateCaptainOrderMutation,
+  useGetCaptainOrderTemplateQuery,
+} from "src/store/slices/sales/captainOrderApiSlice";
 import MainCard from "src/components/MainCard";
 import AddItemModal from "./AddItemModal";
 
-const CreateStoreRequisition = () => {
+const CreateCaptainOrder = () => {
   const navigate = useNavigate();
 
-  const { data: getTemplate } = useGetStoreRequisitionTemplateQuery();
-  const [createStoreRequisition, { isLoading }] =
-    useCreateStoreRequisitionMutation();
+  const { data: getTemplate } = useGetCaptainOrderTemplateQuery();
+  const [createCaptainOrder, { isLoading }] = useCreateCaptainOrderMutation();
 
   const [rows, setRows] = useState([]);
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -46,8 +47,7 @@ const CreateStoreRequisition = () => {
 
   const handleAddItem = (itemData) => {
     const existingIndex = rows.findIndex(
-      (row, index) =>
-        index !== currentItem && row.product_id === itemData.product_id
+      (row, index) => index !== currentItem && row.menu_id === itemData.menu_id
     );
 
     if (existingIndex === -1) {
@@ -84,7 +84,7 @@ const CreateStoreRequisition = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Create Store Requisition
+            Create Captain Order
           </Typography>
         </Grid>
         <Grid item />
@@ -94,38 +94,47 @@ const CreateStoreRequisition = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              store_requisition_date: dayjs(),
-              store_requisition_number: "",
+              captain_order_date: dayjs(),
+              captain_order_number: "",
+              waiter: null,
+              facility_type: null,
               items: [],
             }}
             validationSchema={Yup.object().shape({
-              store_requisition_date: Yup.date()
-                .required("Store Requisition Date is required")
-                .max(
-                  new Date(),
-                  "Store Requisition Date cannot be in the future"
-                ),
-              store_requisition_number: Yup.string().required(
-                "Store Requisition Number is required"
+              captain_order_date: Yup.date()
+                .required("Captain Order Date is required")
+                .max(new Date(), "Captain Order Date cannot be in the future"),
+              captain_order_number: Yup.string().required(
+                "Captain Order Number is required"
               ),
+              waiter: Yup.object()
+                .shape({
+                  id: Yup.number().required("Waiter is required"),
+                })
+                .required("Waiter is required"),
+              facility_type: Yup.object()
+                .shape({
+                  id: Yup.number().required("Facility is required"),
+                })
+                .required("Facility is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
                 if (rows.length === 0) {
                   enqueueSnackbar(
-                    "Please add at least one item to the store requisition.",
+                    "Please add at least one item to the captain order.",
                     { variant: "error" }
                   );
                 } else {
-                  await createStoreRequisition({
-                    store_requisition_date: new Date(
-                      values.store_requisition_date
-                    ),
-                    store_requisition_number: values.store_requisition_number,
+                  await createCaptainOrder({
+                    captain_order_date: new Date(values.captain_order_date),
+                    captain_order_number: values.captain_order_number,
+                    waiter: values.waiter?.id,
+                    facility_type_id: values.facility_type?.id,
                     items: rows,
                   }).unwrap();
                   navigate(-1);
-                  enqueueSnackbar("Store Requisition created successfully.", {
+                  enqueueSnackbar("Captain Order created successfully.", {
                     variant: "success",
                   });
 
@@ -153,48 +162,48 @@ const CreateStoreRequisition = () => {
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                          label="Store Requisition Date"
+                          label="Captain Order Date"
                           variant="outlined"
                           format="DD-MM-YYYY"
                           maxDate={dayjs()}
                           disableFuture
-                          value={values.store_requisition_date}
-                          name="store_requisition_date"
-                          id="store_requisition_date"
+                          value={values.captain_order_date}
+                          name="captain_order_date"
+                          id="captain_order_date"
                           onBlur={handleBlur}
                           onChange={(date) => {
                             handleChange({
                               target: {
-                                name: "store_requisition_date",
+                                name: "captain_order_date",
                                 value: date,
                               },
                             });
                           }}
                           error={Boolean(
-                            touched.store_requisition_date &&
-                              errors.store_requisition_date
+                            touched.captain_order_date &&
+                              errors.captain_order_date
                           )}
                           textField={(props) => (
                             <TextField
                               {...props}
                               error={Boolean(
-                                touched.store_requisition_date &&
-                                  errors.store_requisition_date
+                                touched.captain_order_date &&
+                                  errors.captain_order_date
                               )}
                               helperText={
-                                touched.store_requisition_date &&
-                                errors.store_requisition_date
+                                touched.captain_order_date &&
+                                errors.captain_order_date
                               }
-                              label="Store Requisition Date"
+                              label="Captain Order Date"
                               fullWidth
                             />
                           )}
                         />
                       </LocalizationProvider>
-                      {touched.store_requisition_date &&
-                        errors.store_requisition_date && (
+                      {touched.captain_order_date &&
+                        errors.captain_order_date && (
                           <Typography variant="body2" color="error">
-                            {errors.store_requisition_date}
+                            {errors.captain_order_date}
                           </Typography>
                         )}
                     </Stack>
@@ -204,22 +213,99 @@ const CreateStoreRequisition = () => {
                       <TextField
                         fullWidth
                         variant="outlined"
-                        name="store_requisition_number"
-                        value={values.store_requisition_number}
+                        name="captain_order_number"
+                        value={values.captain_order_number}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Store Requisition Number"
+                        label="Captain Order Number"
                         error={Boolean(
-                          touched.store_requisition_number &&
-                            errors.store_requisition_number
+                          touched.captain_order_number &&
+                            errors.captain_order_number
                         )}
                       />
-                      {touched.store_requisition_number &&
-                        errors.store_requisition_number && (
+                      {touched.captain_order_number &&
+                        errors.captain_order_number && (
                           <Typography variant="body2" color="error">
-                            {errors.store_requisition_number}
+                            {errors.captain_order_number}
                           </Typography>
                         )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.waiter && errors.waiter)}
+                      >
+                        <Autocomplete
+                          disablePortal
+                          id="waiter"
+                          options={getTemplate?.waiterStaffOptions || []}
+                          value={values.waiter || null}
+                          onChange={(event, newValue) => {
+                            handleChange({
+                              target: { name: "waiter", value: newValue },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Waiter"
+                              variant="outlined"
+                              error={Boolean(touched.waiter && errors.waiter)}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.waiter && errors.waiter && (
+                        <Typography variant="body2" color="error">
+                          {errors.waiter}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(
+                          touched.facility_type && errors.facility_type
+                        )}
+                      >
+                        <Autocomplete
+                          disablePortal
+                          id="facility_type"
+                          options={getTemplate?.facilityTypeOptions || []}
+                          value={values.facility_type || null}
+                          onChange={(event, newValue) => {
+                            handleChange({
+                              target: {
+                                name: "facility_type",
+                                value: newValue,
+                              },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Facility"
+                              variant="outlined"
+                              error={Boolean(
+                                touched.facility_type && errors.facility_type
+                              )}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.facility_type && errors.facility_type && (
+                        <Typography variant="body2" color="error">
+                          {errors.facility_type}
+                        </Typography>
+                      )}
                     </Stack>
                   </Grid>
                   <Grid
@@ -258,9 +344,8 @@ const CreateStoreRequisition = () => {
                             <TableHead>
                               <TableRow>
                                 <TableCell>Index</TableCell>
-                                <TableCell>Product</TableCell>
+                                <TableCell>Menu</TableCell>
                                 <TableCell>Quantity</TableCell>
-                                <TableCell>Remark</TableCell>
                                 <TableCell align="right">Action</TableCell>
                               </TableRow>
                             </TableHead>
@@ -287,12 +372,11 @@ const CreateStoreRequisition = () => {
                                     {index + 1}
                                   </TableCell>
                                   <TableCell>
-                                    {getTemplate.productOptions.find(
-                                      (product) => product.id === row.product_id
-                                    )?.name || ""}
+                                    {getTemplate.menuOptions.find(
+                                      (menu) => menu.id === row.menu_id
+                                    )?.item || ""}
                                   </TableCell>
                                   <TableCell>{row.quantity}</TableCell>
-                                  <TableCell>{row.remark}</TableCell>
                                   <TableCell align="right">
                                     <Tooltip title="Edit Item">
                                       <IconButton
@@ -376,4 +460,4 @@ const CreateStoreRequisition = () => {
   );
 };
 
-export default CreateStoreRequisition;
+export default CreateCaptainOrder;

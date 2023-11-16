@@ -23,32 +23,32 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import AddItemModal from "./AddItemModal";
 import {
-  useDeleteStoreRequisitionItemMutation,
-  useCreateStoreRequisitionItemMutation,
-  useGetStoreRequisitionTemplateQuery,
-} from "src/store/slices/sales/storeRequisitionApiSlice";
+  useDeleteCaptainOrderItemMutation,
+  useCreateCaptainOrderItemMutation,
+  useGetCaptainOrderTemplateQuery,
+} from "src/store/slices/sales/captainOrderApiSlice";
 
-const StoreRequisitionItemsModal = ({
+const CaptainOrderItemsModal = ({
   isOpen,
   onModalClose,
-  storeRequisitionItems,
-  storeRequisitionId,
-  storeRequisitionStatus,
+  captainOrderItems,
+  captainOrderId,
+  captainOrderStatus,
 }) => {
-  const { data: getTemplate } = useGetStoreRequisitionTemplateQuery();
-  const [storeRequisitionDeleteApi] = useDeleteStoreRequisitionItemMutation();
-  const [storeRequisitionCreateApi] = useCreateStoreRequisitionItemMutation();
+  const { data: getTemplate } = useGetCaptainOrderTemplateQuery();
+  const [captainOrderDeleteApi] = useDeleteCaptainOrderItemMutation();
+  const [captainOrderCreateApi] = useCreateCaptainOrderItemMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteStoreRequisitionItemId, setDeleteStoreRequisitionItemId] =
+  const [deleteCaptainOrderItemId, setDeleteCaptainOrderItemId] =
     useState(null);
-  const [rows, setRows] = useState(storeRequisitionItems || []);
+  const [rows, setRows] = useState(captainOrderItems || []);
 
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
 
   useEffect(() => {
-    setRows(storeRequisitionItems || []);
-  }, [storeRequisitionItems]);
+    setRows(captainOrderItems || []);
+  }, [captainOrderItems]);
 
   const handleAddItemClick = () => {
     setIsAddItemModalOpen(true);
@@ -56,11 +56,11 @@ const StoreRequisitionItemsModal = ({
 
   const handleAddItem = async (itemData) => {
     try {
-      const item = await storeRequisitionCreateApi({
+      const item = await captainOrderCreateApi({
         ...itemData,
-        id: storeRequisitionId,
+        id: captainOrderId,
       }).unwrap();
-      enqueueSnackbar("Store Requisition item added successfully.", {
+      enqueueSnackbar("Captain Order item added successfully.", {
         variant: "success",
       });
 
@@ -71,29 +71,29 @@ const StoreRequisitionItemsModal = ({
     }
   };
 
-  const handleDelete = (storeRequisition_id) => {
+  const handleDelete = (captainOrder_id) => {
     setShowDeleteModal(true);
-    setDeleteStoreRequisitionItemId(storeRequisition_id);
+    setDeleteCaptainOrderItemId(captainOrder_id);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await storeRequisitionDeleteApi({
-        id: storeRequisitionId,
-        item_id: deleteStoreRequisitionItemId,
+      await captainOrderDeleteApi({
+        id: captainOrderId,
+        item_id: deleteCaptainOrderItemId,
       }).unwrap();
-      enqueueSnackbar("Store Requisition item deleted successfully.", {
+      enqueueSnackbar("Captain Order item deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter((item) => item.id !== deleteStoreRequisitionItemId)
+        prevRows.filter((item) => item.id !== deleteCaptainOrderItemId)
       );
 
       setShowDeleteModal(false);
-      setDeleteStoreRequisitionItemId(null);
+      setDeleteCaptainOrderItemId(null);
     } catch (err) {
-      setDeleteStoreRequisitionItemId(null);
+      setDeleteCaptainOrderItemId(null);
       setShowDeleteModal(false);
     }
   };
@@ -119,12 +119,12 @@ const StoreRequisitionItemsModal = ({
             <Grid container alignItems="center" justifyContent="space-between">
               <Grid item>
                 <Typography variant="h5">
-                  List of Store Requisition Items
+                  List of Captain Order Items
                 </Typography>
               </Grid>
               <Grid item>
-                {storeRequisitionStatus === "Requested" && (
-                  <PermissionGuard permission="add_store_requisition">
+                {captainOrderStatus === "Created" && (
+                  <PermissionGuard permission="add_captain_order">
                     <Button
                       variant="contained"
                       color="primary"
@@ -143,13 +143,11 @@ const StoreRequisitionItemsModal = ({
                     <TableHead>
                       <TableRow>
                         <TableCell>Index</TableCell>
-                        <TableCell>Product Name</TableCell>
-                        <TableCell>UoM</TableCell>
+                        <TableCell>Menu Item</TableCell>
                         <TableCell>Quantity</TableCell>
-                        <TableCell>Remark</TableCell>
                         <TableCell align="right">
-                          <PermissionGuard permission="add_store_requisition">
-                            {storeRequisitionStatus === "Requested" && "Action"}
+                          <PermissionGuard permission="add_captain_order">
+                            {captainOrderStatus === "Created" && "Action"}
                           </PermissionGuard>
                         </TableCell>
                       </TableRow>
@@ -165,14 +163,12 @@ const StoreRequisitionItemsModal = ({
                           }}
                         >
                           <TableCell align="left">{index + 1}</TableCell>
-                          <TableCell>{row.product?.name}</TableCell>
-                          <TableCell>{row.product?.unit_of_measure}</TableCell>
+                          <TableCell>{row.menu?.item}</TableCell>
                           <TableCell>{row.quantity}</TableCell>
-                          <TableCell>{row.remark}</TableCell>
                           <TableCell align="right">
-                            {storeRequisitionStatus === "Requested" && (
-                              <PermissionGuard permission="add_store_requisition">
-                                <Tooltip title="Delete Store Requisition Item">
+                            {captainOrderStatus === "Created" && (
+                              <PermissionGuard permission="add_captain_order">
+                                <Tooltip title="Delete Captain Order Item">
                                   <IconButton
                                     color="error"
                                     size="small"
@@ -197,7 +193,7 @@ const StoreRequisitionItemsModal = ({
             open={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
             onDelete={handleDeleteConfirmed}
-            dialogContent="Are you sure you want to delete this store requisition item?"
+            dialogContent="Are you sure you want to delete this captain order item?"
           />
 
           <AddItemModal
@@ -215,12 +211,12 @@ const StoreRequisitionItemsModal = ({
   );
 };
 
-StoreRequisitionItemsModal.propTypes = {
+CaptainOrderItemsModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onModalClose: PropTypes.func.isRequired,
-  storeRequisitionItems: PropTypes.array.isRequired,
-  storeRequisitionId: PropTypes.number,
-  storeRequisitionStatus: PropTypes.string,
+  captainOrderItems: PropTypes.array.isRequired,
+  captainOrderId: PropTypes.number,
+  captainOrderStatus: PropTypes.string,
 };
 
-export default StoreRequisitionItemsModal;
+export default CaptainOrderItemsModal;

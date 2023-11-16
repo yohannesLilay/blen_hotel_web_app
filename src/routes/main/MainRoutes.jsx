@@ -26,6 +26,7 @@ import StaffRoutes from "./configurations/StaffRoutes";
 import OrderRoutes from "./purchases/OrderRoutes";
 import ReceivableRoutes from "./purchases/ReceivableRoutes";
 import StoreRequisitionRoutes from "./sales/StoreRequisitionRoutes";
+import CaptainOrderRoutes from "./sales/CaptainOrderRoutes";
 
 const MainRoutes = {
   path: "/",
@@ -50,6 +51,7 @@ const MainRoutes = {
     { path: "purchases/orders", children: [...OrderRoutes] },
     { path: "purchases/receivables", children: [...ReceivableRoutes] },
     { path: "sales/store-requisitions", children: [...StoreRequisitionRoutes] },
+    { path: "sales/captain-orders", children: [...CaptainOrderRoutes] },
   ],
 };
 
