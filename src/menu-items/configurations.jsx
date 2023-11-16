@@ -3,6 +3,7 @@ import {
   AccountTreeOutlined,
   TimelineOutlined,
   RestaurantMenuOutlined,
+  AccountCircleOutlined,
 } from "@mui/icons-material";
 
 const configurations = {
@@ -14,6 +15,7 @@ const configurations = {
     "view_facility_type",
     "view_work_flow",
     "view_menu",
+    "view_staff",
   ],
   children: [
     {
@@ -47,6 +49,14 @@ const configurations = {
       url: "/menus",
       permission: "view_menu",
       icon: RestaurantMenuOutlined,
+    },
+    {
+      id: "staff",
+      title: "Staff",
+      type: "item",
+      url: "/staffs",
+      permission: "view_staff",
+      icon: AccountCircleOutlined,
     },
   ],
 };
