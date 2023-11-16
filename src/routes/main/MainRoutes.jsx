@@ -21,6 +21,8 @@ import ProductRoutes from "./product-management/ProductRoutes";
 import SupplierRoutes from "./configurations/SupplierRoutes";
 import FacilityTypeRoutes from "./configurations/FacilityTypeRoutes";
 import WorkFlowRoutes from "./configurations/WorkFlowRoutes";
+import MenuRoutes from "./configurations/MenuRoutes";
+import StaffRoutes from "./configurations/StaffRoutes";
 import OrderRoutes from "./purchases/OrderRoutes";
 import ReceivableRoutes from "./purchases/ReceivableRoutes";
 import StoreRequisitionRoutes from "./sales/StoreRequisitionRoutes";
@@ -43,6 +45,8 @@ const MainRoutes = {
     { path: "suppliers", children: [...SupplierRoutes] },
     { path: "work-flows", children: [...WorkFlowRoutes] },
     { path: "facility-types", children: [...FacilityTypeRoutes] },
+    { path: "menus", children: [...MenuRoutes] },
+    { path: "staffs", children: [...StaffRoutes] },
     { path: "purchases/orders", children: [...OrderRoutes] },
     { path: "purchases/receivables", children: [...ReceivableRoutes] },
     { path: "sales/store-requisitions", children: [...StoreRequisitionRoutes] },

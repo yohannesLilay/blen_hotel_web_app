@@ -1,10 +1,8 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
-  Autocomplete,
   Box,
   Button,
-  Checkbox,
   FormControl,
   Grid,
   IconButton,
@@ -20,26 +18,23 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 
 import {
-  useUpdateUserMutation,
-  useGetUserQuery,
-  useGetUsersTemplateQuery,
-} from "src/store/slices/security/userApiSlice";
+  useCreateStaffMutation,
+  useGetStaffTemplateQuery,
+} from "src/store/slices/configurations/staffApiSlice";
 import MainCard from "src/components/MainCard";
 
-const EditUser = () => {
+const CreateStaff = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
 
-  const { data: getTemplate } = useGetUsersTemplateQuery();
-  const { data: getUser } = useGetUserQuery(id);
-  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const { data: getTemplate } = useGetStaffTemplateQuery();
+  const [createStaff, { isLoading }] = useCreateStaffMutation();
 
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h5" gutterBottom>
-            Edit User
+            Add Staff
           </Typography>
         </Grid>
         <Grid item />
@@ -49,24 +44,12 @@ const EditUser = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              name: getUser?.name || "",
-              email: getUser?.email || "",
-              gender: getTemplate?.genderOptions[getUser?.gender]
-                ? getUser?.gender
-                : "",
-              phone_number: (getUser?.phone_number || "").replace(/^\+251/, ""),
-              roles: (getUser?.roles || []).map(
-                (role) =>
-                  getTemplate?.roleOptions.find(
-                    (option) => option.name == role.name
-                  ) || {}
-              ),
+              name: "",
+              phone_number: "",
+              staff_type: "",
             }}
             validationSchema={Yup.object().shape({
-              name: Yup.string().required("Full Name is required"),
-              email: Yup.string()
-                .email("Must be a valid email")
-                .required("Email is required"),
+              name: Yup.string().required("Name is required"),
               phone_number: Yup.string()
                 .required("Phone Number is required")
                 .test(
@@ -80,26 +63,27 @@ const EditUser = () => {
                     );
                   }
                 ),
-              gender: Yup.string().required("Gender is required"),
-              roles: Yup.array()
-                .required("Roles are required")
-                .min(1, "At least one role is required"),
+              staff_type: Yup.string().required("Staff Type is required"),
             })}
-            onSubmit={async (values) => {
-              await updateUser({
-                id: parseInt(id),
-                name: values.name,
-                email: values.email,
-                gender: values.gender,
-                phone_number: "+251" + values.phone_number,
-                roles: values.roles.map((role) => role.id),
-              }).unwrap();
-              navigate(-1);
-              enqueueSnackbar("User updated successfully.", {
-                variant: "success",
-              });
+            onSubmit={async (values, { setStatus, setSubmitting }) => {
+              try {
+                await createStaff({
+                  name: values.name,
+                  phone_number: "+251" + values.phone_number,
+                  staff_type: values.staff_type,
+                }).unwrap();
+                navigate(-1);
+                enqueueSnackbar("Staff created successfully.", {
+                  variant: "success",
+                });
+
+                setStatus({ success: false });
+                setSubmitting(false);
+              } catch (err) {
+                setStatus({ success: false });
+                setSubmitting(false);
+              }
             }}
-            enableReinitialize
           >
             {({
               errors,
@@ -121,32 +105,12 @@ const EditUser = () => {
                         value={values.name}
                         onBlur={handleBlur}
                         onChange={handleChange}
-                        label="Full Name"
+                        label="Name"
                         error={Boolean(touched.name && errors.name)}
                       />
                       {touched.name && errors.name && (
                         <Typography variant="body2" color="error">
                           {errors.name}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        type="email"
-                        name="email"
-                        value={values.email}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Email Address"
-                        error={Boolean(touched.email && errors.email)}
-                      />
-                      {touched.email && errors.email && (
-                        <Typography variant="body2" color="error">
-                          {errors.email}
                         </Typography>
                       )}
                     </Stack>
@@ -177,26 +141,30 @@ const EditUser = () => {
                       <FormControl
                         fullWidth
                         variant="outlined"
-                        error={Boolean(touched.gender && errors.gender)}
+                        error={Boolean(touched.staff_type && errors.staff_type)}
                       >
-                        <InputLabel id="gender-label">Gender</InputLabel>
+                        <InputLabel id="staff-type-label">
+                          Staff Type
+                        </InputLabel>
                         <Select
-                          labelId="gender-label"
-                          id="gender"
+                          labelId="staff-type-label"
+                          id="staff_type"
                           variant="outlined"
-                          name="gender"
-                          value={values.gender || ""}
+                          name="staff_type"
+                          value={values.staff_type || ""}
                           onBlur={handleBlur}
                           onChange={handleChange}
-                          label="Gender"
-                          error={Boolean(touched.gender && errors.gender)}
+                          label="Staff Type"
+                          error={Boolean(
+                            touched.staff_type && errors.staff_type
+                          )}
                           endAdornment={
-                            values.gender && (
+                            values.staff_type && (
                               <IconButton
                                 size="small"
                                 onClick={() =>
                                   handleChange({
-                                    target: { name: "gender", value: "" },
+                                    target: { name: "staff_type", value: "" },
                                   })
                                 }
                               >
@@ -206,67 +174,21 @@ const EditUser = () => {
                           }
                         >
                           <MenuItem value="" disabled>
-                            Select a gender
+                            Select a staff type
                           </MenuItem>
-                          {getTemplate?.genderOptions &&
-                            Object.keys(getTemplate.genderOptions).map(
+                          {getTemplate?.staffTypeOptions &&
+                            Object.keys(getTemplate.staffTypeOptions).map(
                               (key) => (
                                 <MenuItem key={key} value={key}>
-                                  {getTemplate.genderOptions[key]}
+                                  {getTemplate.staffTypeOptions[key]}
                                 </MenuItem>
                               )
                             )}
                         </Select>
                       </FormControl>
-                      {touched.gender && errors.gender && (
+                      {touched.staff_type && errors.staff_type && (
                         <Typography variant="body2" color="error">
-                          {errors.gender}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Stack spacing={1}>
-                      <FormControl
-                        fullWidth
-                        variant="outlined"
-                        error={Boolean(touched.roles && errors.roles)}
-                      >
-                        <Autocomplete
-                          multiple
-                          limitTags={2}
-                          disableCloseOnSelect
-                          id="roles"
-                          options={getTemplate?.roleOptions || []}
-                          value={values.roles}
-                          onChange={(event, newValue) => {
-                            handleChange({
-                              target: { name: "roles", value: newValue },
-                            });
-                          }}
-                          getOptionLabel={(option) => option.name}
-                          renderOption={(props, option, state) => (
-                            <li {...props}>
-                              <Checkbox
-                                checked={state.selected}
-                                onChange={() => {}}
-                              />
-                              {option.name}
-                            </li>
-                          )}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="Roles"
-                              variant="outlined"
-                              error={Boolean(touched.roles && errors.roles)}
-                            />
-                          )}
-                        />
-                      </FormControl>
-                      {touched.roles && errors.roles && (
-                        <Typography variant="body2" color="error">
-                          {errors.roles}
+                          {errors.staff_type}
                         </Typography>
                       )}
                     </Stack>
@@ -312,4 +234,4 @@ const EditUser = () => {
   );
 };
 
-export default EditUser;
+export default CreateStaff;
