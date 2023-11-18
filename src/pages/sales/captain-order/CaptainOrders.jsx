@@ -23,8 +23,8 @@ import {
   AddOutlined,
   EditOutlined,
   DeleteOutlined,
-  FactCheckOutlined,
   VisibilityOutlined,
+  PrintOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -33,8 +33,10 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import CaptainOrderItemsModal from "./ItemsModal";
+import AdvancedSearchModal from "./AdvancedSearchModal";
 import {
   useGetCaptainOrdersQuery,
+  useGetCaptainOrderTemplateQuery,
   usePrintCaptainOrderMutation,
   useDeleteCaptainOrderMutation,
 } from "src/store/slices/sales/captainOrderApiSlice";
@@ -56,16 +58,15 @@ const ActionButtons = ({
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
-      {status === "Created" ||
-        (status === "Printed" && (
-          <PermissionGuard permission="print_captain_order">
-            <Tooltip title="Print Captain Order">
-              <IconButton color="primary" size="small" onClick={onPrint}>
-                <FactCheckOutlined />
-              </IconButton>
-            </Tooltip>
-          </PermissionGuard>
-        ))}
+      {(status === "Created" || status === "Printed") && (
+        <PermissionGuard permission="print_captain_order">
+          <Tooltip title="Print Captain Order">
+            <IconButton color="primary" size="small" onClick={onPrint}>
+              <PrintOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
+      )}
       {status === "Created" && createdBy === currentUser.userId && (
         <PermissionGuard permission="change_captain_order">
           <Tooltip title="Edit Captain Order">
@@ -136,6 +137,7 @@ const CaptainOrders = () => {
     limit,
     search: searchQuery,
   });
+  const { data: getTemplate } = useGetCaptainOrderTemplateQuery();
   const [captainOrderDeleteApi] = useDeleteCaptainOrderMutation();
   const [approveCaptainOrderApi] = usePrintCaptainOrderMutation();
 
@@ -146,6 +148,7 @@ const CaptainOrders = () => {
   const [detailCaptainOrder, setDetailCaptainOrder] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [changeStatusId, setPrintId] = useState(null);
+  const [advancedSearchModalOpen, setAdvancedSearchModalOpen] = useState(false);
 
   const [rows, setRows] = useState(data?.captainOrders || []);
   const totalCaptainOrders = data?.total || 0;
@@ -164,6 +167,10 @@ const CaptainOrders = () => {
     setLimit(newLimit);
     setPage(1);
     refetch({ page: 1, limit: newLimit });
+  };
+
+  const handleAdvancedSearch = () => {
+    setAdvancedSearchModalOpen(true);
   };
 
   const handleSearch = () => {
@@ -260,23 +267,34 @@ const CaptainOrders = () => {
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
-            <TextField
-              label="Search by captain order number"
-              variant="outlined"
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-              sx={{
-                width: "100%",
-                "@media (min-width: 960px)": { width: "40%" },
-              }}
-            />
+          <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
+              <TextField
+                label="Search by captain order number"
+                variant="outlined"
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+                sx={{
+                  width: "100%",
+                  "@media (min-width: 960px)": { width: "60%" },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ p: 1, pt: 2, textAlign: "right" }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleAdvancedSearch} // Open advanced search modal
+              >
+                Advanced Search
+              </Button>
+            </Grid>
           </Grid>
 
           <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
@@ -287,7 +305,7 @@ const CaptainOrders = () => {
                     <TableCell>Index</TableCell>
                     <TableCell>Captain Order Number</TableCell>
                     <TableCell>Captain Order Date</TableCell>
-                    <TableCell>created By</TableCell>
+                    <TableCell>Created By</TableCell>
                     <TableCell>Waiter</TableCell>
                     <TableCell>Facility</TableCell>
                     <TableCell>Status</TableCell>
@@ -356,6 +374,17 @@ const CaptainOrders = () => {
         captainOrderItems={detailItems}
         captainOrderId={detailCaptainOrder?.captainOrderId}
         captainOrderStatus={detailCaptainOrder?.captainOrderStatus || null}
+      />
+
+      <AdvancedSearchModal
+        isOpen={advancedSearchModalOpen}
+        onClose={() => setAdvancedSearchModalOpen(false)}
+        onSearch={(searchQuery) => {
+          setSearchQuery(searchQuery);
+          handleSearch();
+        }}
+        getTemplate={getTemplate ? getTemplate : {}}
+        searchQuery={searchQuery}
       />
     </>
   );

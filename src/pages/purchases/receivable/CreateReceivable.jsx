@@ -167,7 +167,7 @@ const CreateReceivable = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -212,7 +212,7 @@ const CreateReceivable = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -234,7 +234,7 @@ const CreateReceivable = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -292,7 +292,7 @@ const CreateReceivable = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth

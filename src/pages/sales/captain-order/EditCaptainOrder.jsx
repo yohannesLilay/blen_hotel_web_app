@@ -103,7 +103,7 @@ const EditCaptainOrder = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -153,7 +153,7 @@ const EditCaptainOrder = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -176,7 +176,7 @@ const EditCaptainOrder = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -211,7 +211,7 @@ const EditCaptainOrder = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth

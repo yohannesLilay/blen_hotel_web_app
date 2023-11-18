@@ -77,7 +77,7 @@ const EditStoreRequisition = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -127,7 +127,7 @@ const EditStoreRequisition = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
