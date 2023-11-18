@@ -188,7 +188,6 @@ AddItemModal.propTypes = {
   currentItem: PropTypes.shape({
     quantity: PropTypes.number.isRequired,
     menu_id: PropTypes.number.isRequired,
-    remark: PropTypes.string.isRequired,
   }),
 };
 
