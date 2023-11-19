@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
   Autocomplete,
@@ -34,23 +34,26 @@ import MainCard from "src/components/MainCard";
 const CreateCashReceipt = () => {
   const navigate = useNavigate();
 
-  const { data: getTemplate } = useGetCashReceiptTemplateQuery();
+  const [filter, setFilter] = useState("");
+
+  const { data: getTemplate } = useGetCashReceiptTemplateQuery({ filter });
   const [createCashReceipt, { isLoading }] = useCreateCashReceiptMutation();
 
   const [rows, setRows] = useState([]);
-  const [captainOrderOptions, setCaptainOrderOptions] = useState([]);
-
-  useEffect(() => {
-    if (getTemplate?.captainOrderOptions) {
-      setCaptainOrderOptions(getTemplate.captainOrderOptions);
-    }
-  }, [getTemplate]);
 
   const calculateTotalPrice = () => {
     return rows.reduce(
       (total, row) => total + row.quantity * row.unit_price,
       0
     );
+  };
+
+  const objectToQueryString = (obj) => {
+    return Object.keys(obj)
+      .map(
+        (key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
+      )
+      .join("&");
   };
 
   return (
@@ -217,10 +220,24 @@ const CreateCashReceipt = () => {
                           id="waiter"
                           options={getTemplate?.waiterStaffOptions || []}
                           value={values.waiter || null}
+                          isOptionEqualToValue={(option, value) =>
+                            option.id === value.id
+                          }
                           onChange={(event, newValue) => {
                             handleChange({
                               target: { name: "waiter", value: newValue },
                             });
+
+                            handleChange({
+                              target: { name: "captain_orders", value: [] },
+                            });
+
+                            setRows([]);
+                            setFilter(
+                              objectToQueryString({
+                                waiter: newValue?.id || null,
+                              })
+                            );
                           }}
                           getOptionLabel={(option) => option.name}
                           renderInput={(params) => (
@@ -231,7 +248,6 @@ const CreateCashReceipt = () => {
                               error={Boolean(touched.waiter && errors.waiter)}
                             />
                           )}
-                          disabled
                         />
                       </FormControl>
                       {touched.waiter && errors.waiter && (
@@ -255,7 +271,7 @@ const CreateCashReceipt = () => {
                           limitTags={3}
                           disablePortal
                           id="captain_orders"
-                          options={captainOrderOptions || []}
+                          options={getTemplate?.captainOrderOptions || []}
                           value={values.captain_orders || []}
                           onChange={(event, newValue) => {
                             handleChange({
@@ -266,16 +282,7 @@ const CreateCashReceipt = () => {
                             });
 
                             if (!newValue || newValue.length === 0) {
-                              setCaptainOrderOptions(
-                                getTemplate?.captainOrderOptions
-                              );
                               setRows([]);
-                              handleChange({
-                                target: {
-                                  name: "waiter",
-                                  value: null,
-                                },
-                              });
                             } else if (
                               newValue.length <
                               (values.captain_orders || []).length
@@ -333,31 +340,6 @@ const CreateCashReceipt = () => {
                               const updatedRows = [...rows];
                               const lastSelectedCaptainOrder =
                                 newValue[newValue.length - 1];
-
-                              if (newValue.length === 1 && !values.waiter) {
-                                // Filter captainOrderOptions based on the selected waiter
-                                const filteredCaptainOrderOptions =
-                                  captainOrderOptions.filter(
-                                    (captainOrder) =>
-                                      captainOrder.waiter.id ===
-                                      lastSelectedCaptainOrder.waiter.id
-                                  ) || [];
-
-                                setCaptainOrderOptions(
-                                  filteredCaptainOrderOptions
-                                );
-
-                                handleChange({
-                                  target: {
-                                    name: "waiter",
-                                    value: getTemplate?.waiterStaffOptions.find(
-                                      (waiter) =>
-                                        waiter.id ===
-                                        lastSelectedCaptainOrder.waiter.id
-                                    ),
-                                  },
-                                });
-                              }
 
                               if (lastSelectedCaptainOrder) {
                                 const items = lastSelectedCaptainOrder.items;
