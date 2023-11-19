@@ -130,12 +130,13 @@ const CaptainOrders = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { data, isSuccess, refetch } = useGetCaptainOrdersQuery({
     page,
     limit,
-    search: searchQuery,
+    search,
   });
   const { data: getTemplate } = useGetCaptainOrderTemplateQuery();
   const [captainOrderDeleteApi] = useDeleteCaptainOrderMutation();
@@ -169,16 +170,38 @@ const CaptainOrders = () => {
     refetch({ page: 1, limit: newLimit });
   };
 
-  const handleAdvancedSearch = () => {
-    setAdvancedSearchModalOpen(true);
+  const objectToQueryString = async (obj) => {
+    return Object.keys(obj)
+      .map(
+        (key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
+      )
+      .join("&");
   };
 
-  const handleSearch = () => {
-    if (searchQuery.length > 2) {
-      setPage(1);
+  const handleSearch = async () => {
+    setPage(1);
 
-      refetch({ page, limit, search: searchQuery });
-    }
+    const updatedSearchQuery = {
+      ...searchQuery,
+      captain_order_number: searchQuery.captain_order_number || null,
+    };
+
+    const queryString = await objectToQueryString(updatedSearchQuery);
+    setSearch(queryString);
+  };
+
+  const handleAdvancedSearch = async (advancedSearchQuery) => {
+    setSearchQuery({ captain_order_number: null });
+    const updatedSearchQuery = {
+      captain_order_number: null,
+      ...advancedSearchQuery,
+    };
+
+    setSearchQuery(updatedSearchQuery);
+    setPage(1);
+
+    const queryString = await objectToQueryString(updatedSearchQuery);
+    setSearch(queryString);
   };
 
   const handleEdit = (captainOrderId) => {
@@ -268,13 +291,15 @@ const CaptainOrders = () => {
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
           <Grid container alignItems="center" justifyContent="space-between">
-            <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
+            <Grid item xs={12} sm={6} sx={{ p: 1, pt: 2 }}>
               <TextField
                 label="Search by captain order number"
                 variant="outlined"
                 size="small"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchQuery.captain_order_number || ""}
+                onChange={(e) =>
+                  setSearchQuery({ captain_order_number: e.target.value })
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSearch();
@@ -282,15 +307,15 @@ const CaptainOrders = () => {
                 }}
                 sx={{
                   width: "100%",
-                  "@media (min-width: 960px)": { width: "60%" },
+                  "@media (min-width: 600px)": { width: "60%" },
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6} sx={{ p: 1, pt: 2, textAlign: "right" }}>
+            <Grid item xs={12} sm={6} sx={{ p: 1, pt: 2, textAlign: "right" }}>
               <Button
                 variant="outlined"
                 color="primary"
-                onClick={handleAdvancedSearch} // Open advanced search modal
+                onClick={() => setAdvancedSearchModalOpen(true)}
               >
                 Advanced Search
               </Button>
@@ -379,9 +404,8 @@ const CaptainOrders = () => {
       <AdvancedSearchModal
         isOpen={advancedSearchModalOpen}
         onClose={() => setAdvancedSearchModalOpen(false)}
-        onSearch={(searchQuery) => {
-          setSearchQuery(searchQuery);
-          handleSearch();
+        onSearch={(advancedSearchQuery) => {
+          handleAdvancedSearch(advancedSearchQuery);
         }}
         getTemplate={getTemplate ? getTemplate : {}}
         searchQuery={searchQuery}
