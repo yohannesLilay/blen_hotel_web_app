@@ -10,8 +10,9 @@ export const cashReceiptsApiSlice = apiSlice.injectEndpoints({
       }),
     }),
     getCashReceiptTemplate: builder.query({
-      query: () => ({
-        url: `${CASH_RECEIPT_ENDPOINT}/template`
+      query: ({filter}) => ({
+        url: `${CASH_RECEIPT_ENDPOINT}/template`,
+        params: { filter}
       })
     }),
     createCashReceipt: builder.mutation({
