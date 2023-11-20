@@ -356,7 +356,7 @@ const CreateCashReceipt = () => {
                                       updatedRows.push({
                                         ...item,
                                         menu_id: item.menu.id,
-                                        unit_price: item.menu.price,
+                                        unit_price: parseFloat(item.menu.price),
                                         menu: undefined,
                                       });
                                     } else {

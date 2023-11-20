@@ -32,13 +32,15 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import CashReceiptItemsModal from "./ItemsModal";
+import AdvancedSearchModal from "./AdvancedSearchModal";
 import {
   useGetCashReceiptsQuery,
+  useGetCashReceiptTemplateQuery,
   usePrintCashReceiptMutation,
   useDeleteCashReceiptMutation,
 } from "src/store/slices/sales/cashReceiptApiSlice";
 
-const ActionButtons = ({ onDetail, onDelete, onPrint, status, createdBy }) => {
+const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
   const currentUser = useSelector((state) => state.auth.userInfo);
 
   return (
@@ -48,7 +50,7 @@ const ActionButtons = ({ onDetail, onDelete, onPrint, status, createdBy }) => {
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
-      {(status === "Created" || status === "Printed") && (
+      {(status === "PENDING" || status === "Printed") && (
         <PermissionGuard permission="print_cash_receipt">
           <Tooltip title="Print Cash Receipt">
             <IconButton color="primary" size="small" onClick={onPrint}>
@@ -57,7 +59,7 @@ const ActionButtons = ({ onDetail, onDelete, onPrint, status, createdBy }) => {
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Created" && createdBy === currentUser.userId && (
+      {status === "PENDING" && casher === currentUser.userId && (
         <PermissionGuard permission="delete_cash_receipt">
           <Tooltip title="Delete Cash Receipt">
             <IconButton color="error" size="small" onClick={onDelete}>
@@ -79,9 +81,13 @@ const CashReceiptTableRow = ({ index, row, onDelete, onDetail, onPrint }) => {
       <TableCell align="left">{index + 1}</TableCell>
       <TableCell>{row.cash_receipt_number}</TableCell>
       <TableCell>{dayjs(row.cash_receipt_date).format("DD-MM-YYYY")}</TableCell>
-      <TableCell>{row.created_by?.name}</TableCell>
+      <TableCell>{row.casher?.name}</TableCell>
       <TableCell>{row.waiter?.name}</TableCell>
-      <TableCell>{row.captain_order_numbers.join(", ")}</TableCell>
+      <TableCell>
+        {row.captain_orders
+          .map((order) => order.captain_order_number)
+          .join(", ")}
+      </TableCell>
       <TableCell>{row.status}</TableCell>
       <TableCell align="right">
         <ActionButtons
@@ -89,7 +95,7 @@ const CashReceiptTableRow = ({ index, row, onDelete, onDetail, onPrint }) => {
           onDetail={onDetail}
           onPrint={onPrint}
           status={row.status}
-          createdBy={row.created_by?.id}
+          casher={row.casher?.id}
         />
       </TableCell>
     </TableRow>
@@ -101,12 +107,16 @@ const CashReceipts = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { data, isSuccess, refetch } = useGetCashReceiptsQuery({
     page,
     limit,
-    search: searchQuery,
+    search,
+  });
+  const { data: getTemplate } = useGetCashReceiptTemplateQuery({
+    filter: null,
   });
   const [cashReceiptDeleteApi] = useDeleteCashReceiptMutation();
   const [approveCashReceiptApi] = usePrintCashReceiptMutation();
@@ -117,6 +127,7 @@ const CashReceipts = () => {
   const [detailItems, setDetailItems] = useState([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [changeStatusId, setPrintId] = useState(null);
+  const [advancedSearchModalOpen, setAdvancedSearchModalOpen] = useState(false);
 
   const [rows, setRows] = useState(data?.cashReceipts || []);
   const totalCashReceipts = data?.total || 0;
@@ -137,12 +148,38 @@ const CashReceipts = () => {
     refetch({ page: 1, limit: newLimit });
   };
 
-  const handleSearch = () => {
-    if (searchQuery.length > 2) {
-      setPage(1);
+  const objectToQueryString = async (obj) => {
+    return Object.keys(obj)
+      .map(
+        (key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
+      )
+      .join("&");
+  };
 
-      refetch({ page, limit, search: searchQuery });
-    }
+  const handleSearch = async () => {
+    setPage(1);
+
+    const updatedSearchQuery = {
+      ...searchQuery,
+      cash_receipt_number: searchQuery.cash_receipt_number || null,
+    };
+
+    const queryString = await objectToQueryString(updatedSearchQuery);
+    setSearch(queryString);
+  };
+
+  const handleAdvancedSearch = async (advancedSearchQuery) => {
+    setSearchQuery({ cash_receipt_number: null });
+    const updatedSearchQuery = {
+      cash_receipt_number: null,
+      ...advancedSearchQuery,
+    };
+
+    setSearchQuery(updatedSearchQuery);
+    setPage(1);
+
+    const queryString = await objectToQueryString(updatedSearchQuery);
+    setSearch(queryString);
   };
 
   const handleDetail = (items) => {
@@ -221,23 +258,36 @@ const CashReceipts = () => {
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
-            <TextField
-              label="Search by cash receipt number"
-              variant="outlined"
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearch();
+          <Grid container alignItems="center" justifyContent="space-between">
+            <Grid item xs={12} sm={6} sx={{ p: 1, pt: 2 }}>
+              <TextField
+                label="Search by cash receipt number"
+                variant="outlined"
+                size="small"
+                value={searchQuery.cash_receipt_number || ""}
+                onChange={(e) =>
+                  setSearchQuery({ cash_receipt_number: e.target.value })
                 }
-              }}
-              sx={{
-                width: "100%",
-                "@media (min-width: 960px)": { width: "40%" },
-              }}
-            />
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+                sx={{
+                  width: "100%",
+                  "@media (min-width: 600px)": { width: "60%" },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} sx={{ p: 1, pt: 2, textAlign: "right" }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => setAdvancedSearchModalOpen(true)}
+              >
+                Advanced Search
+              </Button>
+            </Grid>
           </Grid>
 
           <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
@@ -315,6 +365,16 @@ const CashReceipts = () => {
         onModalClose={() => setShowDetailModal(false)}
         cashReceiptItems={detailItems}
       />
+
+      <AdvancedSearchModal
+        isOpen={advancedSearchModalOpen}
+        onClose={() => setAdvancedSearchModalOpen(false)}
+        onSearch={(advancedSearchQuery) => {
+          handleAdvancedSearch(advancedSearchQuery);
+        }}
+        getTemplate={getTemplate ? getTemplate : {}}
+        searchQuery={searchQuery}
+      />
     </>
   );
 };
@@ -325,7 +385,7 @@ ActionButtons.propTypes = {
   onDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
-  createdBy: PropTypes.number.isRequired,
+  casher: PropTypes.number.isRequired,
 };
 
 CashReceiptTableRow.propTypes = {
