@@ -58,7 +58,7 @@ const ActionButtons = ({
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
-      {(status === "Created" || status === "Printed") && (
+      {(status === "PENDING" || status === "Printed") && (
         <PermissionGuard permission="print_captain_order">
           <Tooltip title="Print Captain Order">
             <IconButton color="primary" size="small" onClick={onPrint}>
@@ -67,7 +67,7 @@ const ActionButtons = ({
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Created" && createdBy === currentUser.userId && (
+      {status === "PENDING" && createdBy === currentUser.userId && (
         <PermissionGuard permission="change_captain_order">
           <Tooltip title="Edit Captain Order">
             <IconButton color="primary" size="small" onClick={onEdit}>
@@ -76,7 +76,7 @@ const ActionButtons = ({
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Created" && createdBy === currentUser.userId && (
+      {status === "PENDING" && createdBy === currentUser.userId && (
         <PermissionGuard permission="delete_captain_order">
           <Tooltip title="Delete Captain Order">
             <IconButton color="error" size="small" onClick={onDelete}>
