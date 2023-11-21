@@ -1,6 +1,6 @@
 import {
   ShoppingCartCheckoutOutlined,
-  ReceiptLongOutlined,
+  ChecklistRtlOutlined,
 } from "@mui/icons-material";
 
 const purchases = {
@@ -23,7 +23,7 @@ const purchases = {
       type: "item",
       url: "/purchases/receivables",
       permission: "view_purchase_receivable",
-      icon: ReceiptLongOutlined,
+      icon: ChecklistRtlOutlined,
     },
   ],
 };

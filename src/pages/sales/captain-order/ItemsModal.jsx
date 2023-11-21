@@ -123,7 +123,7 @@ const CaptainOrderItemsModal = ({
                 </Typography>
               </Grid>
               <Grid item>
-                {captainOrderStatus === "Created" && (
+                {captainOrderStatus === "PENDING" && (
                   <PermissionGuard permission="add_captain_order">
                     <Button
                       variant="contained"
@@ -147,7 +147,7 @@ const CaptainOrderItemsModal = ({
                         <TableCell>Quantity</TableCell>
                         <TableCell align="right">
                           <PermissionGuard permission="add_captain_order">
-                            {captainOrderStatus === "Created" && "Action"}
+                            {captainOrderStatus === "PENDING" && "Action"}
                           </PermissionGuard>
                         </TableCell>
                       </TableRow>
@@ -166,7 +166,7 @@ const CaptainOrderItemsModal = ({
                           <TableCell>{row.menu?.item}</TableCell>
                           <TableCell>{row.quantity}</TableCell>
                           <TableCell align="right">
-                            {captainOrderStatus === "Created" && (
+                            {captainOrderStatus === "PENDING" && (
                               <PermissionGuard permission="add_captain_order">
                                 <Tooltip title="Delete Captain Order Item">
                                   <IconButton

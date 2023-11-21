@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import {
   AddOutlined,
-  EditOutlined,
   DeleteOutlined,
   VisibilityOutlined,
   PrintOutlined,
@@ -32,53 +31,37 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
-import CaptainOrderItemsModal from "./ItemsModal";
+import CashReceiptItemsModal from "./ItemsModal";
 import AdvancedSearchModal from "./AdvancedSearchModal";
 import {
-  useGetCaptainOrdersQuery,
-  useGetCaptainOrderTemplateQuery,
-  usePrintCaptainOrderMutation,
-  useDeleteCaptainOrderMutation,
-} from "src/store/slices/sales/captainOrderApiSlice";
+  useGetCashReceiptsQuery,
+  useGetCashReceiptTemplateQuery,
+  usePrintCashReceiptMutation,
+  useDeleteCashReceiptMutation,
+} from "src/store/slices/sales/cashReceiptApiSlice";
 
-const ActionButtons = ({
-  onDetail,
-  onEdit,
-  onDelete,
-  onPrint,
-  status,
-  createdBy,
-}) => {
+const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
   const currentUser = useSelector((state) => state.auth.userInfo);
 
   return (
     <div>
-      <Tooltip title="View Captain Order items">
+      <Tooltip title="View Cash Receipt items">
         <IconButton color="primary" size="small" onClick={onDetail}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       {(status === "PENDING" || status === "Printed") && (
-        <PermissionGuard permission="print_captain_order">
-          <Tooltip title="Print Captain Order">
+        <PermissionGuard permission="print_cash_receipt">
+          <Tooltip title="Print Cash Receipt">
             <IconButton color="primary" size="small" onClick={onPrint}>
               <PrintOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "PENDING" && createdBy === currentUser.userId && (
-        <PermissionGuard permission="change_captain_order">
-          <Tooltip title="Edit Captain Order">
-            <IconButton color="primary" size="small" onClick={onEdit}>
-              <EditOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
-      {status === "PENDING" && createdBy === currentUser.userId && (
-        <PermissionGuard permission="delete_captain_order">
-          <Tooltip title="Delete Captain Order">
+      {status === "PENDING" && casher === currentUser.userId && (
+        <PermissionGuard permission="delete_cash_receipt">
+          <Tooltip title="Delete Cash Receipt">
             <IconButton color="error" size="small" onClick={onDelete}>
               <DeleteOutlined />
             </IconButton>
@@ -89,43 +72,37 @@ const ActionButtons = ({
   );
 };
 
-const CaptainOrderTableRow = ({
-  index,
-  row,
-  onDelete,
-  onEdit,
-  onDetail,
-  onPrint,
-}) => {
+const CashReceiptTableRow = ({ index, row, onDelete, onDetail, onPrint }) => {
   return (
     <TableRow
       key={row.id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{index + 1}</TableCell>
-      <TableCell>{row.captain_order_number}</TableCell>
-      <TableCell>
-        {dayjs(row.captain_order_date).format("DD-MM-YYYY")}
-      </TableCell>
-      <TableCell>{row.created_by?.name}</TableCell>
+      <TableCell>{row.cash_receipt_number}</TableCell>
+      <TableCell>{dayjs(row.cash_receipt_date).format("DD-MM-YYYY")}</TableCell>
+      <TableCell>{row.casher?.name}</TableCell>
       <TableCell>{row.waiter?.name}</TableCell>
-      <TableCell>{row.facility_type?.name}</TableCell>
+      <TableCell>
+        {row.captain_orders
+          .map((order) => order.captain_order_number)
+          .join(", ")}
+      </TableCell>
       <TableCell>{row.status}</TableCell>
       <TableCell align="right">
         <ActionButtons
-          onEdit={onEdit}
           onDelete={onDelete}
           onDetail={onDetail}
           onPrint={onPrint}
           status={row.status}
-          createdBy={row.created_by?.id}
+          casher={row.casher?.id}
         />
       </TableCell>
     </TableRow>
   );
 };
 
-const CaptainOrders = () => {
+const CashReceipts = () => {
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
@@ -133,29 +110,30 @@ const CaptainOrders = () => {
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState({});
 
-  const { data, isSuccess, refetch } = useGetCaptainOrdersQuery({
+  const { data, isSuccess, refetch } = useGetCashReceiptsQuery({
     page,
     limit,
     search,
   });
-  const { data: getTemplate } = useGetCaptainOrderTemplateQuery();
-  const [captainOrderDeleteApi] = useDeleteCaptainOrderMutation();
-  const [approveCaptainOrderApi] = usePrintCaptainOrderMutation();
+  const { data: getTemplate } = useGetCashReceiptTemplateQuery({
+    filter: null,
+  });
+  const [cashReceiptDeleteApi] = useDeleteCashReceiptMutation();
+  const [approveCashReceiptApi] = usePrintCashReceiptMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [deleteCaptainOrderId, setDeleteCaptainOrderId] = useState(null);
+  const [deleteCashReceiptId, setDeleteCashReceiptId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
-  const [detailCaptainOrder, setDetailCaptainOrder] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [changeStatusId, setPrintId] = useState(null);
   const [advancedSearchModalOpen, setAdvancedSearchModalOpen] = useState(false);
 
-  const [rows, setRows] = useState(data?.captainOrders || []);
-  const totalCaptainOrders = data?.total || 0;
+  const [rows, setRows] = useState(data?.cashReceipts || []);
+  const totalCashReceipts = data?.total || 0;
 
   useEffect(() => {
-    if (isSuccess) setRows(data?.captainOrders || []);
+    if (isSuccess) setRows(data?.cashReceipts || []);
   }, [isSuccess, data]);
 
   const handleChangePage = async (event, newPage) => {
@@ -183,7 +161,7 @@ const CaptainOrders = () => {
 
     const updatedSearchQuery = {
       ...searchQuery,
-      captain_order_number: searchQuery.captain_order_number || null,
+      cash_receipt_number: searchQuery.cash_receipt_number || null,
     };
 
     const queryString = await objectToQueryString(updatedSearchQuery);
@@ -191,9 +169,9 @@ const CaptainOrders = () => {
   };
 
   const handleAdvancedSearch = async (advancedSearchQuery) => {
-    setSearchQuery({ captain_order_number: null });
+    setSearchQuery({ cash_receipt_number: null });
     const updatedSearchQuery = {
-      captain_order_number: null,
+      cash_receipt_number: null,
       ...advancedSearchQuery,
     };
 
@@ -204,36 +182,28 @@ const CaptainOrders = () => {
     setSearch(queryString);
   };
 
-  const handleEdit = (captainOrderId) => {
-    navigate(`${captainOrderId}/edit`);
-  };
-
-  const handleDetail = (captainOrderId, captainOrderStatus, items) => {
+  const handleDetail = (items) => {
     setShowDetailModal(true);
     setDetailItems(items);
-    setDetailCaptainOrder({
-      captainOrderId: captainOrderId,
-      captainOrderStatus: captainOrderStatus,
-    });
   };
 
-  const handlePrint = (captainOrderId) => {
+  const handlePrint = (cashReceiptId) => {
     setShowPrintModal(true);
-    setPrintId(captainOrderId);
+    setPrintId(cashReceiptId);
   };
 
   const handlePrintConfirmed = async () => {
     try {
-      const response = await approveCaptainOrderApi({
+      const response = await approveCashReceiptApi({
         id: parseInt(changeStatusId),
       }).unwrap();
       setRows((prevRows) =>
-        prevRows.map((captainOrder) =>
-          captainOrder.id === response.id ? response : captainOrder
+        prevRows.map((cashReceipt) =>
+          cashReceipt.id === response.id ? response : cashReceipt
         )
       );
 
-      enqueueSnackbar(`Captain Order printed successfully.`, {
+      enqueueSnackbar(`Cash Receipt printed successfully.`, {
         variant: "success",
       });
       setPrintId(null);
@@ -244,28 +214,26 @@ const CaptainOrders = () => {
     }
   };
 
-  const handleDelete = (captainOrderId) => {
+  const handleDelete = (cashReceiptId) => {
     setShowDeleteModal(true);
-    setDeleteCaptainOrderId(captainOrderId);
+    setDeleteCashReceiptId(cashReceiptId);
   };
 
   const handleDeleteConfirmed = async () => {
     try {
-      await captainOrderDeleteApi(deleteCaptainOrderId).unwrap();
-      enqueueSnackbar("Captain Order deleted successfully.", {
+      await cashReceiptDeleteApi(deleteCashReceiptId).unwrap();
+      enqueueSnackbar("Cash Receipt deleted successfully.", {
         variant: "success",
       });
 
       setRows((prevRows) =>
-        prevRows.filter(
-          (captainOrder) => captainOrder.id !== deleteCaptainOrderId
-        )
+        prevRows.filter((cashReceipt) => cashReceipt.id !== deleteCashReceiptId)
       );
 
       setShowDeleteModal(false);
-      setDeleteCaptainOrderId(null);
+      setDeleteCashReceiptId(null);
     } catch (err) {
-      setDeleteCaptainOrderId(null);
+      setDeleteCashReceiptId(null);
       setShowDeleteModal(false);
     }
   };
@@ -275,16 +243,16 @@ const CaptainOrders = () => {
       <Grid item xs={12} md={7} lg={8}>
         <Grid container alignItems="center" justifyContent="space-between">
           <Grid item>
-            <Typography variant="h5">List of Captain Orders</Typography>
+            <Typography variant="h5">List of Cash Receipts</Typography>
           </Grid>
           <Grid item>
-            <PermissionGuard permission="add_captain_order">
+            <PermissionGuard permission="add_cash_receipt">
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => navigate("create")}
               >
-                <AddOutlined /> Add Captain Order
+                <AddOutlined /> Add Cash Receipt
               </Button>
             </PermissionGuard>
           </Grid>
@@ -293,12 +261,12 @@ const CaptainOrders = () => {
           <Grid container alignItems="center" justifyContent="space-between">
             <Grid item xs={12} sm={6} sx={{ p: 1, pt: 2 }}>
               <TextField
-                label="Search by captain order number"
+                label="Search by cash receipt number"
                 variant="outlined"
                 size="small"
-                value={searchQuery.captain_order_number || ""}
+                value={searchQuery.cash_receipt_number || ""}
                 onChange={(e) =>
-                  setSearchQuery({ captain_order_number: e.target.value })
+                  setSearchQuery({ cash_receipt_number: e.target.value })
                 }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -328,11 +296,11 @@ const CaptainOrders = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Index</TableCell>
-                    <TableCell>Captain Order Number</TableCell>
-                    <TableCell>Captain Order Date</TableCell>
-                    <TableCell>Created By</TableCell>
+                    <TableCell>Cash Receipt Number</TableCell>
+                    <TableCell>Cash Receipt Date</TableCell>
+                    <TableCell>Casher</TableCell>
                     <TableCell>Waiter</TableCell>
-                    <TableCell>Facility</TableCell>
+                    <TableCell>Captain Order</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
@@ -348,15 +316,12 @@ const CaptainOrders = () => {
                     </TableRow>
                   )}
                   {rows.map((row, index) => (
-                    <CaptainOrderTableRow
+                    <CashReceiptTableRow
                       key={row.id}
                       index={index}
                       row={row}
-                      onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
-                        handleDetail(row.id, row.status, row.items)
-                      }
+                      onDetail={() => handleDetail(row.items)}
                       onPrint={() => handlePrint(row.id)}
                     />
                   ))}
@@ -366,7 +331,7 @@ const CaptainOrders = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 20, 50, 100]}
               component="div"
-              count={totalCaptainOrders}
+              count={totalCashReceipts}
               rowsPerPage={limit}
               page={page - 1}
               onPageChange={handleChangePage}
@@ -381,8 +346,8 @@ const CaptainOrders = () => {
         open={showPrintModal}
         onClose={() => setShowPrintModal(false)}
         onConfirm={handlePrintConfirmed}
-        dialogTitle={`Confirm Print Captain Order`}
-        dialogContent={`Are you sure you want to approve this Captain Order?`}
+        dialogTitle={`Confirm Print Cash Receipt`}
+        dialogContent={`Are you sure you want to approve this Cash Receipt?`}
         dialogActionName="Confirm"
       />
 
@@ -390,15 +355,13 @@ const CaptainOrders = () => {
         open={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleDeleteConfirmed}
-        dialogContent="Are you sure you want to delete this Captain Order?"
+        dialogContent="Are you sure you want to delete this Cash Receipt?"
       />
 
-      <CaptainOrderItemsModal
+      <CashReceiptItemsModal
         isOpen={showDetailModal}
         onModalClose={() => setShowDetailModal(false)}
-        captainOrderItems={detailItems}
-        captainOrderId={detailCaptainOrder?.captainOrderId}
-        captainOrderStatus={detailCaptainOrder?.captainOrderStatus || null}
+        cashReceiptItems={detailItems}
       />
 
       <AdvancedSearchModal
@@ -416,21 +379,19 @@ const CaptainOrders = () => {
 
 // PropTypes validation
 ActionButtons.propTypes = {
-  onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
-  createdBy: PropTypes.number.isRequired,
+  casher: PropTypes.number.isRequired,
 };
 
-CaptainOrderTableRow.propTypes = {
+CashReceiptTableRow.propTypes = {
   index: PropTypes.number.isRequired,
   row: PropTypes.object.isRequired,
-  onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
 };
 
-export default CaptainOrders;
+export default CashReceipts;

@@ -100,7 +100,6 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                           error={Boolean(touched.product && errors.product)}
                         >
                           <Autocomplete
-                            disablePortal
                             id="product"
                             options={getTemplate?.productOptions || []}
                             value={values.product || null}
