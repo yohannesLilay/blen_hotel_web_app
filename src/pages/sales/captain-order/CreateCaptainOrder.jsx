@@ -5,22 +5,15 @@ import {
   Autocomplete,
   Box,
   Button,
+  Card,
+  CardContent,
+  Checkbox,
   Grid,
   FormControl,
-  IconButton,
-  Paper,
   Stack,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Typography,
-  Tooltip,
 } from "@mui/material";
-import { EditOutlined, DeleteOutlined } from "@mui/icons-material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -33,7 +26,7 @@ import {
   useGetCaptainOrderTemplateQuery,
 } from "src/store/slices/sales/captainOrderApiSlice";
 import MainCard from "src/components/MainCard";
-import AddItemModal from "./AddItemModal";
+import { AddOutlined, RemoveOutlined } from "@mui/icons-material";
 
 const CreateCaptainOrder = () => {
   const navigate = useNavigate();
@@ -42,41 +35,29 @@ const CreateCaptainOrder = () => {
   const [createCaptainOrder, { isLoading }] = useCreateCaptainOrderMutation();
 
   const [rows, setRows] = useState([]);
-  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
 
-  const handleAddItem = (itemData) => {
-    const existingIndex = rows.findIndex(
-      (row, index) => index !== currentItem && row.menu_id === itemData.menu_id
-    );
+  const handleSelectedMenu = (selectedMenu) => {
+    if (selectedMenu) {
+      const existingIndex = rows.findIndex(
+        (row) => row.menu_id === selectedMenu.id
+      );
 
-    if (existingIndex === -1) {
-      if (currentItem === null) {
-        setRows([...rows, itemData]);
+      if (existingIndex === -1) {
+        setRows([
+          ...rows,
+          {
+            id: Math.random().toString(36),
+            menu_id: selectedMenu.id,
+            quantity: 1,
+          },
+        ]);
       } else {
         const updatedRows = rows.map((row, index) =>
-          index === currentItem ? itemData : row
+          index === existingIndex ? { ...row, quantity: 1 } : row
         );
         setRows(updatedRows);
       }
-
-      setIsAddItemModalOpen(false);
-      setCurrentItem(null);
-    } else {
-      enqueueSnackbar("Item already exists. Please edit the existing item.", {
-        variant: "error",
-      });
     }
-  };
-
-  const editItem = (index) => {
-    setCurrentItem(index);
-    setIsAddItemModalOpen(true);
-  };
-
-  const deleteItem = (index) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
   };
 
   return (
@@ -98,6 +79,7 @@ const CreateCaptainOrder = () => {
               captain_order_number: "",
               waiter: null,
               facility_type: null,
+              menus: [],
               items: [],
             }}
             validationSchema={Yup.object().shape({
@@ -117,6 +99,9 @@ const CreateCaptainOrder = () => {
                   id: Yup.number().required("Facility is required"),
                 })
                 .required("Facility is required"),
+              menus: Yup.array()
+                .required("At lease one menu item is required")
+                .min(1, "At least one menu item is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
@@ -239,7 +224,6 @@ const CreateCaptainOrder = () => {
                         error={Boolean(touched.waiter && errors.waiter)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="waiter"
                           options={getTemplate?.waiterStaffOptions || []}
                           value={values.waiter || null}
@@ -276,7 +260,6 @@ const CreateCaptainOrder = () => {
                         )}
                       >
                         <Autocomplete
-                          disablePortal
                           id="facility_type"
                           options={getTemplate?.facilityTypeOptions || []}
                           value={values.facility_type || null}
@@ -308,104 +291,123 @@ const CreateCaptainOrder = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    container
-                    justifyContent="flex-end"
-                    spacing={1}
-                  >
-                    {values.order == null && (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          setCurrentItem(null); // Set the current item to null (new item)
-                          setIsAddItemModalOpen(true); // Open the AddItemModal
-                        }}
-                        disabled={currentItem !== null}
-                      >
-                        Add Item
-                      </Button>
-                    )}
-                  </Grid>
                   <Grid item xs={12}>
-                    <MainCard content={false}>
-                      <Box
-                        sx={{
-                          minHeight: 200,
-                          width: "99.8%",
-                          maxWidth: "100%",
-                          p: 1,
-                        }}
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.menus && errors.menus)}
                       >
-                        <TableContainer component={Paper}>
-                          <Table aria-label="simple table">
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>Index</TableCell>
-                                <TableCell>Menu</TableCell>
-                                <TableCell>Quantity</TableCell>
-                                <TableCell align="right">Action</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {rows.length === 0 && (
-                                <TableRow>
-                                  <TableCell colSpan={8} align="center">
-                                    <Typography variant="body1">
-                                      No items available.
-                                    </Typography>
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                              {rows.map((row, index) => (
-                                <TableRow
-                                  key={row.id}
-                                  sx={{
-                                    "&:last-child td, &:last-child th": {
-                                      border: 0,
-                                    },
-                                  }}
-                                >
-                                  <TableCell align="left">
-                                    {index + 1}
-                                  </TableCell>
-                                  <TableCell>
-                                    {getTemplate.menuOptions.find(
-                                      (menu) => menu.id === row.menu_id
-                                    )?.item || ""}
-                                  </TableCell>
-                                  <TableCell>{row.quantity}</TableCell>
-                                  <TableCell align="right">
-                                    <Tooltip title="Edit Item">
-                                      <IconButton
-                                        color="primary"
-                                        size="small"
-                                        onClick={() => editItem(index)}
-                                      >
-                                        <EditOutlined />
-                                      </IconButton>
-                                    </Tooltip>
-                                    {values.order == null && (
-                                      <Tooltip title="Delete Item">
-                                        <IconButton
-                                          color="error"
-                                          size="small"
-                                          onClick={() => deleteItem(index)}
-                                        >
-                                          <DeleteOutlined />
-                                        </IconButton>
-                                      </Tooltip>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </Box>
-                    </MainCard>
+                        <Autocomplete
+                          multiple
+                          limitTags={4}
+                          disableCloseOnSelect
+                          id="menus"
+                          options={getTemplate?.menuOptions || []}
+                          value={values.menus}
+                          onChange={(event, newValue) => {
+                            const removedMenus = values.menus.filter(
+                              (menu) =>
+                                !newValue.some(
+                                  (selectedMenu) => selectedMenu.id === menu.id
+                                )
+                            );
+                            if (removedMenus.length > 0) {
+                              const updatedRows = rows.filter(
+                                (row) => row.menu_id !== removedMenus[0].id
+                              );
+                              setRows(updatedRows);
+                            } else {
+                              const selectedMenu =
+                                newValue[newValue.length - 1];
+                              handleSelectedMenu(selectedMenu);
+                            }
+
+                            handleChange({
+                              target: { name: "menus", value: newValue },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.item}
+                          renderOption={(props, option, state) => (
+                            <li {...props}>
+                              <Checkbox
+                                checked={state.selected}
+                                onChange={() => {}}
+                              />
+                              {option.item}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Menus"
+                              variant="outlined"
+                              error={Boolean(touched.menus && errors.menus)}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.menus && errors.menus && (
+                        <Typography variant="body2" color="error">
+                          {errors.menus}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  <Grid container spacing={2} sx={{ margin: 1 }}>
+                    {rows.map((row, index) => (
+                      <Grid item key={row.id} xs={12} sm={4} md={3} lg={3}>
+                        <Card sx={{ minWidth: 275, maxWidth: 400 }}>
+                          <CardContent>
+                            <Stack
+                              spacing={1}
+                              direction="row"
+                              justifyContent="center"
+                              alignItems="center"
+                              sx={{ marginBottom: 1 }}
+                            >
+                              <Typography variant="h6">
+                                {getTemplate.menuOptions.find(
+                                  (menu) => menu.id === row.menu_id
+                                )?.item || ""}
+                              </Typography>
+                            </Stack>
+                            <Stack
+                              spacing={1}
+                              direction="row"
+                              justifyContent="center"
+                              alignItems="center"
+                            >
+                              <Button
+                                onClick={() => {
+                                  const updatedRows = [...rows];
+                                  updatedRows[index].quantity = Math.max(
+                                    1,
+                                    updatedRows[index].quantity - 1
+                                  );
+                                  setRows(updatedRows);
+                                }}
+                              >
+                                <RemoveOutlined />
+                              </Button>
+                              <Typography variant="h5">
+                                {row.quantity}
+                              </Typography>
+                              <Button
+                                onClick={() => {
+                                  const updatedRows = [...rows];
+                                  updatedRows[index].quantity += 1;
+                                  setRows(updatedRows);
+                                }}
+                              >
+                                <AddOutlined />
+                              </Button>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
                   </Grid>
 
                   <Grid
@@ -445,17 +447,6 @@ const CreateCaptainOrder = () => {
           </Formik>
         </Box>
       </MainCard>
-
-      <AddItemModal
-        isOpen={isAddItemModalOpen}
-        onClose={() => {
-          setCurrentItem(null); // Reset currentItem when closing modal
-          setIsAddItemModalOpen(false);
-        }}
-        onAdd={handleAddItem}
-        currentItem={currentItem !== null ? rows[currentItem] : null}
-        getTemplate={getTemplate || {}}
-      />
     </Grid>
   );
 };
