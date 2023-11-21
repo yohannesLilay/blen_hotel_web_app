@@ -321,9 +321,7 @@ const CashReceipts = () => {
                       index={index}
                       row={row}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
-                        handleDetail(row.id, row.status, row.items)
-                      }
+                      onDetail={() => handleDetail(row.items)}
                       onPrint={() => handlePrint(row.id)}
                     />
                   ))}

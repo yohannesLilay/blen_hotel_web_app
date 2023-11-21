@@ -184,7 +184,6 @@ const EditCaptainOrder = () => {
                         error={Boolean(touched.waiter && errors.waiter)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="waiter"
                           options={getTemplate?.waiterStaffOptions || []}
                           value={values.waiter || null}
@@ -221,7 +220,6 @@ const EditCaptainOrder = () => {
                         )}
                       >
                         <Autocomplete
-                          disablePortal
                           id="facility_type"
                           options={getTemplate?.facilityTypeOptions || []}
                           value={values.facility_type || null}

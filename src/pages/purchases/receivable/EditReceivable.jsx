@@ -167,7 +167,6 @@ const EditReceivable = () => {
                         error={Boolean(touched.supplier && errors.supplier)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="supplier"
                           options={getTemplate?.supplierOptions || []}
                           value={values.supplier || null}

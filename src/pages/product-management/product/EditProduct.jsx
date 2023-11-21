@@ -119,7 +119,6 @@ const EditProduct = () => {
                         )}
                       >
                         <Autocomplete
-                          disablePortal
                           id="unit_of_measure"
                           options={Object.values(getTemplate?.uomOptions || [])}
                           value={values.unit_of_measure || null}
@@ -159,7 +158,6 @@ const EditProduct = () => {
                         error={Boolean(touched.category && errors.category)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="category"
                           options={getTemplate?.categoryOptions || []}
                           value={values.category || null}

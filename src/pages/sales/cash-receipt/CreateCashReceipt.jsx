@@ -216,7 +216,6 @@ const CreateCashReceipt = () => {
                         error={Boolean(touched.waiter && errors.waiter)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="waiter"
                           options={getTemplate?.waiterStaffOptions || []}
                           value={values.waiter || null}
@@ -269,7 +268,6 @@ const CreateCashReceipt = () => {
                         <Autocomplete
                           multiple
                           limitTags={3}
-                          disablePortal
                           id="captain_orders"
                           options={getTemplate?.captainOrderOptions || []}
                           value={values.captain_orders || []}
@@ -453,8 +451,6 @@ const CreateCashReceipt = () => {
                                   <TableCell>
                                     {calculateTotalPrice()} BIRR
                                   </TableCell>
-                                  <TableCell></TableCell>
-                                  <TableCell></TableCell>
                                 </TableRow>
                               )}
                             </TableBody>

@@ -242,7 +242,6 @@ const CreateReceivable = () => {
                         error={Boolean(touched.order && errors.order)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="order"
                           options={getTemplate?.orderOptions || []}
                           value={values.order || null}
@@ -300,7 +299,6 @@ const CreateReceivable = () => {
                         error={Boolean(touched.supplier && errors.supplier)}
                       >
                         <Autocomplete
-                          disablePortal
                           id="supplier"
                           options={getTemplate?.supplierOptions || []}
                           value={values.supplier || null}

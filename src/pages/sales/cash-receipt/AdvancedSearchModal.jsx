@@ -102,7 +102,6 @@ const AdvancedSearchModal = ({
 
           <Grid item xs={12} sm={6}>
             <Autocomplete
-              disablePortal
               id="waiter"
               options={getTemplate?.waiterStaffOptions || []}
               value={waiter}
@@ -115,7 +114,6 @@ const AdvancedSearchModal = ({
           </Grid>
           <Grid item xs={12} sm={6}>
             <Autocomplete
-              disablePortal
               id="casher"
               options={getTemplate?.casherEmployeeOptions || []}
               value={casher}

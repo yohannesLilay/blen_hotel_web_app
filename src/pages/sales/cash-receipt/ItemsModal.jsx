@@ -23,6 +23,13 @@ const CashReceiptItemsModal = ({ isOpen, onModalClose, cashReceiptItems }) => {
     setRows(cashReceiptItems || []);
   }, [cashReceiptItems]);
 
+  const calculateTotalPrice = () => {
+    return rows.reduce(
+      (total, row) => total + row.quantity * row.unit_price,
+      0
+    );
+  };
+
   return (
     <>
       <Modal open={isOpen} onClose={onModalClose}>
@@ -73,10 +80,21 @@ const CashReceiptItemsModal = ({ isOpen, onModalClose, cashReceiptItems }) => {
                           <TableCell align="left">{index + 1}</TableCell>
                           <TableCell>{row.menu?.item}</TableCell>
                           <TableCell>{row.quantity}</TableCell>
-                          <TableCell>{row.unit_price}</TableCell>
-                          <TableCell>{row.quantity * row.unit_price}</TableCell>
+                          <TableCell>{row.unit_price} BIRR</TableCell>
+                          <TableCell>
+                            {row.quantity * row.unit_price} BIRR
+                          </TableCell>
                         </TableRow>
                       ))}
+                      {rows.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={3}></TableCell>
+                          <TableCell align="right">
+                            <strong>Total</strong>:
+                          </TableCell>
+                          <TableCell>{calculateTotalPrice()} BIRR</TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
