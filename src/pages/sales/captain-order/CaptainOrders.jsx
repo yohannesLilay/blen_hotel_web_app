@@ -28,12 +28,13 @@ import {
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
+
 import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
-import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import CaptainOrderItemsModal from "./ItemsModal";
 import AdvancedSearchModal from "./AdvancedSearchModal";
+import PrintCaptainOrderModal from "./PrintCaptainOrderModal";
 import {
   useGetCaptainOrdersQuery,
   useGetCaptainOrderTemplateQuery,
@@ -58,15 +59,13 @@ const ActionButtons = ({
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
-      {(status === "PENDING" || status === "Printed") && (
-        <PermissionGuard permission="print_captain_order">
-          <Tooltip title="Print Captain Order">
-            <IconButton color="primary" size="small" onClick={onPrint}>
-              <PrintOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
+      <PermissionGuard permission="print_captain_order">
+        <Tooltip title="Print Captain Order">
+          <IconButton color="primary" size="small" onClick={onPrint}>
+            <PrintOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
       {status === "PENDING" && createdBy === currentUser.userId && (
         <PermissionGuard permission="change_captain_order">
           <Tooltip title="Edit Captain Order">
@@ -148,7 +147,7 @@ const CaptainOrders = () => {
   const [detailItems, setDetailItems] = useState([]);
   const [detailCaptainOrder, setDetailCaptainOrder] = useState(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [changeStatusId, setPrintId] = useState(null);
+  const [printCaptainOrderDetail, setPrintCaptainOrderDetail] = useState(null);
   const [advancedSearchModalOpen, setAdvancedSearchModalOpen] = useState(false);
 
   const [rows, setRows] = useState(data?.captainOrders || []);
@@ -217,29 +216,32 @@ const CaptainOrders = () => {
     });
   };
 
-  const handlePrint = (captainOrderId) => {
+  const handlePrint = (captainOrderData) => {
     setShowPrintModal(true);
-    setPrintId(captainOrderId);
+    setPrintCaptainOrderDetail(captainOrderData);
   };
 
   const handlePrintConfirmed = async () => {
     try {
-      const response = await approveCaptainOrderApi({
-        id: parseInt(changeStatusId),
-      }).unwrap();
-      setRows((prevRows) =>
-        prevRows.map((captainOrder) =>
-          captainOrder.id === response.id ? response : captainOrder
-        )
-      );
+      if (printCaptainOrderDetail.status === "PENDING") {
+        const response = await approveCaptainOrderApi({
+          id: parseInt(printCaptainOrderDetail.id),
+        }).unwrap();
+        setRows((prevRows) =>
+          prevRows.map((captainOrder) =>
+            captainOrder.id === response.id ? response : captainOrder
+          )
+        );
 
-      enqueueSnackbar(`Captain Order printed successfully.`, {
-        variant: "success",
-      });
-      setPrintId(null);
+        enqueueSnackbar(`Captain Order printed successfully.`, {
+          variant: "success",
+        });
+      }
+
+      setPrintCaptainOrderDetail(null);
       setShowPrintModal(false);
     } catch (err) {
-      setPrintId(null);
+      setPrintCaptainOrderDetail(null);
       setShowPrintModal(false);
     }
   };
@@ -330,7 +332,7 @@ const CaptainOrders = () => {
                     <TableCell>Index</TableCell>
                     <TableCell>Captain Order Number</TableCell>
                     <TableCell>Captain Order Date</TableCell>
-                    <TableCell>Created By</TableCell>
+                    <TableCell>Operator</TableCell>
                     <TableCell>Waiter</TableCell>
                     <TableCell>Facility</TableCell>
                     <TableCell>Status</TableCell>
@@ -357,7 +359,7 @@ const CaptainOrders = () => {
                       onDetail={() =>
                         handleDetail(row.id, row.status, row.items)
                       }
-                      onPrint={() => handlePrint(row.id)}
+                      onPrint={() => handlePrint(row)}
                     />
                   ))}
                 </TableBody>
@@ -375,16 +377,6 @@ const CaptainOrders = () => {
           </Box>
         </MainCard>
       </Grid>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        open={showPrintModal}
-        onClose={() => setShowPrintModal(false)}
-        onConfirm={handlePrintConfirmed}
-        dialogTitle={`Confirm Print Captain Order`}
-        dialogContent={`Are you sure you want to approve this Captain Order?`}
-        dialogActionName="Confirm"
-      />
 
       <DeleteModal
         open={showDeleteModal}
@@ -409,6 +401,13 @@ const CaptainOrders = () => {
         }}
         getTemplate={getTemplate ? getTemplate : {}}
         searchQuery={searchQuery}
+      />
+
+      <PrintCaptainOrderModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onPrint={handlePrintConfirmed}
+        getPrintData={printCaptainOrderDetail ? printCaptainOrderDetail : {}}
       />
     </>
   );
