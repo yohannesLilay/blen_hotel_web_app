@@ -30,9 +30,9 @@ import { enqueueSnackbar } from "notistack";
 import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
-import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import CashReceiptItemsModal from "./ItemsModal";
 import AdvancedSearchModal from "./AdvancedSearchModal";
+import PrintCashReceiptModal from "./PrintCashReceiptModal";
 import {
   useGetCashReceiptsQuery,
   useGetCashReceiptTemplateQuery,
@@ -50,15 +50,13 @@ const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
-      {(status === "PENDING" || status === "Printed") && (
-        <PermissionGuard permission="print_cash_receipt">
-          <Tooltip title="Print Cash Receipt">
-            <IconButton color="primary" size="small" onClick={onPrint}>
-              <PrintOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
+      <PermissionGuard permission="print_cash_receipt">
+        <Tooltip title="Print Cash Receipt">
+          <IconButton color="primary" size="small" onClick={onPrint}>
+            <PrintOutlined />
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
       {status === "PENDING" && casher === currentUser.userId && (
         <PermissionGuard permission="delete_cash_receipt">
           <Tooltip title="Delete Cash Receipt">
@@ -126,7 +124,7 @@ const CashReceipts = () => {
   const [deleteCashReceiptId, setDeleteCashReceiptId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [changeStatusId, setPrintId] = useState(null);
+  const [cashReceiptDetail, setCashReceiptDetail] = useState(null);
   const [advancedSearchModalOpen, setAdvancedSearchModalOpen] = useState(false);
 
   const [rows, setRows] = useState(data?.cashReceipts || []);
@@ -187,29 +185,32 @@ const CashReceipts = () => {
     setDetailItems(items);
   };
 
-  const handlePrint = (cashReceiptId) => {
+  const handlePrint = (cashReceiptData) => {
     setShowPrintModal(true);
-    setPrintId(cashReceiptId);
+    setCashReceiptDetail(cashReceiptData);
   };
 
   const handlePrintConfirmed = async () => {
     try {
-      const response = await approveCashReceiptApi({
-        id: parseInt(changeStatusId),
-      }).unwrap();
-      setRows((prevRows) =>
-        prevRows.map((cashReceipt) =>
-          cashReceipt.id === response.id ? response : cashReceipt
-        )
-      );
+      if (cashReceiptDetail.status === "PENDING") {
+        const response = await approveCashReceiptApi({
+          id: parseInt(cashReceiptDetail.id),
+        }).unwrap();
+        setRows((prevRows) =>
+          prevRows.map((cashReceipt) =>
+            cashReceipt.id === response.id ? response : cashReceipt
+          )
+        );
 
-      enqueueSnackbar(`Cash Receipt printed successfully.`, {
-        variant: "success",
-      });
-      setPrintId(null);
+        enqueueSnackbar(`Cash Receipt printed successfully.`, {
+          variant: "success",
+        });
+      }
+
+      setCashReceiptDetail(null);
       setShowPrintModal(false);
     } catch (err) {
-      setPrintId(null);
+      setCashReceiptDetail(null);
       setShowPrintModal(false);
     }
   };
@@ -322,7 +323,7 @@ const CashReceipts = () => {
                       row={row}
                       onDelete={() => handleDelete(row.id)}
                       onDetail={() => handleDetail(row.items)}
-                      onPrint={() => handlePrint(row.id)}
+                      onPrint={() => handlePrint(row)}
                     />
                   ))}
                 </TableBody>
@@ -340,16 +341,6 @@ const CashReceipts = () => {
           </Box>
         </MainCard>
       </Grid>
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        open={showPrintModal}
-        onClose={() => setShowPrintModal(false)}
-        onConfirm={handlePrintConfirmed}
-        dialogTitle={`Confirm Print Cash Receipt`}
-        dialogContent={`Are you sure you want to approve this Cash Receipt?`}
-        dialogActionName="Confirm"
-      />
 
       <DeleteModal
         open={showDeleteModal}
@@ -372,6 +363,13 @@ const CashReceipts = () => {
         }}
         getTemplate={getTemplate ? getTemplate : {}}
         searchQuery={searchQuery}
+      />
+
+      <PrintCashReceiptModal
+        isOpen={showPrintModal}
+        onClose={() => setShowPrintModal(false)}
+        onPrint={handlePrintConfirmed}
+        getPrintData={cashReceiptDetail ? cashReceiptDetail : {}}
       />
     </>
   );
