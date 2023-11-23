@@ -104,7 +104,6 @@ const CreateReceivable = () => {
           <Formik
             initialValues={{
               receivable_date: dayjs(),
-              receivable_number: "",
               supplier: null,
               order: null,
               items: [],
@@ -113,9 +112,6 @@ const CreateReceivable = () => {
               receivable_date: Yup.date()
                 .required("GRV Date is required")
                 .max(new Date(), "GRV Date cannot be in the future"),
-              receivable_number: Yup.string().required(
-                "GRV Number is required"
-              ),
               order: Yup.object()
                 .shape({
                   id: Yup.number(),
@@ -137,7 +133,6 @@ const CreateReceivable = () => {
                 } else {
                   await createReceivable({
                     receivable_date: new Date(values.receivable_date),
-                    receivable_number: values.receivable_number,
                     order_id: values.order?.id,
                     supplier_id: values.supplier?.id,
                     items: rows,
@@ -167,7 +162,7 @@ const CreateReceivable = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -212,29 +207,7 @@ const CreateReceivable = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="receivable_number"
-                        value={values.receivable_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="GRV Number"
-                        error={Boolean(
-                          touched.receivable_number && errors.receivable_number
-                        )}
-                      />
-                      {touched.receivable_number &&
-                        errors.receivable_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.receivable_number}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -291,7 +264,7 @@ const CreateReceivable = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -351,14 +324,7 @@ const CreateReceivable = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <MainCard content={false}>
-                      <Box
-                        sx={{
-                          minHeight: 200,
-                          width: "99.8%",
-                          maxWidth: "100%",
-                          p: 1,
-                        }}
-                      >
+                      <Box sx={{ p: 0.5 }}>
                         <TableContainer component={Paper}>
                           <Table aria-label="simple table">
                             <TableHead>
