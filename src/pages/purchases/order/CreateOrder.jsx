@@ -101,14 +101,12 @@ const CreateOrder = () => {
           <Formik
             initialValues={{
               order_date: dayjs(),
-              order_number: "",
               items: [],
             }}
             validationSchema={Yup.object().shape({
               order_date: Yup.date()
                 .required("Order Date is required")
                 .max(new Date(), "Order Date cannot be in the future"),
-              order_number: Yup.string().required("Order Number is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
@@ -120,7 +118,6 @@ const CreateOrder = () => {
                 } else {
                   await createOrder({
                     order_date: new Date(values.order_date),
-                    order_number: values.order_number,
                     items: rows,
                   }).unwrap();
                   navigate(-1);
@@ -148,7 +145,7 @@ const CreateOrder = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={6}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -191,28 +188,6 @@ const CreateOrder = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="order_number"
-                        value={values.order_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Order Number"
-                        error={Boolean(
-                          touched.order_number && errors.order_number
-                        )}
-                      />
-                      {touched.order_number && errors.order_number && (
-                        <Typography variant="body2" color="error">
-                          {errors.order_number}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-
                   <Grid
                     item
                     xs={12}
@@ -234,14 +209,7 @@ const CreateOrder = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <MainCard content={false}>
-                      <Box
-                        sx={{
-                          minHeight: 200,
-                          width: "99.8%",
-                          maxWidth: "100%",
-                          p: 1,
-                        }}
-                      >
+                      <Box sx={{ p: 0.5 }}>
                         <TableContainer component={Paper}>
                           <Table aria-label="simple table">
                             <TableHead>

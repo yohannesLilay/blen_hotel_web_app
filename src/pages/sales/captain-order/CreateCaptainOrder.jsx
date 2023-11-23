@@ -76,7 +76,6 @@ const CreateCaptainOrder = () => {
           <Formik
             initialValues={{
               captain_order_date: dayjs(),
-              captain_order_number: "",
               waiter: null,
               facility_type: null,
               menus: [],
@@ -86,9 +85,6 @@ const CreateCaptainOrder = () => {
               captain_order_date: Yup.date()
                 .required("Captain Order Date is required")
                 .max(new Date(), "Captain Order Date cannot be in the future"),
-              captain_order_number: Yup.string().required(
-                "Captain Order Number is required"
-              ),
               waiter: Yup.object()
                 .shape({
                   id: Yup.number().required("Waiter is required"),
@@ -113,7 +109,6 @@ const CreateCaptainOrder = () => {
                 } else {
                   await createCaptainOrder({
                     captain_order_date: new Date(values.captain_order_date),
-                    captain_order_number: values.captain_order_number,
                     waiter: values.waiter?.id,
                     facility_type_id: values.facility_type?.id,
                     items: rows,
@@ -143,7 +138,7 @@ const CreateCaptainOrder = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -193,30 +188,7 @@ const CreateCaptainOrder = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="captain_order_number"
-                        value={values.captain_order_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Captain Order Number"
-                        error={Boolean(
-                          touched.captain_order_number &&
-                            errors.captain_order_number
-                        )}
-                      />
-                      {touched.captain_order_number &&
-                        errors.captain_order_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.captain_order_number}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -250,7 +222,7 @@ const CreateCaptainOrder = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -357,7 +329,7 @@ const CreateCaptainOrder = () => {
 
                   <Grid container spacing={2} sx={{ margin: 1 }}>
                     {rows.map((row, index) => (
-                      <Grid item key={row.id} xs={12} sm={4} md={3} lg={3}>
+                      <Grid item key={row.id} xs={12} sm={4} md={4} lg={3}>
                         <Card sx={{ minWidth: 275, maxWidth: 400 }}>
                           <CardContent>
                             <Stack

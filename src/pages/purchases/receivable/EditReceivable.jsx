@@ -47,7 +47,6 @@ const EditReceivable = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              receivable_number: getReceivable?.receivable_number || "",
               receivable_date: dayjs(getReceivable?.receivable_date) || null,
               supplier:
                 getTemplate?.supplierOptions.find(
@@ -55,9 +54,6 @@ const EditReceivable = () => {
                 ) || null,
             }}
             validationSchema={Yup.object().shape({
-              receivable_number: Yup.string().required(
-                "GRV Number is required"
-              ),
               receivable_date: Yup.date()
                 .required("GRV Date is required")
                 .max(new Date(), "GRV Date cannot be in the future"),
@@ -70,7 +66,6 @@ const EditReceivable = () => {
             onSubmit={async (values) => {
               await updateReceivable({
                 id: parseInt(id),
-                receivable_number: values.receivable_number,
                 receivable_date: values.receivable_date,
                 supplier_id: values.supplier?.id || null,
               }).unwrap();
@@ -135,28 +130,6 @@ const EditReceivable = () => {
                           {errors.receivable_date}
                         </Typography>
                       )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="receivable_number"
-                        value={values.receivable_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="GRV Number"
-                        error={Boolean(
-                          touched.receivable_number && errors.receivable_number
-                        )}
-                      />
-                      {touched.receivable_number &&
-                        errors.receivable_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.receivable_number}
-                          </Typography>
-                        )}
                     </Stack>
                   </Grid>
                   <Grid item xs={12} sm={6}>

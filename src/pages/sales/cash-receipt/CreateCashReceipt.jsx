@@ -72,7 +72,6 @@ const CreateCashReceipt = () => {
           <Formik
             initialValues={{
               cash_receipt_date: dayjs(),
-              cash_receipt_number: "",
               waiter: null,
               captain_orders: [],
               items: [],
@@ -81,9 +80,6 @@ const CreateCashReceipt = () => {
               cash_receipt_date: Yup.date()
                 .required("Cash Receipt Date is required")
                 .max(new Date(), "Cash Receipt Date cannot be in the future"),
-              cash_receipt_number: Yup.string().required(
-                "Cash Receipt Number is required"
-              ),
               waiter: Yup.object()
                 .shape({
                   id: Yup.number().required("Waiter is required"),
@@ -103,7 +99,6 @@ const CreateCashReceipt = () => {
                 } else {
                   await createCashReceipt({
                     cash_receipt_date: new Date(values.cash_receipt_date),
-                    cash_receipt_number: values.cash_receipt_number,
                     waiter: values.waiter?.id,
                     captain_order_ids: values.captain_orders?.map(
                       (captain_order) => captain_order.id
@@ -135,7 +130,7 @@ const CreateCashReceipt = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={2}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -181,29 +176,6 @@ const CreateCashReceipt = () => {
                         errors.cash_receipt_date && (
                           <Typography variant="body2" color="error">
                             {errors.cash_receipt_date}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="cash_receipt_number"
-                        value={values.cash_receipt_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Cash Receipt Number"
-                        error={Boolean(
-                          touched.cash_receipt_number &&
-                            errors.cash_receipt_number
-                        )}
-                      />
-                      {touched.cash_receipt_number &&
-                        errors.cash_receipt_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.cash_receipt_number}
                           </Typography>
                         )}
                     </Stack>
@@ -256,7 +228,7 @@ const CreateCashReceipt = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={4}>
+                  <Grid item xs={12} sm={12} md={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -392,11 +364,7 @@ const CreateCashReceipt = () => {
 
                   <Grid item xs={12}>
                     <MainCard content={false}>
-                      <Box
-                        sx={{
-                          maxWidth: "100%",
-                        }}
-                      >
+                      <Box sx={{ p: 0.5 }}>
                         <TableContainer component={Paper}>
                           <Table aria-label="simple table">
                             <TableHead>

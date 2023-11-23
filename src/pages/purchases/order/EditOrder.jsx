@@ -36,11 +36,9 @@ const EditOrder = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              order_number: getOrder?.order_number || "",
               order_date: dayjs(getOrder?.order_date) || null,
             }}
             validationSchema={Yup.object().shape({
-              order_number: Yup.string().required("Order Number is required"),
               order_date: Yup.date()
                 .required("Order Date is required")
                 .max(new Date(), "Order Date cannot be in the future"),
@@ -48,7 +46,6 @@ const EditOrder = () => {
             onSubmit={async (values) => {
               await updateOrder({
                 id: parseInt(id),
-                order_number: values.order_number,
                 order_date: values.order_date,
               }).unwrap();
               navigate(-1);
@@ -108,27 +105,6 @@ const EditOrder = () => {
                       {touched.order_date && errors.order_date && (
                         <Typography variant="body2" color="error">
                           {errors.order_date}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="order_number"
-                        value={values.order_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Order Number"
-                        error={Boolean(
-                          touched.order_number && errors.order_number
-                        )}
-                      />
-                      {touched.order_number && errors.order_number && (
-                        <Typography variant="body2" color="error">
-                          {errors.order_number}
                         </Typography>
                       )}
                     </Stack>

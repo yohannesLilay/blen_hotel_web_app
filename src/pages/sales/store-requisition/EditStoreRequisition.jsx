@@ -37,15 +37,10 @@ const EditStoreRequisition = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              store_requisition_number:
-                getStoreRequisition?.store_requisition_number || "",
               store_requisition_date:
                 dayjs(getStoreRequisition?.store_requisition_date) || null,
             }}
             validationSchema={Yup.object().shape({
-              store_requisition_number: Yup.string().required(
-                "Store Requisition Number is required"
-              ),
               store_requisition_date: Yup.date()
                 .required("Store Requisition Date is required")
                 .max(
@@ -56,7 +51,6 @@ const EditStoreRequisition = () => {
             onSubmit={async (values) => {
               await updateStoreRequisition({
                 id: parseInt(id),
-                store_requisition_number: values.store_requisition_number,
                 store_requisition_date: values.store_requisition_date,
               }).unwrap();
               navigate(-1);
@@ -123,29 +117,6 @@ const EditStoreRequisition = () => {
                         errors.store_requisition_date && (
                           <Typography variant="body2" color="error">
                             {errors.store_requisition_date}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="store_requisition_number"
-                        value={values.store_requisition_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Store Requisition Number"
-                        error={Boolean(
-                          touched.store_requisition_number &&
-                            errors.store_requisition_number
-                        )}
-                      />
-                      {touched.store_requisition_number &&
-                        errors.store_requisition_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.store_requisition_number}
                           </Typography>
                         )}
                     </Stack>

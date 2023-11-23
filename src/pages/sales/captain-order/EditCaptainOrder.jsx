@@ -47,7 +47,6 @@ const EditCaptainOrder = () => {
         <Box sx={{ p: 2 }}>
           <Formik
             initialValues={{
-              captain_order_number: getCaptainOrder?.captain_order_number || "",
               captain_order_date:
                 dayjs(getCaptainOrder?.captain_order_date) || null,
               waiter:
@@ -60,9 +59,6 @@ const EditCaptainOrder = () => {
                 ) || null,
             }}
             validationSchema={Yup.object().shape({
-              captain_order_number: Yup.string().required(
-                "Captain Order Number is required"
-              ),
               captain_order_date: Yup.date()
                 .required("Captain Order Date is required")
                 .max(new Date(), "Captain Order Date cannot be in the future"),
@@ -80,7 +76,6 @@ const EditCaptainOrder = () => {
             onSubmit={async (values) => {
               await updateCaptainOrder({
                 id: parseInt(id),
-                captain_order_number: values.captain_order_number,
                 captain_order_date: values.captain_order_date,
                 waiter: values.waiter?.id || null,
                 facility_type_id: values.facility_type?.id || null,
@@ -149,29 +144,6 @@ const EditCaptainOrder = () => {
                         errors.captain_order_date && (
                           <Typography variant="body2" color="error">
                             {errors.captain_order_date}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="captain_order_number"
-                        value={values.captain_order_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Captain Order Number"
-                        error={Boolean(
-                          touched.captain_order_number &&
-                            errors.captain_order_number
-                        )}
-                      />
-                      {touched.captain_order_number &&
-                        errors.captain_order_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.captain_order_number}
                           </Typography>
                         )}
                     </Stack>
