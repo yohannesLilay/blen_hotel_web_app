@@ -46,6 +46,12 @@ export const storeRequisitionsApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
       }),
     }),
+    releaseStoreRequisition: builder.mutation({
+      query: ({id}) => ({
+        url: `${STORE_REQUISITION_ENDPOINT}/${id}/release`,
+        method: "PATCH",
+      }),
+    }),
     deleteStoreRequisition: builder.mutation({
       query: (id) => ({
         url: `${STORE_REQUISITION_ENDPOINT}/${id}`,

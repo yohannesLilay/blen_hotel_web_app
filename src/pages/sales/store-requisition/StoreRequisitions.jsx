@@ -25,6 +25,7 @@ import {
   DeleteOutlined,
   FactCheckOutlined,
   VisibilityOutlined,
+  FolderCopyOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -36,6 +37,7 @@ import StoreRequisitionItemsModal from "./ItemsModal";
 import {
   useGetStoreRequisitionsQuery,
   useApproveStoreRequisitionMutation,
+  useReleaseStoreRequisitionMutation,
   useDeleteStoreRequisitionMutation,
 } from "src/store/slices/sales/storeRequisitionApiSlice";
 
@@ -44,6 +46,7 @@ const ActionButtons = ({
   onEdit,
   onDelete,
   onApprove,
+  onRelease,
   status,
   requestedBy,
 }) => {
@@ -61,6 +64,15 @@ const ActionButtons = ({
           <Tooltip title="Approve Store Requisition">
             <IconButton color="primary" size="small" onClick={onApprove}>
               <FactCheckOutlined />
+            </IconButton>
+          </Tooltip>
+        </PermissionGuard>
+      )}
+      {status === "Approved" && (
+        <PermissionGuard permission="release_store_requisition">
+          <Tooltip title="Release Store Requisition">
+            <IconButton color="primary" size="small" onClick={onRelease}>
+              <FolderCopyOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
@@ -94,6 +106,7 @@ const StoreRequisitionTableRow = ({
   onEdit,
   onDetail,
   onApprove,
+  onRelease,
 }) => {
   return (
     <TableRow
@@ -114,6 +127,7 @@ const StoreRequisitionTableRow = ({
           onDelete={onDelete}
           onDetail={onDetail}
           onApprove={onApprove}
+          onRelease={onRelease}
           status={row.status}
           requestedBy={row.requested_by?.id}
         />
@@ -136,6 +150,7 @@ const StoreRequisitions = () => {
   });
   const [storeRequisitionDeleteApi] = useDeleteStoreRequisitionMutation();
   const [approveStoreRequisitionApi] = useApproveStoreRequisitionMutation();
+  const [releaseStoreRequisitionApi] = useReleaseStoreRequisitionMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -144,7 +159,8 @@ const StoreRequisitions = () => {
   const [detailItems, setDetailItems] = useState([]);
   const [detailStoreRequisition, setDetailStoreRequisition] = useState(null);
   const [showApproveModal, setShowApproveModal] = useState(false);
-  const [changeStatusId, setApproveId] = useState(null);
+  const [showReleaseModal, setShowReleaseModal] = useState(false);
+  const [selectedChangeId, setSelectedChangeId] = useState(null);
 
   const [rows, setRows] = useState(data?.storeRequisitions || []);
   const totalStoreRequisitions = data?.total || 0;
@@ -177,24 +193,21 @@ const StoreRequisitions = () => {
     navigate(`${storeRequisitionId}/edit`);
   };
 
-  const handleDetail = (storeRequisitionId, storeRequisitionStatus, items) => {
+  const handleDetail = (storeRequisition) => {
     setShowDetailModal(true);
-    setDetailItems(items);
-    setDetailStoreRequisition({
-      storeRequisitionId: storeRequisitionId,
-      storeRequisitionStatus: storeRequisitionStatus,
-    });
+    setDetailItems(storeRequisition.items);
+    setDetailStoreRequisition(storeRequisition);
   };
 
   const handleApprove = (storeRequisitionId) => {
     setShowApproveModal(true);
-    setApproveId(storeRequisitionId);
+    setSelectedChangeId(storeRequisitionId);
   };
 
   const handleApproveConfirmed = async () => {
     try {
       const response = await approveStoreRequisitionApi({
-        id: parseInt(changeStatusId),
+        id: parseInt(selectedChangeId),
       }).unwrap();
       setRows((prevRows) =>
         prevRows.map((storeRequisition) =>
@@ -205,11 +218,38 @@ const StoreRequisitions = () => {
       enqueueSnackbar(`Store Requisition approved successfully.`, {
         variant: "success",
       });
-      setApproveId(null);
+      setSelectedChangeId(null);
       setShowApproveModal(false);
     } catch (err) {
-      setApproveId(null);
+      setSelectedChangeId(null);
       setShowApproveModal(false);
+    }
+  };
+
+  const handleRelease = (storeRequisitionId) => {
+    setShowReleaseModal(true);
+    setSelectedChangeId(storeRequisitionId);
+  };
+
+  const handleReleaseConfirmed = async () => {
+    try {
+      const response = await releaseStoreRequisitionApi({
+        id: parseInt(selectedChangeId),
+      }).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((storeRequisition) =>
+          storeRequisition.id === response.id ? response : storeRequisition
+        )
+      );
+
+      enqueueSnackbar(`Store Requisition released successfully.`, {
+        variant: "success",
+      });
+      setSelectedChangeId(null);
+      setShowReleaseModal(false);
+    } catch (err) {
+      setSelectedChangeId(null);
+      setShowReleaseModal(false);
     }
   };
 
@@ -309,10 +349,9 @@ const StoreRequisitions = () => {
                       row={row}
                       onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
-                        handleDetail(row.id, row.status, row.items)
-                      }
+                      onDetail={() => handleDetail(row)}
                       onApprove={() => handleApprove(row.id)}
+                      onRelease={() => handleRelease(row.id)}
                     />
                   ))}
                 </TableBody>
@@ -338,6 +377,16 @@ const StoreRequisitions = () => {
         onConfirm={handleApproveConfirmed}
         dialogTitle={`Confirm Approve Store Requisition`}
         dialogContent={`Are you sure you want to approve this Store Requisition?`}
+        dialogActionName="Confirm"
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={showReleaseModal}
+        onClose={() => setShowReleaseModal(false)}
+        onConfirm={handleReleaseConfirmed}
+        dialogTitle={`Confirm Release Store Requisition`}
+        dialogContent={`Are you sure you want to release this Store Requisition?`}
         dialogActionName="Confirm"
       />
 
@@ -367,6 +416,7 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onRelease: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   requestedBy: PropTypes.number.isRequired,
 };
@@ -378,6 +428,7 @@ StoreRequisitionTableRow.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onRelease: PropTypes.func.isRequired,
 };
 
 export default StoreRequisitions;
