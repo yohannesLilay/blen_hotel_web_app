@@ -95,7 +95,6 @@ const CreateStoreRequisition = () => {
           <Formik
             initialValues={{
               store_requisition_date: dayjs(),
-              store_requisition_number: "",
               items: [],
             }}
             validationSchema={Yup.object().shape({
@@ -105,9 +104,6 @@ const CreateStoreRequisition = () => {
                   new Date(),
                   "Store Requisition Date cannot be in the future"
                 ),
-              store_requisition_number: Yup.string().required(
-                "Store Requisition Number is required"
-              ),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
@@ -121,7 +117,6 @@ const CreateStoreRequisition = () => {
                     store_requisition_date: new Date(
                       values.store_requisition_date
                     ),
-                    store_requisition_number: values.store_requisition_number,
                     items: rows,
                   }).unwrap();
                   navigate(-1);
@@ -199,29 +194,6 @@ const CreateStoreRequisition = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Stack spacing={1}>
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        name="store_requisition_number"
-                        value={values.store_requisition_number}
-                        onBlur={handleBlur}
-                        onChange={handleChange}
-                        label="Store Requisition Number"
-                        error={Boolean(
-                          touched.store_requisition_number &&
-                            errors.store_requisition_number
-                        )}
-                      />
-                      {touched.store_requisition_number &&
-                        errors.store_requisition_number && (
-                          <Typography variant="body2" color="error">
-                            {errors.store_requisition_number}
-                          </Typography>
-                        )}
-                    </Stack>
-                  </Grid>
                   <Grid
                     item
                     xs={12}
@@ -245,14 +217,7 @@ const CreateStoreRequisition = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <MainCard content={false}>
-                      <Box
-                        sx={{
-                          minHeight: 200,
-                          width: "99.8%",
-                          maxWidth: "100%",
-                          p: 1,
-                        }}
-                      >
+                      <Box sx={{ p: 0.5 }}>
                         <TableContainer component={Paper}>
                           <Table aria-label="simple table">
                             <TableHead>
