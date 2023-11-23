@@ -16,19 +16,34 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { AddOutlined, EditOutlined, DeleteOutlined } from "@mui/icons-material";
+import {
+  AddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ToggleOffOutlined,
+  ToggleOnOutlined,
+} from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
+import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import {
   useGetStaffsQuery,
+  useToggleStaffMutation,
   useDeleteStaffMutation,
 } from "src/store/slices/configurations/staffApiSlice";
 
-const ActionButtons = ({ onEdit, onDelete }) => {
+const ActionButtons = ({ onEdit, onDelete, onToggleStatus, status }) => {
   return (
     <div>
+      <PermissionGuard permission="change_staff">
+        <Tooltip title={status ? "Deactivate Staff" : "Activate Staff"}>
+          <IconButton color="primary" size="small" onClick={onToggleStatus}>
+            {status ? <ToggleOffOutlined /> : <ToggleOnOutlined />}
+          </IconButton>
+        </Tooltip>
+      </PermissionGuard>
       <PermissionGuard permission="change_staff">
         <Tooltip title="Edit Staff">
           <IconButton color="primary" size="small" onClick={onEdit}>
@@ -47,7 +62,7 @@ const ActionButtons = ({ onEdit, onDelete }) => {
   );
 };
 
-const StaffTableRow = ({ index, row, onDelete, onEdit }) => {
+const StaffTableRow = ({ index, row, onDelete, onEdit, onToggleStatus }) => {
   return (
     <TableRow
       key={row.id}
@@ -57,8 +72,14 @@ const StaffTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.phone_number}</TableCell>
       <TableCell>{row.staff_type}</TableCell>
+      <TableCell>{row.status ? "Active" : "Inactive"}</TableCell>
       <TableCell align="right">
-        <ActionButtons onEdit={onEdit} onDelete={onDelete} />
+        <ActionButtons
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggleStatus={onToggleStatus}
+          status={row.status}
+        />
       </TableCell>
     </TableRow>
   );
@@ -67,10 +88,16 @@ const StaffTableRow = ({ index, row, onDelete, onEdit }) => {
 const Staffs = () => {
   const navigate = useNavigate();
   const { data, isSuccess } = useGetStaffsQuery();
+
   const [staffDeleteApi] = useDeleteStaffMutation();
+  const [staffToggleApi] = useToggleStaffMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteStaffId, setDeleteStaffId] = useState(null);
+  const [showToggleModal, setShowToggleModal] = useState(false);
+  const [toggleStaffId, setToggleStaffId] = useState(null);
+  const [toggleStaffStatus, setToggleStaffStatus] = useState(false);
+
   const [rows, setRows] = useState(data || []);
   useEffect(() => {
     if (isSuccess) setRows(data);
@@ -104,6 +131,37 @@ const Staffs = () => {
     }
   };
 
+  const handleStatusToggle = (staffId, status) => {
+    setShowToggleModal(true);
+    setToggleStaffId(staffId);
+    setToggleStaffStatus(status);
+  };
+
+  const handleToggleStatusConfirmed = async () => {
+    try {
+      const response = await staffToggleApi({ id: toggleStaffId }).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((staff) => (staff.id === response.id ? response : staff))
+      );
+
+      enqueueSnackbar(
+        `Staff ${
+          toggleStaffStatus ? "Deactivated" : "Activated"
+        } successfully.`,
+        {
+          variant: "success",
+        }
+      );
+      setToggleStaffId(null);
+      setShowToggleModal(false);
+      setToggleStaffStatus(false);
+    } catch (err) {
+      setToggleStaffId(null);
+      setShowToggleModal(false);
+      setToggleStaffStatus(false);
+    }
+  };
+
   return (
     <>
       <Grid item xs={12} md={7} lg={8}>
@@ -133,6 +191,7 @@ const Staffs = () => {
                     <TableCell>Name</TableCell>
                     <TableCell>Phone No</TableCell>
                     <TableCell>Type</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>
@@ -153,6 +212,9 @@ const Staffs = () => {
                       row={row}
                       onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
+                      onToggleStatus={() =>
+                        handleStatusToggle(row.id, row.status)
+                      }
                     />
                   ))}
                 </TableBody>
@@ -168,6 +230,20 @@ const Staffs = () => {
         onDelete={handleDeleteConfirmed}
         dialogContent="Are you sure you want to delete this staff?"
       />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={showToggleModal}
+        onClose={() => setShowToggleModal(false)}
+        onConfirm={handleToggleStatusConfirmed}
+        dialogTitle={`Confirm Staff ${
+          toggleStaffStatus ? "Deactivation" : "Activation"
+        }`}
+        dialogContent={`Are you sure you want to ${
+          toggleStaffStatus ? "deactivate" : "activate"
+        } this staff?`}
+        dialogActionName="Confirm"
+      />
     </>
   );
 };
@@ -176,6 +252,8 @@ const Staffs = () => {
 ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onToggleStatus: PropTypes.func.isRequired,
+  status: PropTypes.bool.isRequired,
 };
 
 StaffTableRow.propTypes = {
@@ -183,6 +261,7 @@ StaffTableRow.propTypes = {
   row: PropTypes.object.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onToggleStatus: PropTypes.func.isRequired,
 };
 
 export default Staffs;
