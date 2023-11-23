@@ -30,6 +30,12 @@ export const staffsApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    toggleStaff: builder.mutation({
+      query: (data) => ({
+        url: `${STAFF_ENDPOINT}/${data.id}/toggle-status`,
+        method: "PATCH",
+      }),
+    }),
     deleteStaff: builder.mutation({
       query: (id) => ({
         url: `${STAFF_ENDPOINT}/${id}`,
@@ -45,5 +51,6 @@ export const {
   useCreateStaffMutation,
   useGetStaffQuery,
   useUpdateStaffMutation,
+  useToggleStaffMutation,
   useDeleteStaffMutation,
 } = staffsApiSlice;
