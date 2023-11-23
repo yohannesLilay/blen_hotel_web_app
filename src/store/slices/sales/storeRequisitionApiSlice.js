@@ -75,6 +75,7 @@ export const {
   useGetStoreRequisitionQuery,
   useUpdateStoreRequisitionMutation,
   useApproveStoreRequisitionMutation,
+  useReleaseStoreRequisitionMutation,
   useDeleteStoreRequisitionMutation,
   useDeleteStoreRequisitionItemMutation
 } = storeRequisitionsApiSlice;
