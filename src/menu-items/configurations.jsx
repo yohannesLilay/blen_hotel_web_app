@@ -4,6 +4,7 @@ import {
   TimelineOutlined,
   RestaurantMenuOutlined,
   AccountCircleOutlined,
+  BedOutlined,
 } from "@mui/icons-material";
 
 const configurations = {
@@ -16,6 +17,7 @@ const configurations = {
     "view_work_flow",
     "view_menu",
     "view_staff",
+    "view_room",
   ],
   children: [
     {
@@ -57,6 +59,14 @@ const configurations = {
       url: "/staffs",
       permission: "view_staff",
       icon: AccountCircleOutlined,
+    },
+    {
+      id: "room",
+      title: "Room",
+      type: "item",
+      url: "/rooms",
+      permission: "view_room",
+      icon: BedOutlined,
     },
   ],
 };
