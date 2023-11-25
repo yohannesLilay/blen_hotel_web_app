@@ -72,7 +72,9 @@ const RoomTableRow = ({ index, row, onDelete, onEdit, onToggleStatus }) => {
       <TableCell>{row.name}</TableCell>
       <TableCell>{row.price}</TableCell>
       <TableCell>{row.room_type}</TableCell>
+      <TableCell>{row.notes}</TableCell>
       <TableCell>{row.status ? "Active" : "Inactive"}</TableCell>
+      <TableCell>{row.available ? "Available" : "Occupied"}</TableCell>
       <TableCell align="right">
         <ActionButtons
           onEdit={onEdit}
@@ -189,7 +191,9 @@ const Rooms = () => {
                     <TableCell>Name</TableCell>
                     <TableCell>Price</TableCell>
                     <TableCell>Type</TableCell>
+                    <TableCell>Notes</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell>Availability</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
                 </TableHead>

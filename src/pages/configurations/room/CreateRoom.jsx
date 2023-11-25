@@ -47,10 +47,12 @@ const CreateRoom = () => {
               name: "",
               price: "",
               room_type: "",
+              notes: "",
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
               price: Yup.number().required("Price is required"),
+              notes: Yup.string(),
               room_type: Yup.string().required("Room Type is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
@@ -59,6 +61,7 @@ const CreateRoom = () => {
                   name: values.name,
                   price: values.price,
                   room_type: values.room_type,
+                  notes: values.notes,
                 }).unwrap();
                 navigate(-1);
                 enqueueSnackbar("Room created successfully.", {
@@ -176,6 +179,25 @@ const CreateRoom = () => {
                       {touched.room_type && errors.room_type && (
                         <Typography variant="body2" color="error">
                           {errors.room_type}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        name="notes"
+                        value={values.notes}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        label="Notes"
+                        error={Boolean(touched.notes && errors.notes)}
+                      />
+                      {touched.notes && errors.notes && (
+                        <Typography variant="body2" color="error">
+                          {errors.notes}
                         </Typography>
                       )}
                     </Stack>
