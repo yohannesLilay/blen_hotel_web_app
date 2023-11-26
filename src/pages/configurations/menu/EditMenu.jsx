@@ -33,11 +33,13 @@ const EditMenu = () => {
           <Formik
             initialValues={{
               item: getMenu?.item || "",
+              item_local_name: getMenu?.item_local_name || "",
               price: getMenu?.price || "",
               description: getMenu?.description || "",
             }}
             validationSchema={Yup.object().shape({
               item: Yup.string().required("Item is required"),
+              item_local_name: Yup.string(),
               price: Yup.number().required("Price is required"),
               description: Yup.string(),
             })}
@@ -45,6 +47,7 @@ const EditMenu = () => {
               await updateMenu({
                 id: parseInt(id),
                 item: values.item,
+                item_local_name: values.item_local_name,
                 price: parseFloat(values.price),
                 description: values.description,
               }).unwrap();
@@ -81,6 +84,27 @@ const EditMenu = () => {
                       {touched.item && errors.item && (
                         <Typography variant="body2" color="error">
                           {errors.item}
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        name="item_local_name"
+                        value={values.item_local_name}
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        label="Item Local Name"
+                        error={Boolean(
+                          touched.item_local_name && errors.item_local_name
+                        )}
+                      />
+                      {touched.item_local_name && errors.item_local_name && (
+                        <Typography variant="body2" color="error">
+                          {errors.item_local_name}
                         </Typography>
                       )}
                     </Stack>
