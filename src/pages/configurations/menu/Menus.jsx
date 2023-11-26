@@ -63,7 +63,10 @@ const MenuTableRow = ({ index, row, onDelete, onEdit }) => {
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell align="left">{index + 1}</TableCell>
-      <TableCell>{row.item}</TableCell>
+      <TableCell>
+        {row.item}
+        {row.item_local_name && ` (${row.item_local_name})`}
+      </TableCell>
       <TableCell>{row.price} BIRR</TableCell>
       <TableCell>{row.description}</TableCell>
       <TableCell align="right">
