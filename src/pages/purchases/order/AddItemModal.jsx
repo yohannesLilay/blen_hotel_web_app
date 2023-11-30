@@ -45,14 +45,10 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                       (option) => option.id === currentItem.product_id
                     )
                   : null,
-                unit_price: currentItem?.unit_price
-                  ? currentItem.unit_price
-                  : "",
                 remark: currentItem?.remark ? currentItem.remark : "",
               }}
               validationSchema={Yup.object().shape({
                 quantity: Yup.number().required("Quantity is required"),
-                unit_price: Yup.number().required("Unit Price is required"),
                 remark: Yup.string(),
                 product: Yup.object()
                   .shape({
@@ -66,7 +62,6 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                     id: Math.random().toString(36),
                     product_id: values.product?.id,
                     quantity: parseInt(values.quantity),
-                    unit_price: parseFloat(values.unit_price),
                     remark: values.remark,
                   };
 
@@ -152,27 +147,6 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                         <TextField
                           fullWidth
                           variant="outlined"
-                          name="unit_price"
-                          value={values.unit_price}
-                          onBlur={handleBlur}
-                          onChange={handleChange}
-                          label="Unit Price"
-                          error={Boolean(
-                            touched.unit_price && errors.unit_price
-                          )}
-                        />
-                        {touched.unit_price && errors.unit_price && (
-                          <Typography variant="body2" color="error">
-                            {errors.unit_price}
-                          </Typography>
-                        )}
-                      </Stack>
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Stack spacing={1}>
-                        <TextField
-                          fullWidth
-                          variant="outlined"
                           name="remark"
                           value={values.remark}
                           onBlur={handleBlur}
@@ -237,7 +211,6 @@ AddItemModal.propTypes = {
   currentItem: PropTypes.shape({
     quantity: PropTypes.number.isRequired,
     product_id: PropTypes.number.isRequired,
-    unit_price: PropTypes.number.isRequired,
     remark: PropTypes.string.isRequired,
   }),
 };

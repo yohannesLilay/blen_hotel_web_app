@@ -2,8 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
+  Autocomplete,
   Box,
   Button,
+  Checkbox,
+  FormControl,
   Grid,
   IconButton,
   Paper,
@@ -18,7 +21,7 @@ import {
   Typography,
   Tooltip,
 } from "@mui/material";
-import { EditOutlined, DeleteOutlined } from "@mui/icons-material";
+import { DeleteOutlined } from "@mui/icons-material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -31,7 +34,6 @@ import {
   useGetOrderTemplateQuery,
 } from "src/store/slices/purchases/orderApiSlice";
 import MainCard from "src/components/MainCard";
-import AddItemModal from "./AddItemModal";
 
 const CreateOrder = () => {
   const navigate = useNavigate();
@@ -40,49 +42,35 @@ const CreateOrder = () => {
   const [createOrder, { isLoading }] = useCreateOrderMutation();
 
   const [rows, setRows] = useState([]);
-  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
 
-  const handleAddItem = (itemData) => {
-    const existingIndex = rows.findIndex(
-      (row, index) =>
-        index !== currentItem && row.product_id === itemData.product_id
-    );
+  const handleSelectedProduct = (selectedProduct) => {
+    if (selectedProduct) {
+      const existingIndex = rows.findIndex(
+        (row) => row.product_id === selectedProduct.id
+      );
 
-    if (existingIndex === -1) {
-      if (currentItem === null) {
-        setRows([...rows, itemData]);
+      if (existingIndex === -1) {
+        setRows([
+          ...rows,
+          {
+            id: Math.random().toString(36),
+            product_id: selectedProduct.id,
+            quantity: 1,
+            remark: "",
+          },
+        ]);
       } else {
         const updatedRows = rows.map((row, index) =>
-          index === currentItem ? itemData : row
+          index === existingIndex ? { ...row, quantity: 1, remark: "" } : row
         );
         setRows(updatedRows);
       }
-
-      setIsAddItemModalOpen(false);
-      setCurrentItem(null);
-    } else {
-      enqueueSnackbar("Item already exists. Please edit the existing item.", {
-        variant: "error",
-      });
     }
-  };
-
-  const editItem = (index) => {
-    setCurrentItem(index);
-    setIsAddItemModalOpen(true);
   };
 
   const deleteItem = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
     setRows(updatedRows);
-  };
-
-  const calculateTotalPrice = () => {
-    return rows.reduce(
-      (total, row) => total + row.quantity * row.unit_price,
-      0
-    );
   };
 
   return (
@@ -101,18 +89,33 @@ const CreateOrder = () => {
           <Formik
             initialValues={{
               order_date: dayjs(),
+              products: [],
               items: [],
             }}
             validationSchema={Yup.object().shape({
               order_date: Yup.date()
                 .required("Order Date is required")
                 .max(new Date(), "Order Date cannot be in the future"),
+              products: Yup.array()
+                .required("At lease one product item is required")
+                .min(1, "At least one product item is required"),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
-                if (rows.length === 0) {
+                const isRowsValid =
+                  rows.length > 0 &&
+                  rows.every((row) => {
+                    return (
+                      row.quantity !== null &&
+                      row.quantity !== undefined &&
+                      !isNaN(row.quantity) &&
+                      parseInt(row.quantity, 10) > 0
+                    );
+                  });
+
+                if (!isRowsValid) {
                   enqueueSnackbar(
-                    "Please add at least one item to the order.",
+                    "Please make sure all items have a valid quantity.",
                     { variant: "error" }
                   );
                 } else {
@@ -145,7 +148,7 @@ const CreateOrder = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid item xs={12} sm={3}>
                     <Stack spacing={1}>
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -188,24 +191,72 @@ const CreateOrder = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    container
-                    justifyContent="flex-end"
-                    spacing={1}
-                  >
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        setCurrentItem(null); // Set the current item to null (new item)
-                        setIsAddItemModalOpen(true); // Open the AddItemModal
-                      }}
-                      disabled={currentItem !== null}
-                    >
-                      Add Item
-                    </Button>
+                  <Grid item xs={12} sm={9}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.products && errors.products)}
+                      >
+                        <Autocomplete
+                          multiple
+                          limitTags={4}
+                          disableCloseOnSelect
+                          id="products"
+                          options={getTemplate?.productOptions || []}
+                          value={values.products}
+                          onChange={(event, newValue) => {
+                            const removedProducts = values.products.filter(
+                              (product) =>
+                                !newValue.some(
+                                  (selectedProduct) =>
+                                    selectedProduct.id === product.id
+                                )
+                            );
+                            if (removedProducts.length > 0) {
+                              const updatedRows = rows.filter(
+                                (row) =>
+                                  row.product_id !== removedProducts[0].id
+                              );
+                              setRows(updatedRows);
+                            } else {
+                              const selectedProduct =
+                                newValue[newValue.length - 1];
+                              handleSelectedProduct(selectedProduct);
+                            }
+
+                            handleChange({
+                              target: { name: "products", value: newValue },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderOption={(props, option, state) => (
+                            <li {...props}>
+                              <Checkbox
+                                checked={state.selected}
+                                onChange={() => {}}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Products"
+                              variant="outlined"
+                              error={Boolean(
+                                touched.products && errors.products
+                              )}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                      {touched.products && errors.products && (
+                        <Typography variant="body2" color="error">
+                          {errors.products}
+                        </Typography>
+                      )}
+                    </Stack>
                   </Grid>
                   <Grid item xs={12}>
                     <MainCard content={false}>
@@ -217,8 +268,6 @@ const CreateOrder = () => {
                                 <TableCell>Index</TableCell>
                                 <TableCell>Product</TableCell>
                                 <TableCell>Quantity</TableCell>
-                                <TableCell>Unit Price</TableCell>
-                                <TableCell>Total Price</TableCell>
                                 <TableCell>Remark</TableCell>
                                 <TableCell align="right">Action</TableCell>
                               </TableRow>
@@ -245,32 +294,74 @@ const CreateOrder = () => {
                                   <TableCell align="left">
                                     {index + 1}
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell style={{ width: 300 }}>
                                     {getTemplate.productOptions.find(
                                       (product) => product.id === row.product_id
                                     )?.name || ""}
                                   </TableCell>
-                                  <TableCell>{row.quantity}</TableCell>
-                                  <TableCell>{row.unit_price}</TableCell>
-                                  <TableCell>
-                                    {row.quantity * row.unit_price}
+                                  <TableCell style={{ width: 120 }}>
+                                    <TextField
+                                      size="small"
+                                      type="number"
+                                      value={row.quantity}
+                                      onChange={(e) => {
+                                        const integerValue =
+                                          e.target.value.replace(/[^0-9]/g, "");
+                                        const updatedRows = rows.map((r, i) =>
+                                          i === index
+                                            ? {
+                                                ...r,
+                                                quantity: parseInt(
+                                                  integerValue,
+                                                  10
+                                                ),
+                                              }
+                                            : r
+                                        );
+                                        setRows(updatedRows);
+                                      }}
+                                      inputProps={{ min: 1 }}
+                                    />
                                   </TableCell>
-                                  <TableCell>{row.remark}</TableCell>
-                                  <TableCell align="right">
-                                    <Tooltip title="Edit Item">
-                                      <IconButton
-                                        color="primary"
-                                        size="small"
-                                        onClick={() => editItem(index)}
-                                      >
-                                        <EditOutlined />
-                                      </IconButton>
-                                    </Tooltip>
+                                  <TableCell>
+                                    <TextField
+                                      size="small"
+                                      value={row.remark}
+                                      onChange={(e) => {
+                                        const updatedRows = rows.map((r, i) =>
+                                          i === index
+                                            ? { ...r, remark: e.target.value }
+                                            : r
+                                        );
+                                        setRows(updatedRows);
+                                      }}
+                                      fullWidth
+                                    />
+                                  </TableCell>
+                                  <TableCell
+                                    align="right"
+                                    style={{ width: 80 }}
+                                  >
                                     <Tooltip title="Delete Item">
                                       <IconButton
                                         color="error"
                                         size="small"
-                                        onClick={() => deleteItem(index)}
+                                        onClick={() => {
+                                          deleteItem(index);
+
+                                          const updatedProducts =
+                                            values.products.filter(
+                                              (product) =>
+                                                product.id !==
+                                                rows[index].product_id
+                                            );
+                                          handleChange({
+                                            target: {
+                                              name: "products",
+                                              value: updatedProducts,
+                                            },
+                                          });
+                                        }}
                                       >
                                         <DeleteOutlined />
                                       </IconButton>
@@ -278,17 +369,6 @@ const CreateOrder = () => {
                                   </TableCell>
                                 </TableRow>
                               ))}
-                              {rows.length > 0 && (
-                                <TableRow>
-                                  <TableCell colSpan={3}></TableCell>
-                                  <TableCell align="right">
-                                    <strong>Total</strong>:
-                                  </TableCell>
-                                  <TableCell>{calculateTotalPrice()}</TableCell>
-                                  <TableCell></TableCell>
-                                  <TableCell></TableCell>
-                                </TableRow>
-                              )}
                             </TableBody>
                           </Table>
                         </TableContainer>
@@ -333,17 +413,6 @@ const CreateOrder = () => {
           </Formik>
         </Box>
       </MainCard>
-
-      <AddItemModal
-        isOpen={isAddItemModalOpen}
-        onClose={() => {
-          setCurrentItem(null); // Reset currentItem when closing modal
-          setIsAddItemModalOpen(false);
-        }}
-        onAdd={handleAddItem}
-        currentItem={currentItem !== null ? rows[currentItem] : null} // Pass the currentItem for editing
-        getTemplate={getTemplate || {}}
-      />
     </Grid>
   );
 };

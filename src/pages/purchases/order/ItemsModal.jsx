@@ -94,10 +94,6 @@ const OrderItemsModal = ({
     }
   };
 
-  const calculateTotalPrice = () => {
-    return rows.reduce((total, item) => total + item.total_price, 0);
-  };
-
   return (
     <>
       <Modal open={isOpen} onClose={onModalClose}>
@@ -146,8 +142,6 @@ const OrderItemsModal = ({
                         <TableCell>Product Name</TableCell>
                         <TableCell>UoM</TableCell>
                         <TableCell>Quantity</TableCell>
-                        <TableCell>Unit Price</TableCell>
-                        <TableCell>Total Price</TableCell>
                         <TableCell>Remark</TableCell>
                         <TableCell align="right">
                           <PermissionGuard permission="add_purchase_order">
@@ -168,8 +162,6 @@ const OrderItemsModal = ({
                           <TableCell>{row.product?.name}</TableCell>
                           <TableCell>{row.product?.unit_of_measure}</TableCell>
                           <TableCell>{row.quantity}</TableCell>
-                          <TableCell>{row.unit_price}</TableCell>
-                          <TableCell>{row.total_price}</TableCell>
                           <TableCell>{row.remark}</TableCell>
                           <TableCell align="right">
                             {orderStatus === "Requested" && (
@@ -188,12 +180,6 @@ const OrderItemsModal = ({
                           </TableCell>
                         </TableRow>
                       ))}
-                      <TableRow>
-                        <TableCell colSpan={5} align="right">
-                          <strong>Total</strong>:
-                        </TableCell>
-                        <TableCell>{calculateTotalPrice()}</TableCell>
-                      </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>
