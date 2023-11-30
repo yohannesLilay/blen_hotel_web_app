@@ -5,6 +5,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  Checkbox,
   FormControl,
   Grid,
   IconButton,
@@ -20,7 +21,7 @@ import {
   Typography,
   Tooltip,
 } from "@mui/material";
-import { EditOutlined, DeleteOutlined } from "@mui/icons-material";
+import { DeleteOutlined } from "@mui/icons-material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -33,7 +34,6 @@ import {
   useGetReceivableTemplateQuery,
 } from "src/store/slices/purchases/receivableApiSlice";
 import MainCard from "src/components/MainCard";
-import AddItemModal from "./AddItemModal";
 
 const CreateReceivable = () => {
   const navigate = useNavigate();
@@ -42,39 +42,6 @@ const CreateReceivable = () => {
   const [createReceivable, { isLoading }] = useCreateReceivableMutation();
 
   const [rows, setRows] = useState([]);
-  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
-  const [isDerivedFromOrder, setIsDerivedFromOrder] = useState(false);
-
-  const handleAddItem = (itemData) => {
-    const existingIndex = rows.findIndex(
-      (row, index) =>
-        index !== currentItem && row.product_id === itemData.product_id
-    );
-
-    if (existingIndex === -1) {
-      if (currentItem === null) {
-        setRows([...rows, itemData]);
-      } else {
-        const updatedRows = rows.map((row, index) =>
-          index === currentItem ? itemData : row
-        );
-        setRows(updatedRows);
-      }
-
-      setIsAddItemModalOpen(false);
-      setCurrentItem(null);
-    } else {
-      enqueueSnackbar("Item already exists. Please edit the existing item.", {
-        variant: "error",
-      });
-    }
-  };
-
-  const editItem = (index) => {
-    setCurrentItem(index);
-    setIsAddItemModalOpen(true);
-  };
 
   const deleteItem = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
@@ -86,6 +53,34 @@ const CreateReceivable = () => {
       (total, row) => total + row.quantity * row.unit_price,
       0
     );
+  };
+
+  const handleSelectedProduct = (selectedProduct) => {
+    if (selectedProduct) {
+      const existingIndex = rows.findIndex(
+        (row) => row.product_id === selectedProduct.id
+      );
+
+      if (existingIndex === -1) {
+        setRows([
+          ...rows,
+          {
+            id: Math.random().toString(36),
+            product_id: selectedProduct.id,
+            quantity: 1,
+            unit_price: 0,
+            remark: "",
+          },
+        ]);
+      } else {
+        const updatedRows = rows.map((row, index) =>
+          index === existingIndex
+            ? { ...row, quantity: 1, unit_price: 0, remark: "" }
+            : row
+        );
+        setRows(updatedRows);
+      }
+    }
   };
 
   return (
@@ -106,6 +101,7 @@ const CreateReceivable = () => {
               receivable_date: dayjs(),
               supplier: null,
               order: null,
+              products: [],
               items: [],
             }}
             validationSchema={Yup.object().shape({
@@ -125,9 +121,24 @@ const CreateReceivable = () => {
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
-                if (rows.length === 0) {
+                const isRowsValid =
+                  rows.length > 0 &&
+                  rows.every((row) => {
+                    return (
+                      row.quantity !== null &&
+                      row.quantity !== undefined &&
+                      !isNaN(row.quantity) &&
+                      parseInt(row.quantity, 10) > 0 &&
+                      row.unit_price !== null &&
+                      row.unit_price !== undefined &&
+                      !isNaN(row.unit_price) &&
+                      parseFloat(row.unit_price) > 0
+                    );
+                  });
+
+                if (!isRowsValid) {
                   enqueueSnackbar(
-                    "Please add at least one item to the receivable.",
+                    "Please make sure all items have a valid quantity and unit price.",
                     { variant: "error" }
                   );
                 } else {
@@ -135,7 +146,10 @@ const CreateReceivable = () => {
                     receivable_date: new Date(values.receivable_date),
                     order_id: values.order?.id,
                     supplier_id: values.supplier?.id,
-                    items: rows,
+                    items: rows.map((r) => ({
+                      ...r,
+                      unit_price: parseFloat(r.unit_price) || 0,
+                    })),
                   }).unwrap();
                   navigate(-1);
                   enqueueSnackbar("GRV created successfully.", {
@@ -231,6 +245,7 @@ const CreateReceivable = () => {
                                       ...item,
                                       product_id: item.product.id,
                                       product: undefined,
+                                      unit_price: 0,
                                     };
                                   } else {
                                     return item;
@@ -239,10 +254,8 @@ const CreateReceivable = () => {
                               );
 
                               setRows(modifiedItems);
-                              setIsDerivedFromOrder(true);
                             } else {
                               setRows([]);
-                              setIsDerivedFromOrder(false);
                             }
                           }}
                           getOptionLabel={(option) => option.order_number}
@@ -300,28 +313,75 @@ const CreateReceivable = () => {
                       )}
                     </Stack>
                   </Grid>
-
-                  <Grid
-                    item
-                    xs={12}
-                    container
-                    justifyContent="flex-end"
-                    spacing={1}
-                  >
-                    {values.order == null && (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          setCurrentItem(null); // Set the current item to null (new item)
-                          setIsAddItemModalOpen(true); // Open the AddItemModal
-                        }}
-                        disabled={currentItem !== null}
+                  <Grid item xs={12}>
+                    <Stack spacing={1}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(touched.products && errors.products)}
                       >
-                        Add Item
-                      </Button>
-                    )}
+                        <Autocomplete
+                          multiple
+                          limitTags={4}
+                          disableCloseOnSelect
+                          id="products"
+                          options={getTemplate?.productOptions || []}
+                          value={values.products}
+                          onChange={(event, newValue) => {
+                            const removedProducts = values.products.filter(
+                              (product) =>
+                                !newValue.some(
+                                  (selectedProduct) =>
+                                    selectedProduct.id === product.id
+                                )
+                            );
+                            if (removedProducts.length > 0) {
+                              const updatedRows = rows.filter(
+                                (row) =>
+                                  row.product_id !== removedProducts[0].id
+                              );
+                              setRows(updatedRows);
+                            } else {
+                              const selectedProduct =
+                                newValue[newValue.length - 1];
+                              handleSelectedProduct(selectedProduct);
+                            }
+
+                            handleChange({
+                              target: { name: "products", value: newValue },
+                            });
+                          }}
+                          getOptionLabel={(option) => option.name}
+                          renderOption={(props, option, state) => (
+                            <li {...props}>
+                              <Checkbox
+                                checked={state.selected}
+                                onChange={() => {}}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Products"
+                              variant="outlined"
+                              error={Boolean(
+                                touched.products && errors.products
+                              )}
+                            />
+                          )}
+                          disabled={values.order !== null}
+                        />
+                      </FormControl>
+                      {touched.products && errors.products && (
+                        <Typography variant="body2" color="error">
+                          {errors.products}
+                        </Typography>
+                      )}
+                    </Stack>
                   </Grid>
+
                   <Grid item xs={12}>
                     <MainCard content={false}>
                       <Box sx={{ p: 0.5 }}>
@@ -360,33 +420,107 @@ const CreateReceivable = () => {
                                   <TableCell align="left">
                                     {index + 1}
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell style={{ width: 200 }}>
                                     {getTemplate.productOptions.find(
                                       (product) => product.id === row.product_id
                                     )?.name || ""}
                                   </TableCell>
-                                  <TableCell>{row.quantity}</TableCell>
-                                  <TableCell>{row.unit_price}</TableCell>
+                                  <TableCell style={{ width: 100 }}>
+                                    <TextField
+                                      size="small"
+                                      type="number"
+                                      value={row.quantity}
+                                      onChange={(e) => {
+                                        const integerValue =
+                                          e.target.value.replace(/[^0-9]/g, "");
+                                        const updatedRows = rows.map((r, i) =>
+                                          i === index
+                                            ? {
+                                                ...r,
+                                                quantity: parseInt(
+                                                  integerValue,
+                                                  10
+                                                ),
+                                              }
+                                            : r
+                                        );
+                                        setRows(updatedRows);
+                                      }}
+                                      inputProps={{ min: 1 }}
+                                    />
+                                  </TableCell>
+                                  <TableCell style={{ width: 140 }}>
+                                    <TextField
+                                      size="small"
+                                      value={row.unit_price}
+                                      onChange={(e) => {
+                                        const decimalValue =
+                                          e.target.value.replace(
+                                            /[^0-9.]/g,
+                                            ""
+                                          );
+
+                                        const dotCount = (
+                                          decimalValue.match(/\./g) || []
+                                        ).length;
+
+                                        if (dotCount <= 1) {
+                                          const updatedRows = rows.map((r, i) =>
+                                            i === index
+                                              ? {
+                                                  ...r,
+                                                  unit_price: decimalValue,
+                                                }
+                                              : r
+                                          );
+                                          setRows(updatedRows);
+                                        }
+                                      }}
+                                      inputProps={{ min: 1, step: 0.01 }}
+                                    />
+                                  </TableCell>
                                   <TableCell>
                                     {row.quantity * row.unit_price}
                                   </TableCell>
-                                  <TableCell>{row.remark}</TableCell>
-                                  <TableCell align="right">
-                                    <Tooltip title="Edit Item">
-                                      <IconButton
-                                        color="primary"
-                                        size="small"
-                                        onClick={() => editItem(index)}
-                                      >
-                                        <EditOutlined />
-                                      </IconButton>
-                                    </Tooltip>
+                                  <TableCell>
+                                    <TextField
+                                      size="small"
+                                      value={row.remark}
+                                      onChange={(e) => {
+                                        const updatedRows = rows.map((r, i) =>
+                                          i === index
+                                            ? { ...r, remark: e.target.value }
+                                            : r
+                                        );
+                                        setRows(updatedRows);
+                                      }}
+                                      fullWidth
+                                    />
+                                  </TableCell>
+                                  <TableCell
+                                    align="right"
+                                    style={{ width: 80 }}
+                                  >
                                     {values.order == null && (
                                       <Tooltip title="Delete Item">
                                         <IconButton
                                           color="error"
                                           size="small"
-                                          onClick={() => deleteItem(index)}
+                                          onClick={() => {
+                                            deleteItem(index);
+                                            const updatedProducts =
+                                              values.products.filter(
+                                                (product) =>
+                                                  product.id !==
+                                                  rows[index].product_id
+                                              );
+                                            handleChange({
+                                              target: {
+                                                name: "products",
+                                                value: updatedProducts,
+                                              },
+                                            });
+                                          }}
                                         >
                                           <DeleteOutlined />
                                         </IconButton>
@@ -450,18 +584,6 @@ const CreateReceivable = () => {
           </Formik>
         </Box>
       </MainCard>
-
-      <AddItemModal
-        isOpen={isAddItemModalOpen}
-        onClose={() => {
-          setCurrentItem(null); // Reset currentItem when closing modal
-          setIsAddItemModalOpen(false);
-        }}
-        onAdd={handleAddItem}
-        currentItem={currentItem !== null ? rows[currentItem] : null}
-        getTemplate={getTemplate || {}}
-        areItemsFromOrder={isDerivedFromOrder}
-      />
     </Grid>
   );
 };
