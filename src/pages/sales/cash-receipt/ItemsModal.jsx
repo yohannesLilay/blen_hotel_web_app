@@ -78,7 +78,11 @@ const CashReceiptItemsModal = ({ isOpen, onModalClose, cashReceiptItems }) => {
                           }}
                         >
                           <TableCell align="left">{index + 1}</TableCell>
-                          <TableCell>{row.menu?.item}</TableCell>
+                          <TableCell>
+                            {row.menu?.item}
+                            {row.menu?.item_local_name &&
+                              ` (${row.menu.item_local_name})`}
+                          </TableCell>
                           <TableCell>{row.quantity}</TableCell>
                           <TableCell>{row.unit_price} BIRR</TableCell>
                           <TableCell>

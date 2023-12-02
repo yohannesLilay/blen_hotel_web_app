@@ -181,6 +181,22 @@ const PrintableContent = React.forwardRef(({ getPrintData }, ref) => {
             <Typography>*{amounts.totalAmount}</Typography>
           </div>
         </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginBottom: 0.5,
+            marginRight: 25,
+          }}
+        >
+          <div>
+            <Typography>#ITEMS</Typography>
+          </div>
+          <div style={{ alignItems: "flex-end" }}>
+            <Typography>*{items?.length}</Typography>
+          </div>
+        </div>
       </TableContainer>
     </Grid>
   );

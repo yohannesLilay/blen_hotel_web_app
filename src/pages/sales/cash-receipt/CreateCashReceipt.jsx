@@ -56,6 +56,11 @@ const CreateCashReceipt = () => {
       .join("&");
   };
 
+  const getMenuItemDisplay = (menu) => {
+    const { item, item_local_name } = menu;
+    return `${item || ""}${item_local_name ? ` (${item_local_name})` : ""}`;
+  };
+
   return (
     <Grid item xs={12} md={7} lg={8}>
       <Grid container alignItems="center" justifyContent="space-between">
@@ -399,9 +404,11 @@ const CreateCashReceipt = () => {
                                     {index + 1}
                                   </TableCell>
                                   <TableCell>
-                                    {getTemplate.menuOptions.find(
-                                      (menu) => menu.id === row.menu_id
-                                    )?.item || ""}
+                                    {getMenuItemDisplay(
+                                      getTemplate.menuOptions.find(
+                                        (menu) => menu.id === row.menu_id
+                                      )
+                                    )}
                                   </TableCell>
                                   <TableCell>{row.quantity}</TableCell>
                                   <TableCell>{row.unit_price} BIRR</TableCell>

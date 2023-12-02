@@ -100,7 +100,13 @@ const AddItemModal = ({ isOpen, onClose, onAdd, currentItem, getTemplate }) => {
                                 target: { name: "menu", value: newValue },
                               });
                             }}
-                            getOptionLabel={(option) => option.item}
+                            getOptionLabel={(option) =>
+                              `${option.item}${
+                                option.item_local_name
+                                  ? ` (${option.item_local_name})`
+                                  : ""
+                              }`
+                            }
                             renderInput={(params) => (
                               <TextField
                                 {...params}
