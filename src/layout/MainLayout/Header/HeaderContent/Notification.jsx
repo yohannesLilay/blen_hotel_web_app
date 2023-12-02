@@ -58,24 +58,28 @@ const Notification = () => {
   useEffect(() => {
     const userId = userInfo ? userInfo.userId : null;
 
-    const socket = io(`${import.meta.env.VITE_SERVER_URL}`, {
-      query: { userId: userId },
-    });
+    const shouldUseWebSocket = import.meta.env.VITE_USE_WEBSOCKET === "true";
 
-    socket.on("connect", () => {
-      socket.emit("joinRoom", String(userId));
-    });
+    if (shouldUseWebSocket) {
+      const socket = io(`${import.meta.env.VITE_SERVER_URL}`, {
+        query: { userId: userId },
+      });
 
-    socket.on("notification", (data) => {
-      if (data) {
-        dispatch(incrementNotificationCount());
-        enqueueSnackbar("You have new notification.", { variant: "info" });
-      }
-    });
+      socket.on("connect", () => {
+        socket.emit("joinRoom", String(userId));
+      });
 
-    return () => {
-      socket.disconnect();
-    };
+      socket.on("notification", (data) => {
+        if (data) {
+          dispatch(incrementNotificationCount());
+          enqueueSnackbar("You have new notification.", { variant: "info" });
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    } else return undefined;
   }, [dispatch, userInfo]);
 
   const anchorRef = useRef(null);
