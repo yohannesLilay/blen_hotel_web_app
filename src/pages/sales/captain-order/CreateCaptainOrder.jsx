@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
+import PropTypes from "prop-types";
 import {
   Autocomplete,
   Box,
@@ -27,6 +28,44 @@ import {
 } from "src/store/slices/sales/captainOrderApiSlice";
 import MainCard from "src/components/MainCard";
 import { AddOutlined, RemoveOutlined } from "@mui/icons-material";
+
+const MenuItemCard = ({ row, menuOption, onDecrease, onIncrease }) => (
+  <Grid item xs={12} sm={4} md={4} lg={3}>
+    <Card sx={{ minWidth: 275, maxWidth: 400 }}>
+      <CardContent>
+        <Stack
+          spacing={1}
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          sx={{ marginBottom: 1 }}
+        >
+          <Typography variant="h6">
+            {`${menuOption.item || ""}${
+              menuOption.item_local_name
+                ? ` (${menuOption.item_local_name})`
+                : ""
+            }`}
+          </Typography>
+        </Stack>
+        <Stack
+          spacing={1}
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Button onClick={onDecrease}>
+            <RemoveOutlined />
+          </Button>
+          <Typography variant="h5">{row.quantity}</Typography>
+          <Button onClick={onIncrease}>
+            <AddOutlined />
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
+  </Grid>
+);
 
 const CreateCaptainOrder = () => {
   const navigate = useNavigate();
@@ -58,6 +97,18 @@ const CreateCaptainOrder = () => {
         setRows(updatedRows);
       }
     }
+  };
+
+  const handleQuantityChange = (index, change) => {
+    // Assuming 'rows' and 'setRows' are state variables
+    setRows((prevRows) => {
+      const updatedRows = [...prevRows];
+      updatedRows[index].quantity = Math.max(
+        1,
+        updatedRows[index].quantity + change
+      );
+      return updatedRows;
+    });
   };
 
   return (
@@ -306,7 +357,11 @@ const CreateCaptainOrder = () => {
                                 checked={state.selected}
                                 onChange={() => {}}
                               />
-                              {option.item}
+                              {`${option.item}${
+                                option.item_local_name
+                                  ? ` (${option.item_local_name})`
+                                  : ""
+                              }`}
                             </li>
                           )}
                           renderInput={(params) => (
@@ -328,58 +383,22 @@ const CreateCaptainOrder = () => {
                   </Grid>
 
                   <Grid container spacing={2} sx={{ margin: 1 }}>
-                    {rows.map((row, index) => (
-                      <Grid item key={row.id} xs={12} sm={4} md={4} lg={3}>
-                        <Card sx={{ minWidth: 275, maxWidth: 400 }}>
-                          <CardContent>
-                            <Stack
-                              spacing={1}
-                              direction="row"
-                              justifyContent="center"
-                              alignItems="center"
-                              sx={{ marginBottom: 1 }}
-                            >
-                              <Typography variant="h6">
-                                {getTemplate.menuOptions.find(
-                                  (menu) => menu.id === row.menu_id
-                                )?.item || ""}
-                              </Typography>
-                            </Stack>
-                            <Stack
-                              spacing={1}
-                              direction="row"
-                              justifyContent="center"
-                              alignItems="center"
-                            >
-                              <Button
-                                onClick={() => {
-                                  const updatedRows = [...rows];
-                                  updatedRows[index].quantity = Math.max(
-                                    1,
-                                    updatedRows[index].quantity - 1
-                                  );
-                                  setRows(updatedRows);
-                                }}
-                              >
-                                <RemoveOutlined />
-                              </Button>
-                              <Typography variant="h5">
-                                {row.quantity}
-                              </Typography>
-                              <Button
-                                onClick={() => {
-                                  const updatedRows = [...rows];
-                                  updatedRows[index].quantity += 1;
-                                  setRows(updatedRows);
-                                }}
-                              >
-                                <AddOutlined />
-                              </Button>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
+                    {rows.map((row, index) => {
+                      const menuOption =
+                        getTemplate.menuOptions.find(
+                          (menu) => menu.id === row.menu_id
+                        ) || {};
+
+                      return (
+                        <MenuItemCard
+                          key={row.id}
+                          row={row}
+                          menuOption={menuOption}
+                          onDecrease={() => handleQuantityChange(index, -1)}
+                          onIncrease={() => handleQuantityChange(index, 1)}
+                        />
+                      );
+                    })}
                   </Grid>
 
                   <Grid
@@ -421,6 +440,13 @@ const CreateCaptainOrder = () => {
       </MainCard>
     </Grid>
   );
+};
+
+MenuItemCard.propTypes = {
+  row: PropTypes.object.isRequired,
+  menuOption: PropTypes.object.isRequired,
+  onDecrease: PropTypes.func.isRequired,
+  onIncrease: PropTypes.func.isRequired,
 };
 
 export default CreateCaptainOrder;
