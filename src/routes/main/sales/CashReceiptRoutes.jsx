@@ -10,6 +10,9 @@ const CashReceipts = Loadable(
 const CreateCashReceipt = Loadable(
   lazy(() => import("src/pages/sales/cash-receipt/CreateCashReceipt"))
 );
+const CashReceiptDetail = Loadable(
+  lazy(() => import("src/pages/sales/cash-receipt/CashReceiptDetail"))
+);
 
 const CashReceiptRoutes = [
   {
@@ -27,6 +30,15 @@ const CashReceiptRoutes = [
       <PrivateRoute
         element={<CreateCashReceipt />}
         requiredPermission={"add_cash_receipt"}
+      />
+    ),
+  },
+  {
+    path: ":id",
+    element: (
+      <PrivateRoute
+        element={<CashReceiptDetail />}
+        requiredPermission={"view_cash_receipt"}
       />
     ),
   },

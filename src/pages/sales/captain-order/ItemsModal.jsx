@@ -110,7 +110,7 @@ const CaptainOrderItemsModal = ({
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 4,
-            maxWidth: 1200,
+            maxWidth: 800,
             width: "100%",
             textAlign: "center",
           }}

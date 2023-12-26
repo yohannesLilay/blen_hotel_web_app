@@ -13,6 +13,9 @@ const CreateCaptainOrder = Loadable(
 const EditCaptainOrder = Loadable(
   lazy(() => import("src/pages/sales/captain-order/EditCaptainOrder"))
 );
+const CaptainOrderDetail = Loadable(
+  lazy(() => import("src/pages/sales/captain-order/CaptainOrderDetail"))
+);
 
 const CaptainOrderRoutes = [
   {
@@ -30,6 +33,15 @@ const CaptainOrderRoutes = [
       <PrivateRoute
         element={<CreateCaptainOrder />}
         requiredPermission={"add_captain_order"}
+      />
+    ),
+  },
+  {
+    path: ":id",
+    element: (
+      <PrivateRoute
+        element={<CaptainOrderDetail />}
+        requiredPermission={"view_captain_order"}
       />
     ),
   },

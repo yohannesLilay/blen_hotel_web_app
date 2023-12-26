@@ -64,7 +64,7 @@ const EditRoom = () => {
               await updateRoom({
                 id: parseInt(id),
                 name: values.name,
-                price: values.price,
+                price: parseInt(values.price),
                 room_type: values.room_type,
                 notes: values.notes,
               }).unwrap();

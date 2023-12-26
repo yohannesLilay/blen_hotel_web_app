@@ -9,7 +9,7 @@ const HasPermission = (permissions) => {
   return (
     !permissions ||
     (userInfo &&
-      userInfo.permissions.some((userPermission) =>
+      userInfo?.permissions?.some((userPermission) =>
         permissions.includes(userPermission)
       ))
   );

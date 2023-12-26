@@ -30,6 +30,7 @@ import StoreRequisitionRoutes from "./sales/StoreRequisitionRoutes";
 import CaptainOrderRoutes from "./sales/CaptainOrderRoutes";
 import CashReceiptRoutes from "./sales/CashReceiptRoutes";
 import BookRoomRoutes from "./reservations/BookRoomRoutes";
+import ReportRoutes from "./reports/ReportRoutes";
 
 const MainRoutes = {
   path: "/",
@@ -58,6 +59,7 @@ const MainRoutes = {
     { path: "sales/captain-orders", children: [...CaptainOrderRoutes] },
     { path: "sales/cash-receipts", children: [...CashReceiptRoutes] },
     { path: "reservations/book-rooms", children: [...BookRoomRoutes] },
+    { path: "reports", children: [...ReportRoutes] },
   ],
 };
 

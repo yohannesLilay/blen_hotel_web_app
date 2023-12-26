@@ -80,7 +80,7 @@ const EditCaptainOrder = () => {
                 waiter: values.waiter?.id || null,
                 facility_type_id: values.facility_type?.id || null,
               }).unwrap();
-              navigate(-1);
+              navigate(`../${id}`);
               enqueueSnackbar("Captain Order updated successfully.", {
                 variant: "success",
               });

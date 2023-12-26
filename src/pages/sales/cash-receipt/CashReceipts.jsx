@@ -24,6 +24,7 @@ import {
   DeleteOutlined,
   VisibilityOutlined,
   PrintOutlined,
+  ArrowDropDownOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -40,18 +41,30 @@ import {
   useDeleteCashReceiptMutation,
 } from "src/store/slices/sales/cashReceiptApiSlice";
 
-const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
+const ActionButtons = ({
+  onDetail,
+  onItemDetail,
+  onDelete,
+  onPrint,
+  status,
+  casher,
+}) => {
   const currentUser = useSelector((state) => state.auth.userInfo);
 
   return (
     <div>
-      <Tooltip title="View Cash Receipt items">
+      <Tooltip title="View Detail">
         <IconButton color="primary" size="small" onClick={onDetail}>
+          <ArrowDropDownOutlined />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="View Items">
+        <IconButton color="primary" size="small" onClick={onItemDetail}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       <PermissionGuard permission="print_cash_receipt">
-        <Tooltip title="Print Cash Receipt">
+        <Tooltip title="Print">
           <IconButton color="primary" size="small" onClick={onPrint}>
             <PrintOutlined />
           </IconButton>
@@ -59,7 +72,7 @@ const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
       </PermissionGuard>
       {status === "PENDING" && casher === currentUser.userId && (
         <PermissionGuard permission="delete_cash_receipt">
-          <Tooltip title="Delete Cash Receipt">
+          <Tooltip title="Delete">
             <IconButton color="error" size="small" onClick={onDelete}>
               <DeleteOutlined />
             </IconButton>
@@ -70,7 +83,14 @@ const ActionButtons = ({ onDetail, onDelete, onPrint, status, casher }) => {
   );
 };
 
-const CashReceiptTableRow = ({ index, row, onDelete, onDetail, onPrint }) => {
+const CashReceiptTableRow = ({
+  index,
+  row,
+  onDelete,
+  onDetail,
+  onItemDetail,
+  onPrint,
+}) => {
   return (
     <TableRow
       key={row.id}
@@ -91,6 +111,7 @@ const CashReceiptTableRow = ({ index, row, onDelete, onDetail, onPrint }) => {
         <ActionButtons
           onDelete={onDelete}
           onDetail={onDetail}
+          onItemDetail={onItemDetail}
           onPrint={onPrint}
           status={row.status}
           casher={row.casher?.id}
@@ -322,7 +343,8 @@ const CashReceipts = () => {
                       index={index}
                       row={row}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() => handleDetail(row.items)}
+                      onDetail={() => navigate(`${row.id}`)}
+                      onItemDetail={() => handleDetail(row.items)}
                       onPrint={() => handlePrint(row)}
                     />
                   ))}
@@ -351,7 +373,7 @@ const CashReceipts = () => {
 
       <CashReceiptItemsModal
         isOpen={showDetailModal}
-        onModalClose={() => setShowDetailModal(false)}
+        onClose={() => setShowDetailModal(false)}
         cashReceiptItems={detailItems}
       />
 
@@ -379,6 +401,7 @@ const CashReceipts = () => {
 ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onItemDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   casher: PropTypes.number.isRequired,
@@ -389,6 +412,7 @@ CashReceiptTableRow.propTypes = {
   row: PropTypes.object.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onItemDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
 };
 
