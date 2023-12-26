@@ -158,13 +158,14 @@ const CreateCaptainOrder = () => {
                     { variant: "error" }
                   );
                 } else {
-                  await createCaptainOrder({
+                  const response = await createCaptainOrder({
                     captain_order_date: new Date(values.captain_order_date),
                     waiter: values.waiter?.id,
                     facility_type_id: values.facility_type?.id,
                     items: rows,
                   }).unwrap();
-                  navigate(-1);
+
+                  navigate(`../${response.id}`);
                   enqueueSnackbar("Captain Order created successfully.", {
                     variant: "success",
                   });

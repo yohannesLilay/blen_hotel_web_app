@@ -25,6 +25,7 @@ import {
   DeleteOutlined,
   VisibilityOutlined,
   PrintOutlined,
+  ArrowDropDownOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -44,6 +45,7 @@ import {
 
 const ActionButtons = ({
   onDetail,
+  onItemDetail,
   onEdit,
   onDelete,
   onPrint,
@@ -54,13 +56,18 @@ const ActionButtons = ({
 
   return (
     <div>
-      <Tooltip title="View Captain Order items">
+      <Tooltip title="View Detail">
         <IconButton color="primary" size="small" onClick={onDetail}>
+          <ArrowDropDownOutlined />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="View items">
+        <IconButton color="primary" size="small" onClick={onItemDetail}>
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
       <PermissionGuard permission="print_captain_order">
-        <Tooltip title="Print Captain Order">
+        <Tooltip title="Print">
           <IconButton color="primary" size="small" onClick={onPrint}>
             <PrintOutlined />
           </IconButton>
@@ -68,7 +75,7 @@ const ActionButtons = ({
       </PermissionGuard>
       {status === "PENDING" && createdBy === currentUser.userId && (
         <PermissionGuard permission="change_captain_order">
-          <Tooltip title="Edit Captain Order">
+          <Tooltip title="Edit">
             <IconButton color="primary" size="small" onClick={onEdit}>
               <EditOutlined />
             </IconButton>
@@ -77,7 +84,7 @@ const ActionButtons = ({
       )}
       {status === "PENDING" && createdBy === currentUser.userId && (
         <PermissionGuard permission="delete_captain_order">
-          <Tooltip title="Delete Captain Order">
+          <Tooltip title="Delete">
             <IconButton color="error" size="small" onClick={onDelete}>
               <DeleteOutlined />
             </IconButton>
@@ -94,33 +101,37 @@ const CaptainOrderTableRow = ({
   onDelete,
   onEdit,
   onDetail,
+  onItemDetail,
   onPrint,
 }) => {
   return (
-    <TableRow
-      key={row.id}
-      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-    >
-      <TableCell align="left">{index + 1}</TableCell>
-      <TableCell>{row.captain_order_number}</TableCell>
-      <TableCell>
-        {dayjs(row.captain_order_date).format("DD-MM-YYYY")}
-      </TableCell>
-      <TableCell>{row.created_by?.name}</TableCell>
-      <TableCell>{row.waiter?.name}</TableCell>
-      <TableCell>{row.facility_type?.name}</TableCell>
-      <TableCell>{row.status}</TableCell>
-      <TableCell align="right">
-        <ActionButtons
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onDetail={onDetail}
-          onPrint={onPrint}
-          status={row.status}
-          createdBy={row.created_by?.id}
-        />
-      </TableCell>
-    </TableRow>
+    <>
+      <TableRow
+        key={row.id}
+        sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+      >
+        <TableCell align="left">{index + 1}</TableCell>
+        <TableCell>{row.captain_order_number}</TableCell>
+        <TableCell>
+          {dayjs(row.captain_order_date).format("DD-MM-YYYY")}
+        </TableCell>
+        <TableCell>{row.created_by?.name}</TableCell>
+        <TableCell>{row.waiter?.name}</TableCell>
+        <TableCell>{row.facility_type?.name}</TableCell>
+        <TableCell>{row.status}</TableCell>
+        <TableCell align="right">
+          <ActionButtons
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onDetail={onDetail}
+            onItemDetail={onItemDetail}
+            onPrint={onPrint}
+            status={row.status}
+            createdBy={row.created_by?.id}
+          />
+        </TableCell>
+      </TableRow>
+    </>
   );
 };
 
@@ -201,10 +212,6 @@ const CaptainOrders = () => {
 
     const queryString = await objectToQueryString(updatedSearchQuery);
     setSearch(queryString);
-  };
-
-  const handleEdit = (captainOrderId) => {
-    navigate(`${captainOrderId}/edit`);
   };
 
   const handleDetail = (captainOrderId, captainOrderStatus, items) => {
@@ -354,9 +361,10 @@ const CaptainOrders = () => {
                       key={row.id}
                       index={index}
                       row={row}
-                      onEdit={() => handleEdit(row.id)}
+                      onEdit={() => navigate(`${row.id}/edit`)}
                       onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
+                      onDetail={() => navigate(`${row.id}`)}
+                      onItemDetail={() =>
                         handleDetail(row.id, row.status, row.items)
                       }
                       onPrint={() => handlePrint(row)}
@@ -418,6 +426,7 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onItemDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   createdBy: PropTypes.number.isRequired,
@@ -429,6 +438,7 @@ CaptainOrderTableRow.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onItemDetail: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
 };
 

@@ -102,7 +102,7 @@ const CreateCashReceipt = () => {
                     { variant: "error" }
                   );
                 } else {
-                  await createCashReceipt({
+                  const response = await createCashReceipt({
                     cash_receipt_date: new Date(values.cash_receipt_date),
                     waiter: values.waiter?.id,
                     captain_order_ids: values.captain_orders?.map(
@@ -110,7 +110,8 @@ const CreateCashReceipt = () => {
                     ),
                     items: rows,
                   }).unwrap();
-                  navigate(-1);
+
+                  navigate(`../${response.id}`);
                   enqueueSnackbar("Cash Receipt created successfully.", {
                     variant: "success",
                   });
