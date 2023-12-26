@@ -30,7 +30,7 @@ function Reports() {
       description:
         "Offers a detailed overview of individual product sales within a specified time frame.",
       route: "product-sales-report",
-      permission: "view_product_sales_reports",
+      permission: "view_product_sales_report",
     },
     {
       id: 2,
