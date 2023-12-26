@@ -4,7 +4,8 @@ import configurations from "./configurations";
 import product from "./productManagement";
 import purchase from "./purchases";
 import sales from "./sales";
-import Reservations from "./reservations";
+import reservations from "./reservations";
+import reports from "./reports";
 
 const menuItems = {
   items: [
@@ -14,7 +15,8 @@ const menuItems = {
     product,
     purchase,
     sales,
-    Reservations,
+    reservations,
+    reports,
   ],
 };
 
