@@ -93,12 +93,32 @@ const CashReceiptDetail = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
 
-  const calculateTotalPrice = () => {
-    return getCashReceipt.items.reduce(
+  // const calculateTotalPrice = () => {
+  //   return getCashReceipt.items.reduce(
+  //     (total, row) => total + row.quantity * row.unit_price,
+  //     0
+  //   );
+  // };
+
+  const calculateAmounts = () => {
+    const subTotalAmount = getCashReceipt?.items.reduce(
       (total, row) => total + row.quantity * row.unit_price,
       0
     );
+
+    const taxAmount = subTotalAmount != null ? subTotalAmount * 0.15 : 0;
+
+    const totalAmount =
+      subTotalAmount !== null ? subTotalAmount + taxAmount : 0;
+
+    return {
+      subTotalAmount: subTotalAmount?.toFixed(2) || "0.00",
+      taxAmount: taxAmount?.toFixed(2) || "0.00",
+      totalAmount: totalAmount?.toFixed(2) || "0.00",
+    };
   };
+
+  const amounts = calculateAmounts();
 
   const handlePrintConfirmed = async () => {
     try {
@@ -231,9 +251,27 @@ const CashReceiptDetail = () => {
                     <TableRow>
                       <TableCell colSpan={3}></TableCell>
                       <TableCell align="right">
+                        <strong>Sub Total</strong>:
+                      </TableCell>
+                      <TableCell>{amounts.subTotalAmount} BIRR</TableCell>
+                    </TableRow>
+                  )}
+                  {getCashReceipt.items.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={3}></TableCell>
+                      <TableCell align="right">
+                        <strong>VAT 15%</strong>:
+                      </TableCell>
+                      <TableCell>{amounts.taxAmount} BIRR</TableCell>
+                    </TableRow>
+                  )}
+                  {getCashReceipt.items.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={3}></TableCell>
+                      <TableCell align="right">
                         <strong>Total</strong>:
                       </TableCell>
-                      <TableCell>{calculateTotalPrice()} BIRR</TableCell>
+                      <TableCell>{amounts.totalAmount} BIRR</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -265,7 +303,7 @@ ActionButtons.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onPrint: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
-  createdBy: PropTypes.number.isRequired,
+  createdBy: PropTypes.number,
 };
 
 export default CashReceiptDetail;

@@ -130,6 +130,7 @@ const CaptainOrderDetail = () => {
         });
       }
 
+      refetch();
       setShowPrintModal(false);
     } catch (err) {
       setShowPrintModal(false);
