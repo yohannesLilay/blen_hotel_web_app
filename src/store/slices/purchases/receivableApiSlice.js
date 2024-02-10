@@ -46,6 +46,13 @@ export const receivablesApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
       }),
     }),
+    rejectReceivable: builder.mutation({
+      query: (data) => ({
+        url: `${RECEIVABLE_ENDPOINT}/${data.id}/reject`,
+        method: "PATCH",
+        body: data
+      }),
+    }),
     deleteReceivable: builder.mutation({
       query: (id) => ({
         url: `${RECEIVABLE_ENDPOINT}/${id}`,
@@ -69,6 +76,7 @@ export const {
   useGetReceivableQuery,
   useUpdateReceivableMutation,
   useApproveReceivableMutation,
+  useRejectReceivableMutation,
   useDeleteReceivableMutation,
   useDeleteReceivableItemMutation
 } = receivablesApiSlice;

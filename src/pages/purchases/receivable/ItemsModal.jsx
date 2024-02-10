@@ -124,7 +124,8 @@ const ReceivableItemsModal = ({
                 <Typography variant="h5">List of GRV Items</Typography>
               </Grid>
               <Grid item>
-                {receivableStatus === "Requested" && (
+                {(receivableStatus === "Requested" ||
+                  receivableStatus === "Rejected") && (
                   <PermissionGuard permission="add_purchase_receivable">
                     <Button
                       variant="contained"
@@ -152,7 +153,9 @@ const ReceivableItemsModal = ({
                         <TableCell>Remark</TableCell>
                         <TableCell align="right">
                           <PermissionGuard permission="add_purchase_order">
-                            {receivableStatus === "Requested" && "Action"}
+                            {(receivableStatus === "Requested" ||
+                              receivableStatus === "Rejected") &&
+                              "Action"}
                           </PermissionGuard>
                         </TableCell>
                       </TableRow>
@@ -175,7 +178,8 @@ const ReceivableItemsModal = ({
                           <TableCell>{row.total_price}</TableCell>
                           <TableCell>{row.remark}</TableCell>
                           <TableCell align="right">
-                            {receivableStatus === "Requested" && (
+                            {(receivableStatus === "Requested" ||
+                              receivableStatus === "Rejected") && (
                               <PermissionGuard permission="add_purchase_receivable">
                                 <Tooltip title="Delete Receivable Item">
                                   <IconButton

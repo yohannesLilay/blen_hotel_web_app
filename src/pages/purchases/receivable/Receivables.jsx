@@ -25,6 +25,8 @@ import {
   DeleteOutlined,
   FactCheckOutlined,
   VisibilityOutlined,
+  ReviewsOutlined,
+  ThumbDownAltOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -33,9 +35,12 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import ReceivableItemsModal from "./ItemsModal";
+import RejectModal from "../RejectModal";
+import RejectDetailModal from "../RejectDetailModal";
 import {
   useGetReceivablesQuery,
   useApproveReceivableMutation,
+  useRejectReceivableMutation,
   useDeleteReceivableMutation,
 } from "src/store/slices/purchases/receivableApiSlice";
 
@@ -43,7 +48,9 @@ const ActionButtons = ({
   onDetail,
   onEdit,
   onDelete,
+  onRejectDetail,
   onApprove,
+  onReject,
   status,
   preparedBy,
 }) => {
@@ -56,6 +63,13 @@ const ActionButtons = ({
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
+      {status === "Rejected" && (
+        <Tooltip title="GRV Reject Detail">
+          <IconButton color="primary" size="small" onClick={onRejectDetail}>
+            <ReviewsOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
       {status === "Requested" && (
         <PermissionGuard permission="approve_purchase_receivable">
           <Tooltip title="Approve GRV">
@@ -65,24 +79,35 @@ const ActionButtons = ({
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && preparedBy === currentUser.userId && (
-        <PermissionGuard permission="change_purchase_receivable">
-          <Tooltip title="Edit GRV">
-            <IconButton color="primary" size="small" onClick={onEdit}>
-              <EditOutlined />
+      {(status === "Requested" || status === "Checked") && (
+        <PermissionGuard permission="reject_purchase_receivable">
+          <Tooltip title="Reject GRV">
+            <IconButton color="primary" size="small" onClick={onReject}>
+              <ThumbDownAltOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && preparedBy === currentUser.userId && (
-        <PermissionGuard permission="delete_purchase_receivable">
-          <Tooltip title="Delete GRV">
-            <IconButton color="error" size="small" onClick={onDelete}>
-              <DeleteOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
+      {(status === "Requested" || status === "Rejected") &&
+        preparedBy === currentUser.userId && (
+          <PermissionGuard permission="change_purchase_receivable">
+            <Tooltip title="Edit GRV">
+              <IconButton color="primary" size="small" onClick={onEdit}>
+                <EditOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+        )}
+      {(status === "Requested" || status === "Rejected") &&
+        preparedBy === currentUser.userId && (
+          <PermissionGuard permission="delete_purchase_receivable">
+            <Tooltip title="Delete GRV">
+              <IconButton color="error" size="small" onClick={onDelete}>
+                <DeleteOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+        )}
     </div>
   );
 };
@@ -93,7 +118,9 @@ const ReceivableTableRow = ({
   onDelete,
   onEdit,
   onDetail,
+  onRejectDetail,
   onApprove,
+  onReject,
 }) => {
   return (
     <TableRow
@@ -112,8 +139,10 @@ const ReceivableTableRow = ({
         <ActionButtons
           onEdit={onEdit}
           onDelete={onDelete}
+          onRejectDetail={onRejectDetail}
           onDetail={onDetail}
           onApprove={onApprove}
+          onReject={onReject}
           status={row.status}
           preparedBy={row.prepared_by?.id}
         />
@@ -136,13 +165,17 @@ const Receivables = () => {
   });
   const [receivableDeleteApi] = useDeleteReceivableMutation();
   const [approveReceivableApi] = useApproveReceivableMutation();
+  const [receivableRejectApi] = useRejectReceivableMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRejectionDetailModal, setShowRejectionDetailModal] =
+    useState(false);
   const [deleteReceivableId, setDeleteReceivableId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
   const [detailReceivable, setDetailReceivable] = useState(null);
   const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectActionModal, setShowRejectActionModal] = useState(false);
   const [changeStatusId, setApproveId] = useState(null);
 
   const [rows, setRows] = useState(data?.receivables || []);
@@ -172,24 +205,6 @@ const Receivables = () => {
     }
   };
 
-  const handleEdit = (receivableId) => {
-    navigate(`${receivableId}/edit`);
-  };
-
-  const handleDetail = (receivableId, receivableStatus, items) => {
-    setShowDetailModal(true);
-    setDetailItems(items);
-    setDetailReceivable({
-      receivableId: receivableId,
-      receivableStatus: receivableStatus,
-    });
-  };
-
-  const handleApprove = (receivableId) => {
-    setShowApproveModal(true);
-    setApproveId(receivableId);
-  };
-
   const handleApproveConfirmed = async () => {
     try {
       const response = await approveReceivableApi({
@@ -212,9 +227,28 @@ const Receivables = () => {
     }
   };
 
-  const handleDelete = (receivableId) => {
-    setShowDeleteModal(true);
-    setDeleteReceivableId(receivableId);
+  const handleRejectAction = async (rejectionData) => {
+    try {
+      const data = {
+        id: parseInt(changeStatusId),
+        rejection_reason: rejectionData.rejection_reason,
+      };
+      const response = await receivableRejectApi(data).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((receivable) =>
+          receivable.id === response.id ? response : receivable
+        )
+      );
+
+      enqueueSnackbar(`Purchase receivable(GRV) rejected successfully.`, {
+        variant: "success",
+      });
+      setApproveId(null);
+      setShowRejectActionModal(false);
+    } catch (err) {
+      setApproveId(null);
+      setShowRejectActionModal(false);
+    }
   };
 
   const handleDeleteConfirmed = async () => {
@@ -306,12 +340,33 @@ const Receivables = () => {
                       key={row.id}
                       index={index}
                       row={row}
-                      onEdit={() => handleEdit(row.id)}
-                      onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
-                        handleDetail(row.id, row.status, row.items)
-                      }
-                      onApprove={() => handleApprove(row.id)}
+                      onEdit={() => {
+                        navigate(`${row.id}/edit`);
+                      }}
+                      onDelete={() => {
+                        setShowDeleteModal(true);
+                        setDeleteReceivableId(row.id);
+                      }}
+                      onDetail={() => {
+                        setShowDetailModal(true);
+                        setDetailItems(row.items);
+                        setDetailReceivable({
+                          receivableId: row.id,
+                          receivableStatus: row.status,
+                        });
+                      }}
+                      onRejectDetail={() => {
+                        setShowRejectionDetailModal(true);
+                        setDetailReceivable(row);
+                      }}
+                      onApprove={() => {
+                        setShowApproveModal(true);
+                        setApproveId(row.id);
+                      }}
+                      onReject={() => {
+                        setShowRejectActionModal(true);
+                        setApproveId(row.id);
+                      }}
                     />
                   ))}
                 </TableBody>
@@ -354,6 +409,27 @@ const Receivables = () => {
         receivableId={detailReceivable?.receivableId}
         receivableStatus={detailReceivable?.receivableStatus || null}
       />
+
+      <RejectModal
+        isOpen={showRejectActionModal}
+        onClose={() => {
+          setShowRejectActionModal(false);
+          setApproveId(null);
+        }}
+        dialogTitle="Reject Purchase Receivable(GRV)"
+        dialogAction="Reject GRV"
+        onAdd={handleRejectAction}
+      />
+
+      <RejectDetailModal
+        isOpen={showRejectionDetailModal}
+        onClose={() => {
+          setShowRejectionDetailModal(false);
+          setDetailReceivable(null);
+        }}
+        dialogTitle="Purchase Receivable(GRV) Rejection Detail"
+        rejectDetail={detailReceivable || {}}
+      />
     </>
   );
 };
@@ -363,7 +439,9 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onRejectDetail: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onReject: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   preparedBy: PropTypes.number.isRequired,
 };
@@ -374,7 +452,9 @@ ReceivableTableRow.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onRejectDetail: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onReject: PropTypes.func.isRequired,
 };
 
 export default Receivables;

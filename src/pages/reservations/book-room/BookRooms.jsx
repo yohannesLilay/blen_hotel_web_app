@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import {
   AddOutlined,
-  EditOutlined,
   DeleteOutlined,
   ExitToAppOutlined,
 } from "@mui/icons-material";
@@ -39,35 +38,33 @@ import {
   useDeleteBookRoomMutation,
 } from "src/store/slices/reservations/bookRoomApiSlice";
 
-const ActionButtons = ({ onEdit, onDelete, onFree }) => {
+const ActionButtons = ({ onDelete, onFree, roomStatus }) => {
   return (
     <div>
-      <PermissionGuard permission="change_book_room">
-        <Tooltip title="Free Booked Room">
-          <IconButton color="primary" size="small" onClick={onFree}>
-            <ExitToAppOutlined />
-          </IconButton>
-        </Tooltip>
-      </PermissionGuard>
-      <PermissionGuard permission="change_book_room">
-        <Tooltip title="Edit Book Room">
-          <IconButton color="primary" size="small" onClick={onEdit}>
-            <EditOutlined />
-          </IconButton>
-        </Tooltip>
-      </PermissionGuard>
-      <PermissionGuard permission="delete_book_room">
-        <Tooltip title="Delete Book Room">
-          <IconButton color="error" size="small" onClick={onDelete}>
-            <DeleteOutlined />
-          </IconButton>
-        </Tooltip>
-      </PermissionGuard>
+      {roomStatus && (
+        <>
+          <PermissionGuard permission="change_book_room">
+            <Tooltip title="Free Booked Room">
+              <IconButton color="primary" size="small" onClick={onFree}>
+                <ExitToAppOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+
+          <PermissionGuard permission="delete_book_room">
+            <Tooltip title="Delete Book Room">
+              <IconButton color="error" size="small" onClick={onDelete}>
+                <DeleteOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+        </>
+      )}
     </div>
   );
 };
 
-const BookRoomTableRow = ({ index, row, onDelete, onEdit, onFree }) => {
+const BookRoomTableRow = ({ index, row, onDelete, onFree }) => {
   return (
     <TableRow
       key={row.id}
@@ -80,7 +77,11 @@ const BookRoomTableRow = ({ index, row, onDelete, onEdit, onFree }) => {
       <TableCell>{row.operator.name}</TableCell>
       <TableCell>{row.notes}</TableCell>
       <TableCell align="right">
-        <ActionButtons onFree={onFree} onEdit={onEdit} onDelete={onDelete} />
+        <ActionButtons
+          onFree={onFree}
+          onDelete={onDelete}
+          roomStatus={row.guest_in}
+        />
       </TableCell>
     </TableRow>
   );
@@ -125,10 +126,6 @@ const BookRooms = () => {
     refetch({ page: 1, limit: newLimit });
   };
 
-  const handleEdit = (bookRoomId) => {
-    navigate(`${bookRoomId}/edit`);
-  };
-
   const handleDelete = (bookRoomId) => {
     setShowDeleteModal(true);
     setDeleteBookRoomId(bookRoomId);
@@ -160,7 +157,6 @@ const BookRooms = () => {
 
   const handleFreeBookedRoomConfirmed = async () => {
     try {
-      console.log(freeRoomId);
       const response = await freeBookRoomApi({ id: freeRoomId }).unwrap();
       setRows((prevRows) =>
         prevRows.map((bookRoom) =>
@@ -259,7 +255,6 @@ const BookRooms = () => {
                       key={row.id}
                       index={index}
                       row={row}
-                      onEdit={() => handleEdit(row.id)}
                       onDelete={() => handleDelete(row.id)}
                       onFree={() => handleFreeBookedRoom(row.id)}
                     />
@@ -305,6 +300,7 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onFree: PropTypes.func.isRequired,
+  roomStatus: PropTypes.bool.isRequired,
 };
 
 BookRoomTableRow.propTypes = {

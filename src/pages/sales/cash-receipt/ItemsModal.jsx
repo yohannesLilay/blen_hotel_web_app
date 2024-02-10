@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { NumericFormat } from "react-number-format";
 import {
   Box,
   Button,
@@ -38,12 +39,25 @@ const CashReceiptItemsModal = ({ isOpen, onClose, cashReceiptItems }) => {
     setRows(cashReceiptItems || []);
   }, [cashReceiptItems]);
 
-  const calculateTotalPrice = () => {
-    return rows.reduce(
+  const calculateAmounts = () => {
+    const subTotalAmount = cashReceiptItems.reduce(
       (total, row) => total + row.quantity * row.unit_price,
       0
     );
+
+    const taxAmount = subTotalAmount != null ? subTotalAmount * 0.15 : 0;
+
+    const totalAmount =
+      subTotalAmount !== null ? subTotalAmount + taxAmount : 0;
+
+    return {
+      subTotalAmount: subTotalAmount?.toFixed(2) || "0.00",
+      taxAmount: taxAmount?.toFixed(2) || "0.00",
+      totalAmount: totalAmount?.toFixed(2) || "0.00",
+    };
   };
+
+  const amounts = calculateAmounts();
 
   return (
     <>
@@ -100,19 +114,85 @@ const CashReceiptItemsModal = ({ isOpen, onClose, cashReceiptItems }) => {
                             ` (${row.menu.item_local_name})`}
                         </TableCell>
                         <TableCell>{row.quantity}</TableCell>
-                        <TableCell>{row.unit_price} BIRR</TableCell>
                         <TableCell>
-                          {row.quantity * row.unit_price} BIRR
+                          <NumericFormat
+                            value={row.unit_price}
+                            displayType="text"
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            style={{ display: "inline" }}
+                          />{" "}
+                          BIRR
+                        </TableCell>
+                        <TableCell>
+                          <NumericFormat
+                            value={row.quantity * row.unit_price}
+                            displayType="text"
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            style={{ display: "inline" }}
+                          />{" "}
+                          BIRR
                         </TableCell>
                       </TableRow>
                     ))}
-                    {rows.length > 0 && (
+                    {cashReceiptItems.length > 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3}></TableCell>
+                        <TableCell align="right">
+                          <strong>Sub Total</strong>:
+                        </TableCell>
+                        <TableCell>
+                          <NumericFormat
+                            value={amounts.subTotalAmount}
+                            displayType="text"
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            style={{ display: "inline" }}
+                          />{" "}
+                          BIRR
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {cashReceiptItems.length > 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3}></TableCell>
+                        <TableCell align="right">
+                          <strong>VAT 15%</strong>:
+                        </TableCell>
+                        <TableCell>
+                          <NumericFormat
+                            value={amounts.taxAmount}
+                            displayType="text"
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            style={{ display: "inline" }}
+                          />{" "}
+                          BIRR
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {cashReceiptItems.length > 0 && (
                       <TableRow>
                         <TableCell colSpan={3}></TableCell>
                         <TableCell align="right">
                           <strong>Total</strong>:
                         </TableCell>
-                        <TableCell>{calculateTotalPrice()} BIRR</TableCell>
+                        <TableCell>
+                          <NumericFormat
+                            value={amounts.totalAmount}
+                            displayType="text"
+                            thousandSeparator={true}
+                            decimalScale={2}
+                            fixedDecimalScale={true}
+                            style={{ display: "inline" }}
+                          />{" "}
+                          BIRR
+                        </TableCell>
                       </TableRow>
                     )}
                   </TableBody>

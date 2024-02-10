@@ -119,7 +119,8 @@ const OrderItemsModal = ({
                 </Typography>
               </Grid>
               <Grid item>
-                {orderStatus === "Requested" && (
+                {(orderStatus === "Requested" ||
+                  orderStatus === "Rejected") && (
                   <PermissionGuard permission="add_purchase_order">
                     <Button
                       variant="contained"
@@ -145,7 +146,9 @@ const OrderItemsModal = ({
                         <TableCell>Remark</TableCell>
                         <TableCell align="right">
                           <PermissionGuard permission="add_purchase_order">
-                            {orderStatus === "Requested" && "Action"}
+                            {(orderStatus === "Requested" ||
+                              orderStatus === "Rejected") &&
+                              "Action"}
                           </PermissionGuard>
                         </TableCell>
                       </TableRow>

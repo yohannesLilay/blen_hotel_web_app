@@ -26,6 +26,8 @@ import {
   CheckCircleOutline,
   FactCheckOutlined,
   VisibilityOutlined,
+  ThumbDownAltOutlined,
+  ReviewsOutlined,
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
@@ -34,19 +36,24 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import OrderItemsModal from "./ItemsModal";
+import RejectModal from "../RejectModal";
 import {
   useGetOrdersQuery,
   useCheckOrderMutation,
   useApproveOrderMutation,
+  useRejectOrderMutation,
   useDeleteOrderMutation,
 } from "src/store/slices/purchases/orderApiSlice";
+import RejectDetailModal from "../RejectDetailModal";
 
 const ActionButtons = ({
   onDetail,
+  onRejectDetail,
   onEdit,
   onDelete,
   onCheck,
   onApprove,
+  onReject,
   status,
   requestedBy,
 }) => {
@@ -59,6 +66,13 @@ const ActionButtons = ({
           <VisibilityOutlined />
         </IconButton>
       </Tooltip>
+      {status === "Rejected" && (
+        <Tooltip title="Purchase Order Reject Detail">
+          <IconButton color="primary" size="small" onClick={onRejectDetail}>
+            <ReviewsOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
       {status === "Requested" && (
         <PermissionGuard permission="check_purchase_order">
           <Tooltip title="Check Purchase Order">
@@ -77,24 +91,35 @@ const ActionButtons = ({
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && requestedBy === currentUser.userId && (
-        <PermissionGuard permission="change_purchase_order">
-          <Tooltip title="Edit Order">
-            <IconButton color="primary" size="small" onClick={onEdit}>
-              <EditOutlined />
+      {(status === "Requested" || status === "Checked") && (
+        <PermissionGuard permission="reject_purchase_order">
+          <Tooltip title="Reject Purchase Order">
+            <IconButton color="primary" size="small" onClick={onReject}>
+              <ThumbDownAltOutlined />
             </IconButton>
           </Tooltip>
         </PermissionGuard>
       )}
-      {status === "Requested" && requestedBy === currentUser.userId && (
-        <PermissionGuard permission="delete_purchase_order">
-          <Tooltip title="Delete Order">
-            <IconButton color="error" size="small" onClick={onDelete}>
-              <DeleteOutlined />
-            </IconButton>
-          </Tooltip>
-        </PermissionGuard>
-      )}
+      {(status === "Requested" || status === "Rejected") &&
+        requestedBy === currentUser.userId && (
+          <PermissionGuard permission="change_purchase_order">
+            <Tooltip title="Edit Order">
+              <IconButton color="primary" size="small" onClick={onEdit}>
+                <EditOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+        )}
+      {(status === "Requested" || status === "Rejected") &&
+        requestedBy === currentUser.userId && (
+          <PermissionGuard permission="delete_purchase_order">
+            <Tooltip title="Delete Order">
+              <IconButton color="error" size="small" onClick={onDelete}>
+                <DeleteOutlined />
+              </IconButton>
+            </Tooltip>
+          </PermissionGuard>
+        )}
     </div>
   );
 };
@@ -105,8 +130,10 @@ const OrderTableRow = ({
   onDelete,
   onEdit,
   onDetail,
+  onRejectDetail,
   onCheck,
   onApprove,
+  onReject,
 }) => {
   return (
     <TableRow
@@ -125,8 +152,10 @@ const OrderTableRow = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onDetail={onDetail}
+          onRejectDetail={onRejectDetail}
           onCheck={onCheck}
           onApprove={onApprove}
+          onReject={onReject}
           status={row.status}
           requestedBy={row.requested_by?.id}
         />
@@ -150,14 +179,18 @@ const Orders = () => {
   const [orderDeleteApi] = useDeleteOrderMutation();
   const [orderCheckApi] = useCheckOrderMutation();
   const [orderApproveApi] = useApproveOrderMutation();
+  const [orderRejectApi] = useRejectOrderMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRejectionDetailModal, setShowRejectionDetailModal] =
+    useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState(null);
   const [detailItems, setDetailItems] = useState([]);
   const [detailOrder, setDetailOrder] = useState(null);
   const [showCheckActionModal, setShowCheckActionModal] = useState(false);
   const [showApproveActionModal, setShowApproveActionModal] = useState(false);
+  const [showRejectActionModal, setShowRejectActionModal] = useState(false);
   const [changeStatusId, setChangeStatusId] = useState(null);
 
   const [rows, setRows] = useState(data?.orders || []);
@@ -185,26 +218,6 @@ const Orders = () => {
 
       refetch({ page, limit, search: searchQuery });
     }
-  };
-
-  const handleEdit = (orderId) => {
-    navigate(`${orderId}/edit`);
-  };
-
-  const handleDetail = (orderId, orderStatus, items) => {
-    setShowDetailModal(true);
-    setDetailItems(items);
-    setDetailOrder({ orderId: orderId, orderStatus: orderStatus });
-  };
-
-  const handleCheckAction = (orderId) => {
-    setShowCheckActionModal(true);
-    setChangeStatusId(orderId);
-  };
-
-  const handleApproveAction = (orderId) => {
-    setShowApproveActionModal(true);
-    setChangeStatusId(orderId);
   };
 
   const handleCheckActionConfirmed = async () => {
@@ -247,9 +260,26 @@ const Orders = () => {
     }
   };
 
-  const handleDelete = (orderId) => {
-    setShowDeleteModal(true);
-    setDeleteOrderId(orderId);
+  const handleRejectAction = async (rejectionData) => {
+    try {
+      const data = {
+        id: parseInt(changeStatusId),
+        rejection_reason: rejectionData.rejection_reason,
+      };
+      const response = await orderRejectApi(data).unwrap();
+      setRows((prevRows) =>
+        prevRows.map((order) => (order.id === response.id ? response : order))
+      );
+
+      enqueueSnackbar(`Purchase order rejected successfully.`, {
+        variant: "success",
+      });
+      setChangeStatusId(null);
+      setShowRejectActionModal(false);
+    } catch (err) {
+      setChangeStatusId(null);
+      setShowRejectActionModal(false);
+    }
   };
 
   const handleDeleteConfirmed = async () => {
@@ -340,13 +370,37 @@ const Orders = () => {
                       key={row.id}
                       index={index}
                       row={row}
-                      onEdit={() => handleEdit(row.id)}
-                      onDelete={() => handleDelete(row.id)}
-                      onDetail={() =>
-                        handleDetail(row.id, row.status, row.items)
-                      }
-                      onCheck={() => handleCheckAction(row.id)}
-                      onApprove={() => handleApproveAction(row.id)}
+                      onEdit={() => {
+                        navigate(`${row.id}/edit`);
+                      }}
+                      onDelete={() => {
+                        setShowDeleteModal(true);
+                        setDeleteOrderId(row.id);
+                      }}
+                      onDetail={() => {
+                        setShowDetailModal(true);
+                        setDetailItems(row.items);
+                        setDetailOrder({
+                          orderId: row.id,
+                          orderStatus: row.status,
+                        });
+                      }}
+                      onRejectDetail={() => {
+                        setShowRejectionDetailModal(true);
+                        setDetailOrder(row);
+                      }}
+                      onCheck={() => {
+                        setShowCheckActionModal(true);
+                        setChangeStatusId(row.id);
+                      }}
+                      onApprove={() => {
+                        setShowApproveActionModal(true);
+                        setChangeStatusId(row.id);
+                      }}
+                      onReject={() => {
+                        setShowRejectActionModal(true);
+                        setChangeStatusId(row.id);
+                      }}
                     />
                   ))}
                 </TableBody>
@@ -398,6 +452,24 @@ const Orders = () => {
         orderId={detailOrder?.orderId || null}
         orderStatus={detailOrder?.orderStatus || null}
       />
+
+      <RejectModal
+        isOpen={showRejectActionModal}
+        onClose={() => setShowRejectActionModal(false)}
+        dialogTitle="Reject Purchase Order"
+        dialogAction="Reject Order"
+        onAdd={handleRejectAction}
+      />
+
+      <RejectDetailModal
+        isOpen={showRejectionDetailModal}
+        onClose={() => {
+          setShowRejectionDetailModal(false);
+          setDetailOrder(null);
+        }}
+        dialogTitle="Purchase Order Rejection Detail"
+        rejectDetail={detailOrder || {}}
+      />
     </>
   );
 };
@@ -407,8 +479,10 @@ ActionButtons.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onRejectDetail: PropTypes.func.isRequired,
   onCheck: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onReject: PropTypes.func.isRequired,
   status: PropTypes.string.isRequired,
   requestedBy: PropTypes.number.isRequired,
 };
@@ -419,8 +493,10 @@ OrderTableRow.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   onDetail: PropTypes.func.isRequired,
+  onRejectDetail: PropTypes.func.isRequired,
   onCheck: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
+  onReject: PropTypes.func.isRequired,
 };
 
 export default Orders;

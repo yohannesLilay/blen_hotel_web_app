@@ -2,6 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { NumericFormat } from "react-number-format";
 import {
   Box,
   Grid,
@@ -24,7 +25,6 @@ import {
 } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { enqueueSnackbar } from "notistack";
-
 import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
@@ -241,9 +241,27 @@ const CashReceiptDetail = () => {
                           ` (${row.menu.item_local_name})`}
                       </TableCell>
                       <TableCell>{row.quantity}</TableCell>
-                      <TableCell>{row.unit_price} BIRR</TableCell>
                       <TableCell>
-                        {row.quantity * row.unit_price} BIRR
+                        <NumericFormat
+                          value={row.unit_price}
+                          displayType="text"
+                          thousandSeparator={true}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          style={{ display: "inline" }}
+                        />{" "}
+                        BIRR
+                      </TableCell>
+                      <TableCell>
+                        <NumericFormat
+                          value={row.quantity * row.unit_price}
+                          displayType="text"
+                          thousandSeparator={true}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          style={{ display: "inline" }}
+                        />{" "}
+                        BIRR
                       </TableCell>
                     </TableRow>
                   ))}
@@ -253,7 +271,17 @@ const CashReceiptDetail = () => {
                       <TableCell align="right">
                         <strong>Sub Total</strong>:
                       </TableCell>
-                      <TableCell>{amounts.subTotalAmount} BIRR</TableCell>
+                      <TableCell>
+                        <NumericFormat
+                          value={amounts.subTotalAmount}
+                          displayType="text"
+                          thousandSeparator={true}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          style={{ display: "inline" }}
+                        />{" "}
+                        BIRR
+                      </TableCell>
                     </TableRow>
                   )}
                   {getCashReceipt.items.length > 0 && (
@@ -262,7 +290,17 @@ const CashReceiptDetail = () => {
                       <TableCell align="right">
                         <strong>VAT 15%</strong>:
                       </TableCell>
-                      <TableCell>{amounts.taxAmount} BIRR</TableCell>
+                      <TableCell>
+                        <NumericFormat
+                          value={amounts.taxAmount}
+                          displayType="text"
+                          thousandSeparator={true}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          style={{ display: "inline" }}
+                        />{" "}
+                        BIRR
+                      </TableCell>
                     </TableRow>
                   )}
                   {getCashReceipt.items.length > 0 && (
@@ -271,7 +309,17 @@ const CashReceiptDetail = () => {
                       <TableCell align="right">
                         <strong>Total</strong>:
                       </TableCell>
-                      <TableCell>{amounts.totalAmount} BIRR</TableCell>
+                      <TableCell>
+                        <NumericFormat
+                          value={amounts.totalAmount}
+                          displayType="text"
+                          thousandSeparator={true}
+                          decimalScale={2}
+                          fixedDecimalScale={true}
+                          style={{ display: "inline" }}
+                        />{" "}
+                        BIRR
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
