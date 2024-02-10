@@ -1,10 +1,18 @@
 import { Grid, Typography } from "@mui/material";
 import AnalyticEcommerce from "../components/statistics/AnalyticEcommerce";
-
-import { useGetInfoReportQuery } from "src/store/slices/reports/reportApiSlice";
+import {
+  useGetInfoReportQuery,
+  useGetTopUsedMenusReportQuery,
+  useGetTopIncomeMenusReportQuery,
+} from "src/store/slices/reports/reportApiSlice";
+import BarChartComponent from "../components/charts/BarChart";
 
 const Dashboard = () => {
   const { data } = useGetInfoReportQuery();
+  const { data: topUsedMenus, isSuccess: topUsedSuccess } =
+    useGetTopUsedMenusReportQuery();
+  const { data: topIncomeMenus, isSuccess: topIncomeSuccess } =
+    useGetTopIncomeMenusReportQuery();
 
   return (
     <Grid container rowSpacing={4.5} columnSpacing={2.75}>
@@ -36,6 +44,24 @@ const Dashboard = () => {
           count={data?.activeReceivableCount?.toString()}
         />
       </Grid>
+
+      {topUsedSuccess && (
+        <Grid item xs={12} sm={6}>
+          <BarChartComponent
+            dataset={topUsedMenus}
+            title="Top 5 Used Products"
+          />
+        </Grid>
+      )}
+
+      {topIncomeSuccess && (
+        <Grid item xs={12} sm={6}>
+          <BarChartComponent
+            dataset={topIncomeMenus}
+            title="Top 5 Income Products"
+          />
+        </Grid>
+      )}
 
       <Grid
         item

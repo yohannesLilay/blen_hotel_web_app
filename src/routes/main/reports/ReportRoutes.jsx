@@ -8,6 +8,12 @@ const Reports = Loadable(lazy(() => import("src/pages/reports/Reports")));
 const ProductSalesReport = Loadable(
   lazy(() => import("src/pages/reports/ProductSalesReport"))
 );
+const RoomRevenueReport = Loadable(
+  lazy(() => import("src/pages/reports/RoomRevenueReport"))
+);
+const SalesByStaffReport = Loadable(
+  lazy(() => import("src/pages/reports/SalesByStaffReport"))
+);
 
 const ReportRoutes = [
   {
@@ -20,6 +26,24 @@ const ReportRoutes = [
       <PrivateRoute
         element={<ProductSalesReport />}
         requiredPermission={"view_product_sales_report"}
+      />
+    ),
+  },
+  {
+    path: "room-revenue-report",
+    element: (
+      <PrivateRoute
+        element={<RoomRevenueReport />}
+        requiredPermission={"view_room_revenue_report"}
+      />
+    ),
+  },
+  {
+    path: "sales-by-staff-report",
+    element: (
+      <PrivateRoute
+        element={<SalesByStaffReport />}
+        requiredPermission={"view_sales_by_staff_report"}
       />
     ),
   },

@@ -26,27 +26,27 @@ import { enqueueSnackbar } from "notistack";
 import { NumericFormat } from "react-number-format";
 import MainCard from "src/components/MainCard";
 import {
-  useGetProductSalesReportMutation,
+  useGetSalesByStaffReportMutation,
   useGetReportTemplateQuery,
 } from "src/store/slices/reports/reportApiSlice";
 import { SettingsOutlined } from "@mui/icons-material";
 
-function ProductSalesReport() {
+function SalesByStaffReport() {
   const navigate = useNavigate();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [generateReport, { isLoading }] = useGetProductSalesReportMutation();
+  const [generateReport, { isLoading }] = useGetSalesByStaffReportMutation();
   const { data: getTemplate } = useGetReportTemplateQuery();
 
   const [rows, setRows] = useState([]);
   const [totalSales, setTotalSales] = useState(null);
-  const [product, setProduct] = useState(null);
+  const [staff, setStaff] = useState(null);
   const [timePeriod, setTimePeriod] = useState(null);
 
   return (
     <div>
       <Typography variant="h5" gutterBottom>
-        Product Sales Report
+        Sales By Staff Report
       </Typography>
 
       {isCollapsed == false && (
@@ -58,7 +58,7 @@ function ProductSalesReport() {
                   initialValues={{
                     start_date: null,
                     end_date: null,
-                    product: null,
+                    staff: null,
                   }}
                   validationSchema={Yup.object().shape({
                     start_date: Yup.date()
@@ -75,11 +75,11 @@ function ProductSalesReport() {
                     end_date: Yup.date()
                       .required("End Date is required")
                       .max(new Date(), "End Date cannot be in the future"),
-                    product: Yup.object()
+                    staff: Yup.object()
                       .shape({
-                        id: Yup.number().required("Product is required"),
+                        id: Yup.number().required("Staff is required"),
                       })
-                      .required("Product is required"),
+                      .required("Staff is required"),
                   })}
                   onSubmit={async (values, { setStatus, setSubmitting }) => {
                     try {
@@ -92,12 +92,12 @@ function ProductSalesReport() {
                         const response = await generateReport({
                           start_date: new Date(values.start_date),
                           end_date: new Date(values.end_date),
-                          product_id: values.product?.id,
+                          staff_id: values.staff?.id,
                         }).unwrap();
 
                         setRows(response?.detail || []);
                         setTotalSales(response?.total || null);
-                        setProduct(response?.product?.item || null);
+                        setStaff(response?.staff?.name || null);
                         setTimePeriod(response?.timePeriod || null);
 
                         setIsCollapsed(true);
@@ -212,36 +212,33 @@ function ProductSalesReport() {
                             <FormControl
                               fullWidth
                               variant="outlined"
-                              error={Boolean(touched.product && errors.product)}
+                              error={Boolean(touched.staff && errors.staff)}
                             >
                               <Autocomplete
-                                id="product"
-                                options={getTemplate?.menuOptions || []}
-                                value={values.product || null}
+                                id="staff"
+                                options={getTemplate?.waiterStaffOptions || []}
+                                value={values.staff || null}
                                 onChange={(event, newValue) => {
                                   handleChange({
-                                    target: {
-                                      name: "product",
-                                      value: newValue,
-                                    },
+                                    target: { name: "staff", value: newValue },
                                   });
                                 }}
-                                getOptionLabel={(option) => option.item}
+                                getOptionLabel={(option) => option.name}
                                 renderInput={(params) => (
                                   <TextField
                                     {...params}
-                                    label="Product"
+                                    label="Staff"
                                     variant="outlined"
                                     error={Boolean(
-                                      touched.product && errors.product
+                                      touched.staff && errors.staff
                                     )}
                                   />
                                 )}
                               />
                             </FormControl>
-                            {touched.product && errors.product && (
+                            {touched.staff && errors.staff && (
                               <Typography variant="body2" color="error">
-                                {errors.product}
+                                {errors.staff}
                               </Typography>
                             )}
                           </Stack>
@@ -304,7 +301,7 @@ function ProductSalesReport() {
             <Grid container>
               <Grid item xs={12} md={4}>
                 <Box mb={1}>
-                  <span style={{ fontWeight: "bold" }}>Product:</span> {product}
+                  <span style={{ fontWeight: "bold" }}>Staff:</span> {staff}
                 </Box>
               </Grid>
               <Grid item xs={12} md={4}>
@@ -374,4 +371,4 @@ function ProductSalesReport() {
   );
 }
 
-export default ProductSalesReport;
+export default SalesByStaffReport;

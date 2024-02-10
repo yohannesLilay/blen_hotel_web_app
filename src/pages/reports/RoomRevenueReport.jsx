@@ -13,11 +13,8 @@ import {
   Paper,
   Button,
   Stack,
-  FormControl,
-  Autocomplete,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { useNavigate } from "react-router-dom";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { Formik } from "formik";
@@ -25,28 +22,24 @@ import * as Yup from "yup";
 import { enqueueSnackbar } from "notistack";
 import { NumericFormat } from "react-number-format";
 import MainCard from "src/components/MainCard";
-import {
-  useGetProductSalesReportMutation,
-  useGetReportTemplateQuery,
-} from "src/store/slices/reports/reportApiSlice";
+import { useGetRoomRevenueReportMutation } from "src/store/slices/reports/reportApiSlice";
 import { SettingsOutlined } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
-function ProductSalesReport() {
+function RoomRevenueReport() {
   const navigate = useNavigate();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [generateReport, { isLoading }] = useGetProductSalesReportMutation();
-  const { data: getTemplate } = useGetReportTemplateQuery();
+  const [generateReport, { isLoading }] = useGetRoomRevenueReportMutation();
 
   const [rows, setRows] = useState([]);
-  const [totalSales, setTotalSales] = useState(null);
-  const [product, setProduct] = useState(null);
+  const [totalRevenue, setTotalRevenue] = useState(null);
   const [timePeriod, setTimePeriod] = useState(null);
 
   return (
     <div>
       <Typography variant="h5" gutterBottom>
-        Product Sales Report
+        Room Revenue Report
       </Typography>
 
       {isCollapsed == false && (
@@ -58,7 +51,6 @@ function ProductSalesReport() {
                   initialValues={{
                     start_date: null,
                     end_date: null,
-                    product: null,
                   }}
                   validationSchema={Yup.object().shape({
                     start_date: Yup.date()
@@ -75,11 +67,6 @@ function ProductSalesReport() {
                     end_date: Yup.date()
                       .required("End Date is required")
                       .max(new Date(), "End Date cannot be in the future"),
-                    product: Yup.object()
-                      .shape({
-                        id: Yup.number().required("Product is required"),
-                      })
-                      .required("Product is required"),
                   })}
                   onSubmit={async (values, { setStatus, setSubmitting }) => {
                     try {
@@ -92,12 +79,10 @@ function ProductSalesReport() {
                         const response = await generateReport({
                           start_date: new Date(values.start_date),
                           end_date: new Date(values.end_date),
-                          product_id: values.product?.id,
                         }).unwrap();
 
                         setRows(response?.detail || []);
-                        setTotalSales(response?.total || null);
-                        setProduct(response?.product?.item || null);
+                        setTotalRevenue(response?.total || null);
                         setTimePeriod(response?.timePeriod || null);
 
                         setIsCollapsed(true);
@@ -207,45 +192,6 @@ function ProductSalesReport() {
                             )}
                           </Stack>
                         </Grid>
-                        <Grid item xs={12}>
-                          <Stack spacing={1}>
-                            <FormControl
-                              fullWidth
-                              variant="outlined"
-                              error={Boolean(touched.product && errors.product)}
-                            >
-                              <Autocomplete
-                                id="product"
-                                options={getTemplate?.menuOptions || []}
-                                value={values.product || null}
-                                onChange={(event, newValue) => {
-                                  handleChange({
-                                    target: {
-                                      name: "product",
-                                      value: newValue,
-                                    },
-                                  });
-                                }}
-                                getOptionLabel={(option) => option.item}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    label="Product"
-                                    variant="outlined"
-                                    error={Boolean(
-                                      touched.product && errors.product
-                                    )}
-                                  />
-                                )}
-                              />
-                            </FormControl>
-                            {touched.product && errors.product && (
-                              <Typography variant="body2" color="error">
-                                {errors.product}
-                              </Typography>
-                            )}
-                          </Stack>
-                        </Grid>
                         <Grid
                           item
                           xs={12}
@@ -304,11 +250,6 @@ function ProductSalesReport() {
             <Grid container>
               <Grid item xs={12} md={4}>
                 <Box mb={1}>
-                  <span style={{ fontWeight: "bold" }}>Product:</span> {product}
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Box mb={1}>
                   <span style={{ fontWeight: "bold" }}>Time Period:</span>{" "}
                   {dayjs(timePeriod.startDate).format("YYYY-MM-DD")} -{" "}
                   {dayjs(timePeriod.endDate).format("YYYY-MM-DD")}
@@ -316,9 +257,9 @@ function ProductSalesReport() {
               </Grid>
               <Grid item xs={12} md={4}>
                 <Box>
-                  <span style={{ fontWeight: "bold" }}>Total Sales:</span>{" "}
+                  <span style={{ fontWeight: "bold" }}>Total Revenue:</span>{" "}
                   <NumericFormat
-                    value={totalSales}
+                    value={totalRevenue}
                     displayType="text"
                     thousandSeparator={true}
                     decimalScale={2}
@@ -335,7 +276,9 @@ function ProductSalesReport() {
                 <TableHead>
                   <TableRow>
                     <TableCell style={{ paddingLeft: "20px" }}>Date</TableCell>
-                    <TableCell>Sales Amount</TableCell>
+                    <TableCell>Revenue</TableCell>
+                    <TableCell># Rooms Occupied</TableCell>
+                    <TableCell># Rooms Free</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -355,13 +298,15 @@ function ProductSalesReport() {
                       </TableCell>
                       <TableCell>
                         <NumericFormat
-                          value={row.totalPrice}
+                          value={row.revenue}
                           displayType="text"
                           thousandSeparator={true}
                           decimalScale={2}
                           fixedDecimalScale={true}
                         />
                       </TableCell>
+                      <TableCell>{row.roomsOccupied}</TableCell>
+                      <TableCell>{row.roomsFree}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -374,4 +319,4 @@ function ProductSalesReport() {
   );
 }
 
-export default ProductSalesReport;
+export default RoomRevenueReport;
