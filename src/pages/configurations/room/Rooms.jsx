@@ -15,6 +15,8 @@ import {
   Tooltip,
   Typography,
   Paper,
+  TextField,
+  TablePagination,
 } from "@mui/material";
 import {
   AddOutlined,
@@ -22,15 +24,18 @@ import {
   DeleteOutlined,
   ToggleOffOutlined,
   ToggleOnOutlined,
+  ImportExportOutlined,
 } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
+import ImportDialog from "src/components/modals/ImportModal";
 import {
   useGetRoomsQuery,
   useToggleRoomMutation,
+  useImportRoomMutation,
   useDeleteRoomMutation,
 } from "src/store/slices/configurations/roomApiSlice";
 
@@ -89,21 +94,53 @@ const RoomTableRow = ({ index, row, onDelete, onEdit, onToggleStatus }) => {
 
 const Rooms = () => {
   const navigate = useNavigate();
-  const { data, isSuccess } = useGetRoomsQuery();
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data, isSuccess, refetch } = useGetRoomsQuery({
+    page,
+    limit,
+    search: searchQuery,
+  });
 
   const [roomDeleteApi] = useDeleteRoomMutation();
   const [roomToggleApi] = useToggleRoomMutation();
+  const [importRoom] = useImportRoomMutation();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteRoomId, setDeleteRoomId] = useState(null);
   const [showToggleModal, setShowToggleModal] = useState(false);
   const [toggleRoomId, setToggleRoomId] = useState(null);
   const [toggleRoomStatus, setToggleRoomStatus] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
-  const [rows, setRows] = useState(data || []);
+  const [rows, setRows] = useState(data?.rooms || []);
+  const totalRooms = data?.total || 0;
+
   useEffect(() => {
-    if (isSuccess) setRows(data);
+    if (isSuccess) setRows(data?.rooms || []);
   }, [isSuccess, data]);
+
+  const handleChangePage = async (event, newPage) => {
+    setPage(newPage + 1);
+    refetch({ page: newPage + 1, limit });
+  };
+
+  const handleChangeRowsPerPage = async (event) => {
+    const newLimit = +event.target.value;
+
+    setLimit(newLimit);
+    setPage(1);
+    refetch({ page: 1, limit: newLimit });
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.length > 2) {
+      setPage(1);
+
+      refetch({ page, limit, search: searchQuery });
+    }
+  };
 
   const handleEdit = (roomId) => {
     navigate(`${roomId}/edit`);
@@ -121,9 +158,8 @@ const Rooms = () => {
         variant: "success",
       });
 
-      setRows((prevRows) =>
-        prevRows.filter((room) => room.id !== deleteRoomId)
-      );
+      setPage(1);
+      refetch();
 
       setShowDeleteModal(false);
       setDeleteRoomId(null);
@@ -162,6 +198,22 @@ const Rooms = () => {
     }
   };
 
+  const handleImport = async (importData) => {
+    try {
+      await importRoom(importData).unwrap();
+      setPage(1);
+      refetch();
+
+      enqueueSnackbar("Rooms imported successfully.", {
+        variant: "success",
+      });
+
+      setShowImportModal(false);
+    } catch (err) {
+      setShowImportModal(false);
+    }
+  };
+
   return (
     <>
       <Grid item xs={12} md={7} lg={8}>
@@ -170,6 +222,16 @@ const Rooms = () => {
             <Typography variant="h5">List of Rooms</Typography>
           </Grid>
           <Grid item>
+            <PermissionGuard permission="import_room">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setShowImportModal(true)}
+                style={{ marginRight: "10px" }}
+              >
+                <ImportExportOutlined /> Import Room
+              </Button>
+            </PermissionGuard>
             <PermissionGuard permission="add_room">
               <Button
                 variant="contained"
@@ -182,6 +244,26 @@ const Rooms = () => {
           </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
+          <Grid item xs={12} md={6} sx={{ p: 1, pt: 2 }}>
+            <TextField
+              label="Search by name"
+              variant="outlined"
+              size="small"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
+              sx={{
+                width: "100%",
+                "@media (min-width: 960px)": { width: "40%" },
+              }}
+            />
+          </Grid>
+
           <Box sx={{ width: "99.8%", maxWidth: "100%", p: 1 }}>
             <TableContainer component={Paper}>
               <Table aria-label="simple table">
@@ -222,6 +304,15 @@ const Rooms = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 20, 50, 100]}
+              component="div"
+              count={totalRooms}
+              rowsPerPage={limit}
+              page={page - 1}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
           </Box>
         </MainCard>
       </Grid>
@@ -245,6 +336,15 @@ const Rooms = () => {
           toggleRoomStatus ? "deactivate" : "activate"
         } this room?`}
         dialogActionName="Confirm"
+      />
+
+      <ImportDialog
+        isOpen={showImportModal}
+        onClose={() => {
+          setShowImportModal(false);
+        }}
+        onImport={handleImport}
+        dialogContent="Import Room"
       />
     </>
   );

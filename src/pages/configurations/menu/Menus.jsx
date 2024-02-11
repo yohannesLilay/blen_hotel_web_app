@@ -138,10 +138,8 @@ const Menus = () => {
         variant: "success",
       });
 
-      setRows((prevRows) =>
-        prevRows.filter((menu) => menu.id !== deleteMenuId)
-      );
-
+      setPage(1);
+      refetch();
       setShowDeleteModal(false);
       setDeleteMenuId(null);
     } catch (err) {

@@ -1,22 +1,32 @@
-import { apiSlice } from "../apiSlice"
+import { apiSlice } from "../apiSlice";
 const ROOM_ENDPOINT = "rooms";
 
 export const roomsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getRooms: builder.query({
-      query: () => ({ url: ROOM_ENDPOINT }),
+      query: ({ page, limit, search }) => ({
+        url: ROOM_ENDPOINT,
+        params: { page, limit, search },
+      }),
     }),
     getRoomTemplate: builder.query({
-        query: () => ({
-          url: `${ROOM_ENDPOINT}/template`,
-        }),
+      query: () => ({
+        url: `${ROOM_ENDPOINT}/template`,
       }),
+    }),
     createRoom: builder.mutation({
       query: (data) => ({
         url: `${ROOM_ENDPOINT}/`,
         method: "POST",
         body: data,
       }),
+    }),
+    importRoom: builder.mutation({
+      query: (data) => ({
+        url: `${ROOM_ENDPOINT}/import`,
+        method: "POST",
+        body: data
+      })
     }),
     getRoom: builder.query({
       query: (id) => ({
@@ -49,6 +59,7 @@ export const {
   useGetRoomsQuery,
   useGetRoomTemplateQuery,
   useCreateRoomMutation,
+  useImportRoomMutation,
   useGetRoomQuery,
   useUpdateRoomMutation,
   useToggleRoomMutation,
