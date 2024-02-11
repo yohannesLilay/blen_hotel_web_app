@@ -29,6 +29,7 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
+import menuTemplate from "src/assets/template/menu-template.xlsx";
 import {
   useGetMenusQuery,
   useImportMenuMutation,
@@ -124,11 +125,6 @@ const Menus = () => {
 
   const handleEdit = (menuId) => {
     navigate(`${menuId}/edit`);
-  };
-
-  const handleDelete = (menuId) => {
-    setShowDeleteModal(true);
-    setDeleteMenuId(menuId);
   };
 
   const handleDeleteConfirmed = async () => {
@@ -242,7 +238,10 @@ const Menus = () => {
                       index={index}
                       row={row}
                       onEdit={() => handleEdit(row.id)}
-                      onDelete={() => handleDelete(row.id)}
+                      onDelete={() => {
+                        setShowDeleteModal(true);
+                        setDeleteMenuId(row.id);
+                      }}
                     />
                   ))}
                 </TableBody>
@@ -275,6 +274,8 @@ const Menus = () => {
         }}
         onImport={handleImport}
         dialogContent="Import Menus"
+        templateFile={menuTemplate}
+        templateFileName="menu-template.xlsx"
       />
     </>
   );

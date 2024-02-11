@@ -29,6 +29,7 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
+import productCategoryTemplate from "src/assets/template/product-category-template.xlsx";
 import {
   useGetCategoriesQuery,
   useImportCategoryMutation,
@@ -118,11 +119,6 @@ const Categories = () => {
 
   const handleEdit = (categoryId) => {
     navigate(`${categoryId}/edit`);
-  };
-
-  const handleDelete = (categoryId) => {
-    setShowDeleteModal(true);
-    setDeleteCategoryId(categoryId);
   };
 
   const handleDeleteConfirmed = async () => {
@@ -236,7 +232,10 @@ const Categories = () => {
                       index={index}
                       row={row}
                       onEdit={() => handleEdit(row.id)}
-                      onDelete={() => handleDelete(row.id)}
+                      onDelete={() => {
+                        setShowDeleteModal(true);
+                        setDeleteCategoryId(row.id);
+                      }}
                     />
                   ))}
                 </TableBody>
@@ -269,6 +268,8 @@ const Categories = () => {
         }}
         onImport={handleImport}
         dialogContent="Import Categories"
+        templateFile={productCategoryTemplate}
+        templateFileName="product-category-template.xlsx"
       />
     </>
   );

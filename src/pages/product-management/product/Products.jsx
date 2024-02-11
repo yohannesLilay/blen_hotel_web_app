@@ -29,6 +29,7 @@ import PermissionGuard from "src/components/PermissionGuard";
 import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ImportDialog from "src/components/modals/ImportModal";
+import productTemplate from "src/assets/template/product-template.xlsx";
 import {
   useGetProductsQuery,
   useImportProductMutation,
@@ -280,6 +281,8 @@ const Products = () => {
         }}
         onImport={handleImport}
         dialogContent="Import Products"
+        templateFile={productTemplate}
+        templateFileName="product-template.xlsx"
       />
     </>
   );
