@@ -45,23 +45,29 @@ const Dashboard = () => {
         />
       </Grid>
 
-      {topUsedSuccess && (
-        <Grid item xs={12} sm={6}>
-          <BarChartComponent
-            dataset={topUsedMenus}
-            title="Top 5 Used Products"
-          />
-        </Grid>
-      )}
+      {topUsedSuccess &&
+        topUsedMenus &&
+        Array.isArray(topUsedMenus) &&
+        topUsedMenus.length > 0 && (
+          <Grid item xs={12} sm={6}>
+            <BarChartComponent
+              dataset={topUsedMenus}
+              title="Top 5 Used Products"
+            />
+          </Grid>
+        )}
 
-      {topIncomeSuccess && (
-        <Grid item xs={12} sm={6}>
-          <BarChartComponent
-            dataset={topIncomeMenus}
-            title="Top 5 Income Products"
-          />
-        </Grid>
-      )}
+      {topIncomeSuccess &&
+        topIncomeMenus &&
+        Array.isArray(topIncomeMenus) &&
+        topIncomeMenus.length > 0 && (
+          <Grid item xs={12} sm={6}>
+            <BarChartComponent
+              dataset={topIncomeMenus}
+              title="Top 5 Income Products"
+            />
+          </Grid>
+        )}
 
       <Grid
         item

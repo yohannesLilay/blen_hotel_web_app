@@ -21,11 +21,14 @@ const chartSetting = {
 const valueFormatter = (value) => `${value}`;
 
 const BarChartComponent = ({ dataset, title }) => {
-  const parsedDataset = dataset.map((item) => ({
-    ...item,
-    usageCount: Number(item.usageCount),
-    totalPrice: Number(item.totalPrice),
-  }));
+  const parsedDataset =
+    dataset && Array.isArray(dataset) && dataset.length > 0
+      ? dataset.map((item) => ({
+          ...item,
+          usageCount: Number(item.usageCount),
+          totalPrice: Number(item.totalPrice),
+        }))
+      : [];
 
   return (
     <>
