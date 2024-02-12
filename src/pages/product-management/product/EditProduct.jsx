@@ -9,6 +9,8 @@ import {
   TextField,
   Stack,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -47,6 +49,7 @@ const EditProduct = () => {
               unit_of_measure: getProduct?.unit_of_measure || "",
               safety_stock_level: getProduct?.safety_stock_level || "",
               notes: getProduct?.notes || "",
+              is_directly_consumed: getProduct?.is_directly_consumed || false,
               category:
                 getTemplate?.categoryOptions.find(
                   (option) => option.id === getProduct?.category?.id
@@ -62,6 +65,9 @@ const EditProduct = () => {
               category: Yup.object().shape({
                 id: Yup.number().required("Category is required"),
               }),
+              is_directly_consumed: Yup.boolean().required(
+                "Is Directly Consumed is required"
+              ),
             })}
             onSubmit={async (values) => {
               await updateProduct({
@@ -71,6 +77,7 @@ const EditProduct = () => {
                 safety_stock_level: parseInt(values.safety_stock_level),
                 notes: values.notes,
                 categoryId: values.category?.id,
+                is_directly_consumed: values.is_directly_consumed,
               }).unwrap();
               navigate(-1);
               enqueueSnackbar("Product updated successfully.", {
@@ -90,7 +97,7 @@ const EditProduct = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -109,7 +116,7 @@ const EditProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -150,7 +157,7 @@ const EditProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -186,7 +193,7 @@ const EditProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -209,7 +216,7 @@ const EditProduct = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -226,6 +233,27 @@ const EditProduct = () => {
                           {errors.notes}
                         </Typography>
                       )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            name="is_directly_consumed"
+                            checked={values.is_directly_consumed}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          />
+                        }
+                        label="Is Directly Consumed"
+                      />
+                      {touched.is_directly_consumed &&
+                        errors.is_directly_consumed && (
+                          <Typography variant="body2" color="error">
+                            {errors.is_directly_consumed}
+                          </Typography>
+                        )}
                     </Stack>
                   </Grid>
                   <Grid

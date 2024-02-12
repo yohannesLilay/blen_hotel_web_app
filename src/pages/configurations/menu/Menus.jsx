@@ -81,12 +81,13 @@ const Menus = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isSuccess, refetch } = useGetMenusQuery({
     page,
     limit,
-    search: searchQuery,
+    search,
   });
   const [menuDeleteApi] = useDeleteMenuMutation();
   const [importMenu] = useImportMenuMutation();
@@ -118,8 +119,11 @@ const Menus = () => {
   const handleSearch = () => {
     if (searchQuery.length > 2) {
       setPage(1);
+      setSearch(searchQuery);
 
-      refetch({ page, limit, search: searchQuery });
+      refetch({ page, limit, search });
+    } else {
+      setSearch("");
     }
   };
 
@@ -273,7 +277,7 @@ const Menus = () => {
           setShowImportModal(false);
         }}
         onImport={handleImport}
-        dialogContent="Import Menus"
+        dialogTitle="Import Menus"
         templateFile={menuTemplate}
         templateFileName="menu-template.xlsx"
       />

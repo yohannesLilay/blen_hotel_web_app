@@ -32,6 +32,7 @@ import MainCard from "src/components/MainCard";
 import DeleteModal from "src/components/modals/DeleteModal";
 import ConfirmationModal from "src/components/modals/ConfirmationModal";
 import ImportDialog from "src/components/modals/ImportModal";
+import roomTemplate from "src/assets/template/room-template.xlsx";
 import {
   useGetRoomsQuery,
   useToggleRoomMutation,
@@ -96,13 +97,14 @@ const Rooms = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
   const { data, isSuccess, refetch } = useGetRoomsQuery({
     page,
     limit,
     search: searchQuery,
   });
-
   const [roomDeleteApi] = useDeleteRoomMutation();
   const [roomToggleApi] = useToggleRoomMutation();
   const [importRoom] = useImportRoomMutation();
@@ -137,8 +139,11 @@ const Rooms = () => {
   const handleSearch = () => {
     if (searchQuery.length > 2) {
       setPage(1);
+      setSearch(searchQuery);
 
-      refetch({ page, limit, search: searchQuery });
+      refetch({ page, limit, search });
+    } else {
+      setSearch("");
     }
   };
 
@@ -344,7 +349,9 @@ const Rooms = () => {
           setShowImportModal(false);
         }}
         onImport={handleImport}
-        dialogContent="Import Room"
+        dialogTitle="Import Rooms"
+        templateFile={roomTemplate}
+        templateFileName="room-template.xlsx"
       />
     </>
   );

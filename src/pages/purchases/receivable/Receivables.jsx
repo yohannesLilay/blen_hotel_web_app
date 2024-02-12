@@ -156,6 +156,7 @@ const Receivables = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isSuccess, refetch } = useGetReceivablesQuery({
@@ -200,8 +201,11 @@ const Receivables = () => {
   const handleSearch = () => {
     if (searchQuery.length > 2) {
       setPage(1);
+      setSearch(searchQuery);
 
-      refetch({ page, limit, search: searchQuery });
+      refetch({ page, limit, search });
+    } else {
+      setSearch("");
     }
   };
 

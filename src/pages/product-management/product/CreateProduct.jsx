@@ -9,6 +9,8 @@ import {
   TextField,
   Stack,
   Typography,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import * as Yup from "yup";
 import { Formik } from "formik";
@@ -45,6 +47,7 @@ const CreateProduct = () => {
               unit_of_measure: "",
               safety_stock_level: "",
               notes: "",
+              is_directly_consumed: false,
             }}
             validationSchema={Yup.object().shape({
               name: Yup.string().required("Name is required"),
@@ -56,6 +59,9 @@ const CreateProduct = () => {
               category: Yup.object().shape({
                 id: Yup.number().required("Category is required"),
               }),
+              is_directly_consumed: Yup.boolean().required(
+                "Is Directly Consumed is required"
+              ),
             })}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               try {
@@ -65,6 +71,7 @@ const CreateProduct = () => {
                   safety_stock_level: parseInt(values.safety_stock_level),
                   notes: values.notes,
                   categoryId: values.category?.id,
+                  is_directly_consumed: values.is_directly_consumed,
                 }).unwrap();
                 navigate(-1);
                 enqueueSnackbar("Product created successfully.", {
@@ -90,7 +97,7 @@ const CreateProduct = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -109,7 +116,7 @@ const CreateProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -150,7 +157,7 @@ const CreateProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <FormControl
                         fullWidth
@@ -186,7 +193,7 @@ const CreateProduct = () => {
                       )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -209,7 +216,7 @@ const CreateProduct = () => {
                         )}
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} md={6}>
                     <Stack spacing={1}>
                       <TextField
                         fullWidth
@@ -226,6 +233,27 @@ const CreateProduct = () => {
                           {errors.notes}
                         </Typography>
                       )}
+                    </Stack>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Stack spacing={1}>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            name="is_directly_consumed"
+                            checked={values.is_directly_consumed}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                          />
+                        }
+                        label="Is Directly Consumed"
+                      />
+                      {touched.is_directly_consumed &&
+                        errors.is_directly_consumed && (
+                          <Typography variant="body2" color="error">
+                            {errors.is_directly_consumed}
+                          </Typography>
+                        )}
                     </Stack>
                   </Grid>
                   <Grid

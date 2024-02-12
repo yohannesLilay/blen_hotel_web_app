@@ -69,6 +69,7 @@ const ProductTableRow = ({ index, row, onDelete, onEdit }) => {
       <TableCell>{row.category.name}</TableCell>
       <TableCell>{row.stock_quantity}</TableCell>
       <TableCell>{row.safety_stock_level}</TableCell>
+      <TableCell>{row.is_directly_consumed ? "Yes" : "No"}</TableCell>
       <TableCell>{row.notes}</TableCell>
       <TableCell align="right">
         <ActionButtons onEdit={onEdit} onDelete={onDelete} />
@@ -81,12 +82,13 @@ const Products = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isSuccess, refetch } = useGetProductsQuery({
     page,
     limit,
-    search: searchQuery,
+    search,
   });
   const [productDeleteApi] = useDeleteProductMutation();
   const [importProduct] = useImportProductMutation();
@@ -118,8 +120,11 @@ const Products = () => {
   const handleSearch = () => {
     if (searchQuery.length > 2) {
       setPage(1);
+      setSearch(searchQuery);
 
-      refetch({ page, limit, search: searchQuery });
+      refetch({ page, limit, search });
+    } else {
+      setSearch("");
     }
   };
 
@@ -228,6 +233,7 @@ const Products = () => {
                     <TableCell>Category</TableCell>
                     <TableCell>Qty in Stoke</TableCell>
                     <TableCell>Safety Stock Level</TableCell>
+                    <TableCell>Directly Consumed</TableCell>
                     <TableCell>Notes</TableCell>
                     <TableCell align="right">Action</TableCell>
                   </TableRow>
@@ -280,7 +286,7 @@ const Products = () => {
           setShowImportModal(false);
         }}
         onImport={handleImport}
-        dialogContent="Import Products"
+        dialogTitle="Import Products"
         templateFile={productTemplate}
         templateFileName="product-template.xlsx"
       />

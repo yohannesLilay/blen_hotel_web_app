@@ -77,7 +77,9 @@ const Categories = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+
   const { data, isSuccess, refetch } = useGetCategoriesQuery({
     page,
     limit,
@@ -112,8 +114,11 @@ const Categories = () => {
   const handleSearch = () => {
     if (searchQuery.length > 2) {
       setPage(1);
+      setSearch(searchQuery);
 
-      refetch({ page, limit, search: searchQuery });
+      refetch({ page, limit, search });
+    } else {
+      setSearch("");
     }
   };
 
@@ -267,7 +272,7 @@ const Categories = () => {
           setShowImportModal(false);
         }}
         onImport={handleImport}
-        dialogContent="Import Categories"
+        dialogTitle="Import Categories"
         templateFile={productCategoryTemplate}
         templateFileName="product-category-template.xlsx"
       />
